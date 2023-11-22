@@ -186,15 +186,6 @@ class _LoginWithEmailStatefulState extends State<LoginWithEmailStateful> {
                   SizedBox(
                     height: defaultVerticalPadding
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Login with email', style: textFieldPageTitleTextStyle)
-                    ]
-                  ),
-                  SizedBox(
-                    height: titleToContentMargin,
-                  ),
                   containerMargin(
                     textFieldWithDescription(
                       TextField(

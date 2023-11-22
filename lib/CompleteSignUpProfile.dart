@@ -183,15 +183,6 @@ class _CompleteSignUpProfileStatefulState extends State<CompleteSignUpProfileSta
               child: ListView(
                 children: <Widget>[
                   SizedBox(
-                    height: defaultVerticalPadding
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Set up your account', style: textFieldPageTitleTextStyle)
-                    ]
-                  ),
-                  SizedBox(
                     height: titleToContentMargin,
                   ),
                   Center(

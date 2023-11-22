@@ -138,7 +138,6 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
                             ],
                           ),
                         ),
-                      
                       ]
                     );
                   }

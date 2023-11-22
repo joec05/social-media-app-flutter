@@ -58,22 +58,29 @@ A simple social media project app made with Flutter accompanied with multiple us
 
 ## Basic preview of the application
 
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_1.jpg?raw=true "Social media app preview 1")
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_12.jpg?raw=true "Social media app preview 12")
+
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_9.jpg?raw=true "Social media app preview 9")
 
 ![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_8.jpg?raw=true "Social media app preview 8")
 
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_1.jpg?raw=true "Social media app preview 1")
+
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_10.jpg?raw=true "Social media app preview 10")
+
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_13.jpg?raw=true "Social media app preview 13")
+
 ![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_7.jpg?raw=true "Social media app preview 7")
-
-
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_2.jpg?raw=true "Social media app preview 2")
-
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_3.jpg?raw=true "Social media app preview 3")
 
 ![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_4.jpg?raw=true "Social media app preview 4")
 
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_5.jpg?raw=true "Social media app preview 5")
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_2.jpg?raw=true "Social media app preview 2")
 
 ![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_6.jpg?raw=true "Social media app preview 6")
+
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_11.jpg?raw=true "Social media app preview 11")
+
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_5.jpg?raw=true "Social media app preview 5")
 
 ## Things to fix and improve
 

@@ -188,15 +188,6 @@ class _LoginWithUsernameStatefulState extends State<LoginWithUsernameStateful> {
               child: ListView(
                 children: <Widget>[
                   SizedBox(
-                    height: defaultVerticalPadding
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Login with username', style: textFieldPageTitleTextStyle)
-                    ]
-                  ),
-                  SizedBox(
                     height: titleToContentMargin,
                   ),
                   containerMargin(

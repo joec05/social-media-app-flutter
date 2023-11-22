@@ -1,4 +1,3 @@
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
@@ -25,7 +24,7 @@ Size defaultTextFieldButtonSize = Size(
 
 double defaultVerticalPadding = getScreenHeight() * 0.02;
 
-TextStyle textFieldPageTitleTextStyle = TextStyle(fontSize: 22.5, fontWeight: FontWeight.bold);
+TextStyle textFieldPageTitleTextStyle = const TextStyle(fontSize: 22.5, fontWeight: FontWeight.bold);
 
 double regularTextFieldContentHorizontalPadding = getScreenWidth() * 0.02;
 
@@ -40,14 +39,14 @@ Widget textFieldWithDescription(Widget textField, String description, String too
       Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(description, style: TextStyle(color: Colors.white, fontSize: 14.5, fontWeight: FontWeight.bold)),
+          Text(description, style: const TextStyle(color: Colors.white, fontSize: 14.5, fontWeight: FontWeight.bold)),
           SizedBox(
             width: getScreenWidth() * 0.0075,
           ),
           toolTipMessage.isNotEmpty ? 
             Tooltip(
               message: toolTipMessage,
-              child: Icon(Icons.info, size: 17.5)
+              child: const Icon(Icons.info, size: 17.5)
             )
           : Container(),
         ]
@@ -65,11 +64,11 @@ double titleToContentMargin = getScreenHeight() * 0.0225;
 double textFieldToButtonMargin = getScreenHeight() * 0.03;
 
 InputDecoration generateProfileTextFieldDecoration(content){
-  OutlineInputBorder textFieldBorder = OutlineInputBorder(
+  OutlineInputBorder textFieldBorder = const OutlineInputBorder(
     borderSide: BorderSide(width: 2, color: Colors.white),
   );
 
-  OutlineInputBorder focusedTextFieldBorder = OutlineInputBorder(
+  OutlineInputBorder focusedTextFieldBorder = const OutlineInputBorder(
     borderSide: BorderSide(width: 2, color: Colors.brown),
   );
   return InputDecoration(
@@ -83,11 +82,11 @@ InputDecoration generateProfileTextFieldDecoration(content){
 }
 
 InputDecoration generateSearchTextFieldDecoration(content){
-  OutlineInputBorder textFieldBorder = OutlineInputBorder(
+  OutlineInputBorder textFieldBorder = const OutlineInputBorder(
     borderSide: BorderSide(width: 1, color: Colors.white),
   );
 
-  OutlineInputBorder focusedTextFieldBorder = OutlineInputBorder(
+  OutlineInputBorder focusedTextFieldBorder = const OutlineInputBorder(
     borderSide: BorderSide(width: 1, color: Colors.brown),
   );
   return InputDecoration(
@@ -101,11 +100,11 @@ InputDecoration generateSearchTextFieldDecoration(content){
 }
 
 InputDecoration generateBioTextFieldDecoration(){
-  OutlineInputBorder textFieldBorder = OutlineInputBorder(
+  OutlineInputBorder textFieldBorder = const OutlineInputBorder(
     borderSide: BorderSide(width: 2, color: Colors.white),
   );
 
-  OutlineInputBorder focusedTextFieldBorder = OutlineInputBorder(
+  OutlineInputBorder focusedTextFieldBorder = const OutlineInputBorder(
     borderSide: BorderSide(width: 2, color: Colors.brown),
   );
   return InputDecoration(
@@ -122,7 +121,7 @@ Widget loadingSignWidget(){
   return Container(
     width: getScreenWidth(), height: getScreenHeight(),
     color: Colors.white.withOpacity(0.5),
-    child: Center(
+    child: const Center(
       child: CircularProgressIndicator()
     )
   );
@@ -136,11 +135,11 @@ Widget containerMargin(Widget child, EdgeInsets margin){
 
 
 InputDecoration generatePostTextFieldDecoration(content){
-  OutlineInputBorder textFieldBorder = OutlineInputBorder(
+  OutlineInputBorder textFieldBorder = const OutlineInputBorder(
     borderSide: BorderSide(width: 2, color: Colors.white),
   );
 
-  OutlineInputBorder focusedTextFieldBorder = OutlineInputBorder(
+  OutlineInputBorder focusedTextFieldBorder = const OutlineInputBorder(
     borderSide: BorderSide(width: 2, color: Colors.brown),
   );
   return InputDecoration(
@@ -159,7 +158,7 @@ Widget loadingPageWidget(){
   return Center(
     child: Container(
       padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding, vertical: defaultVerticalPadding),
-      child: CircularProgressIndicator()
+      child: const CircularProgressIndicator()
     )
   );
 }
@@ -188,7 +187,7 @@ Widget mediaDataPostComponentWidget(MediaDatasClass mediaData, BuildContext cont
       },
       child: Container(
         margin: EdgeInsets.symmetric(vertical: mediaComponentMargin),
-        constraints: BoxConstraints(
+        constraints: const BoxConstraints(
           maxHeight: 200,
           maxWidth: double.infinity
         ),
@@ -223,7 +222,7 @@ Widget mediaDataMessageComponentWidget(MediaDatasClass mediaData, BuildContext c
       },
       child: Container(
         margin: EdgeInsets.symmetric(vertical: mediaComponentMargin),
-        constraints: BoxConstraints(
+        constraints: const BoxConstraints(
           maxHeight: 200,
           maxWidth: 200
         ),
@@ -251,14 +250,14 @@ Widget mediaDataMessageComponentWidget(MediaDatasClass mediaData, BuildContext c
 Widget mediaDataDraftPostComponentWidget(MediaDatasClass mediaData){
   if(mediaData.mediaType == MediaType.image){
     return Container(
-      constraints: BoxConstraints(
+      constraints: const BoxConstraints(
         maxHeight: 200,
         maxWidth: double.infinity
       ),
       child: Image.file(File(mediaData.url))
     );
   }else if(mediaData.mediaType == MediaType.video){
-    return Container(
+    return SizedBox(
       width: mediaData.mediaSize!.width,
       height: mediaData.mediaSize!.height,
       child: VideoPlayer(mediaData.playerController!)
@@ -274,14 +273,14 @@ Widget mediaDataDraftPostComponentWidget(MediaDatasClass mediaData){
 Widget mediaDataDraftMessageComponentWidget(MediaDatasClass mediaData){
   if(mediaData.mediaType == MediaType.image){
     return Container(
-      constraints: BoxConstraints(
+      constraints: const BoxConstraints(
         maxHeight: 200,
         maxWidth: double.infinity
       ),
       child: Image.file(File(mediaData.url))
     );
   }else if(mediaData.mediaType == MediaType.video){
-    return Container(
+    return SizedBox(
       width: mediaData.mediaSize!.width,
       height: mediaData.mediaSize!.height,
       child: VideoPlayer(mediaData.playerController!)

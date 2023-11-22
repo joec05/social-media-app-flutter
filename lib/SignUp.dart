@@ -274,15 +274,6 @@ class _SignUpStatefulState extends State<SignUpStateful> {
               child: ListView(
                 children: <Widget>[
                   SizedBox(
-                    height: defaultVerticalPadding
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Create your account', style: textFieldPageTitleTextStyle)
-                    ]
-                  ),
-                  SizedBox(
                     height: titleToContentMargin,
                   ),
                   containerMargin(

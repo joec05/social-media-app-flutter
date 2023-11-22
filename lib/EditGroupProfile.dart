@@ -209,12 +209,6 @@ class _EditGroupProfileStatefulState extends State<EditGroupProfileStateful> wit
                   SizedBox(
                     height: defaultVerticalPadding
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Edit your profile', style: textFieldPageTitleTextStyle)
-                    ]
-                  ),
                   SizedBox(
                     height: titleToContentMargin,
                   ),

@@ -101,7 +101,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
             mediasComponents.value = [
               ...mediasComponents.value,
               Container(
-                decoration: BoxDecoration(border: Border.all(width: 2, color: Colors.red)),
+                decoration: BoxDecoration(border: Border.all(width: 2, color: Colors.grey)),
                 child: Image.file(
                   File(filePath), fit: BoxFit.contain, width: updatedMediaData.mediaSize!.width, 
                   height: updatedMediaData.mediaSize!.height

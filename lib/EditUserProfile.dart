@@ -332,15 +332,6 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
               child: ListView(
                 children: <Widget>[
                   SizedBox(
-                    height: defaultVerticalPadding
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Edit your profile', style: textFieldPageTitleTextStyle)
-                    ]
-                  ),
-                  SizedBox(
                     height: titleToContentMargin,
                   ),
                   ValueListenableBuilder(
