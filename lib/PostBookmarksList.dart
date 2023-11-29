@@ -52,7 +52,7 @@ class _PostBookmarksListWidgetStatefulState extends State<_PostBookmarksListWidg
   void initState(){
     super.initState();
     postID = widget.postID;
-    fetchPostVoices(users.value.length, false);
+    runDelay(() async => fetchPostBookmarks(users.value.length, false), actionDelayTime);
     userDataStreamClassSubscription = UserDataStreamClass().userDataStream.listen((UserDataStreamControllerClass data) {
       if(mounted){
         if(data.uniqueID == postID && data.actionType.name == UserDataStreamsUpdateType.addPostBookmarks.name){
@@ -88,7 +88,7 @@ class _PostBookmarksListWidgetStatefulState extends State<_PostBookmarksListWidg
     canPaginate.dispose();
   }
 
-  Future<void> fetchPostVoices(int currentUsersLength, bool isRefreshing) async{
+  Future<void> fetchPostBookmarks(int currentUsersLength, bool isRefreshing) async{
     try {
       if(mounted){
         isLoading.value = true;
@@ -137,7 +137,7 @@ class _PostBookmarksListWidgetStatefulState extends State<_PostBookmarksListWidg
         loadingUsersStatus.value = LoadingStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
-          await fetchPostVoices(users.value.length, false);
+          await fetchPostBookmarks(users.value.length, false);
           if(mounted){
             loadingUsersStatus.value = LoadingStatus.loaded;
           }

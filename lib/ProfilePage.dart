@@ -50,7 +50,7 @@ class _ProfilePageWidgetStatefulState extends State<_ProfilePageWidgetStateful> 
     super.initState();
     userID = widget.userID;
     _tabController = TabController(length: 2, vsync: this);
-    fetchProfileData();
+    runDelay(() async => fetchProfileData(), 0);
     _scrollController.addListener(() {
       if(mounted){
         if(_scrollController.position.pixels > animateToTopMinHeight){

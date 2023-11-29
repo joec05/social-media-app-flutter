@@ -23,18 +23,20 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
   @override
   void initState() {
     super.initState();
-    FirebaseAuth.instance.currentUser?.sendEmailVerification();
+    auth.currentUser?.sendEmailVerification();
     timer = Timer.periodic(const Duration(seconds: 3), (_) => checkEmailVerified());
   }
 
   void checkEmailVerified() async {
-    await FirebaseAuth.instance.currentUser?.reload();
-    setState(() {
-      verified = FirebaseAuth.instance.currentUser!.emailVerified;
-    });
-    if(verified) {
-      timer?.cancel();
-      Navigator.pop(context, verified);
+    await auth.currentUser?.reload();
+    if(mounted){
+      setState(() {
+        verified = auth.currentUser!.emailVerified;
+      });
+      if(verified) {
+        timer?.cancel();
+        Navigator.pop(context, verified);
+      }
     }
   }
 
@@ -76,7 +78,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                 buttonColor: Colors.red, buttonText: 'Resend email', 
                 onTapped: (){
                   try{
-                    FirebaseAuth.instance.currentUser!.sendEmailVerification();
+                    auth.currentUser!.sendEmailVerification();
                   } catch(e) {
                     debugPrint(e.toString());
                   }

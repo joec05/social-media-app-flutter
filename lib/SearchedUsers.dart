@@ -52,7 +52,7 @@ class _SearchedUsersWidgetStatefulState extends State<_SearchedUsersWidgetStatef
   void initState(){
     super.initState();
     searchedText = widget.searchedText;
-    fetchSearchedUsers(users.value.length, false, false);
+    runDelay(() async => fetchSearchedUsers(users.value.length, false, false), actionDelayTime);
     _scrollController.addListener(() {
       if(mounted){
         if(_scrollController.position.pixels > animateToTopMinHeight){

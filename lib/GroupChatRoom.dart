@@ -84,7 +84,7 @@ class _GroupChatRoomWidgetStatefulState extends State<_GroupChatRoomWidgetStatef
       chatID.value = widget.chatID;
       newChatID.value = chatID.value == null ? const Uuid().v4() : null;
     }
-    fetchGroupChatData(messages.value.length, false, false);
+    runDelay(() async => fetchGroupChatData(messages.value.length, false, false), actionDelayTime);
     messageController.addListener(() {
       if(mounted){
         String messageText = messageController.text;
@@ -730,69 +730,75 @@ class _GroupChatRoomWidgetStatefulState extends State<_GroupChatRoomWidgetStatef
         title: ValueListenableBuilder(
           valueListenable: groupProfile, 
           builder: ((context, groupProfileData, child) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                InkWell(
-                  onTap: (){
-                    if(chatID.value != null){
-                      runDelay(() => Navigator.push(
-                        context,
-                        SliderRightToLeftRoute(
-                          page: GroupProfilePageWidget(chatID: chatID.value!, groupProfileData: groupProfile.value,)
-                        )
-                      ), navigatorDelayTime);
-                    }
-                  },
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.start, 
-                          children: [
-                            Column(
-                              children: [
-                                GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: (){
-                                  },
-                                  child: Container(
-                                    width: getScreenWidth() * 0.075,
-                                    height: getScreenWidth() * 0.075,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(width: 2, color: Colors.white),
-                                      borderRadius: BorderRadius.circular(100),
-                                      image: DecorationImage(
-                                        image: NetworkImage(
-                                          groupProfileData.profilePicLink
-                                        ), fit: BoxFit.fill
-                                      )
-                                    ),
-                                  ),
-                                )
-                              ]
-                            ),
-                            SizedBox(width: getScreenWidth() * 0.03),
-                            Expanded( 
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.start,
+            if(groupProfileData.profilePicLink.isNotEmpty){
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: (){
+                      if(chatID.value != null){
+                        runDelay(() => Navigator.push(
+                          context,
+                          SliderRightToLeftRoute(
+                            page: GroupProfilePageWidget(chatID: chatID.value!, groupProfileData: groupProfile.value,)
+                          )
+                        ), navigatorDelayTime);
+                      }
+                    },
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.start, 
+                            children: [
+                              Column(
                                 children: [
-                                  Text(StringEllipsis.convertToEllipsis(groupProfileData.name), maxLines: 1, overflow: TextOverflow.ellipsis)
-                                ],
+                                  GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: (){
+                                    },
+                                    child: Container(
+                                      width: getScreenWidth() * 0.075,
+                                      height: getScreenWidth() * 0.075,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(width: 2, color: Colors.white),
+                                        borderRadius: BorderRadius.circular(100),
+                                        image: DecorationImage(
+                                          image: NetworkImage(
+                                            groupProfileData.profilePicLink
+                                          ), fit: BoxFit.fill
+                                        )
+                                      ),
+                                    ),
+                                  )
+                                ]
+                              ),
+                              SizedBox(width: getScreenWidth() * 0.03),
+                              Expanded( 
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(StringEllipsis.convertToEllipsis(groupProfileData.name), maxLines: 1, overflow: TextOverflow.ellipsis)
+                                  ],
+                                )
                               )
-                            )
-                          ],
-                        )
-                      ),
-                    ],
-                  )
-                ),
-              ],
+                            ],
+                          )
+                        ),
+                      ],
+                    )
+                  ),
+                ],
+              );
+            }
+            return SizedBox(
+              width: getScreenWidth() * 0.075,
+              height: getScreenWidth() * 0.075,
             );
           })
         ),

@@ -57,7 +57,7 @@ class _ProfilePageBookmarksWidgetStatefulState extends State<_ProfilePageBookmar
   void initState(){
     super.initState();
     userID = widget.userID;
-    fetchProfileBookmarks(posts.value.length, false);
+    runDelay(() async => fetchProfileBookmarks(posts.value.length, false), actionDelayTime);
     bookmarkDataStreamClassSubscription = BookmarkDataStreamClass().bookmarkDataStream.listen((BookmarkDataStreamControllerClass data) {
       if(data.uniqueID == 'add_bookmarks_${fetchReduxDatabase().currentID}'){
         var postClass = data.postClass;

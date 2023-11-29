@@ -54,7 +54,7 @@ class _EditGroupProfileStatefulState extends State<EditGroupProfileStateful> wit
     super.initState();
     chatID = widget.chatID;
     groupProfile = ValueNotifier(widget.groupProfileData);
-    fetchUserProfileData();
+    runDelay(() async => fetchUserProfileData(), actionDelayTime);
     nameController.addListener(() {
       if(mounted){
         String nameText = nameController.text;

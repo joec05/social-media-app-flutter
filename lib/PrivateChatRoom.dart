@@ -83,7 +83,7 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
       chatID.value = widget.chatID;
       recipient.value = widget.recipient;
     }
-    fetchPrivateChatData(messages.value.length, false, false);
+    runDelay(() async => fetchPrivateChatData(messages.value.length, false, false), actionDelayTime);
     messageController.addListener(() {
       if(mounted){
         String messageText = messageController.text;

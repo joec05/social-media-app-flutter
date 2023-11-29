@@ -50,7 +50,7 @@ class _ProfilePageWithUsernameWidgetStatefulState extends State<_ProfilePageWith
   void initState(){
     super.initState();
     username = widget.username;
-    fetchProfileDataWithUsername();
+    runDelay(() async => fetchProfileDataWithUsername(), actionDelayTime);
     _tabController = TabController(length: 2, vsync: this);
     _scrollController.addListener(() {
       if(mounted){

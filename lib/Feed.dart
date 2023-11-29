@@ -57,7 +57,7 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
   @override
   void initState(){
     super.initState();
-    fetchFeedPosts(posts.value.length, false, false);
+    runDelay(() async => fetchFeedPosts(posts.value.length, false, false), actionDelayTime);
     postDataStreamClassSubscription = PostDataStreamClass().postDataStream.listen((PostDataStreamControllerClass data) {
       if(data.uniqueID == fetchReduxDatabase().currentID && mounted){
         posts.value = [data.postClass, ...posts.value];

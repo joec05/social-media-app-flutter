@@ -55,7 +55,7 @@ class _ProfilePagePostsWidgetStatefulState extends State<_ProfilePagePostsWidget
   void initState(){
     super.initState();
     userID = widget.userID;
-    fetchProfilePosts(posts.value.length, false);
+    runDelay(() async => fetchProfilePosts(posts.value.length, false), actionDelayTime);
     postDataStreamClassSubscription = PostDataStreamClass().postDataStream.listen((PostDataStreamControllerClass data) {
       if(data.uniqueID == fetchReduxDatabase().currentID && mounted){
         posts.value = [data.postClass, ...posts.value];

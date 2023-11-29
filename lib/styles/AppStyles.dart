@@ -171,7 +171,7 @@ double lockIconProfileWidgetSize = 16;
 
 double muteIconProfileWidgetSize = 16;
 
-double moreIconProfileWidgetSize = 22.5;
+double moreIconProfileWidgetSize = 20;
 
 double iconsBesideNameProfileMargin = getScreenWidth() * 0.0125;
 
@@ -338,7 +338,7 @@ Widget generatePostMoreOptionsWidget(Function onTap, Widget child){
     child: InkWell(
       onTap: () => onTap(),
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: getScreenWidth() * 0.015, horizontal: getScreenWidth() * 0.015),
+        padding: EdgeInsets.symmetric(vertical: getScreenWidth() * 0.0005, horizontal: getScreenWidth() * 0.015),
         child: child,
       )
     )

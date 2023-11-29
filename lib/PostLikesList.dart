@@ -52,7 +52,7 @@ class _PostLikesListWidgetStatefulState extends State<_PostLikesListWidgetStatef
   void initState(){
     super.initState();
     postID = widget.postID;
-    fetchPostLikes(users.value.length, false);
+    runDelay(() async => fetchPostLikes(users.value.length, false), actionDelayTime);
     userDataStreamClassSubscription = UserDataStreamClass().userDataStream.listen((UserDataStreamControllerClass data) {
       if(mounted){
         if(data.uniqueID == postID && data.actionType.name == UserDataStreamsUpdateType.addPostLikes.name){

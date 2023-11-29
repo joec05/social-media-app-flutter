@@ -51,7 +51,7 @@ class _GroupMembersPageStatefulState extends State<_GroupMembersPageStateful> wi
     if(mounted){
       totalUsersLength.value = widget.usersID.length;
     }
-    fetchGroupMembersData(users.value.length, false);
+    runDelay(() async => fetchGroupMembersData(users.value.length, false), actionDelayTime);
     _scrollController.addListener(() {
       if(mounted){
         if(_scrollController.position.pixels > animateToTopMinHeight){

@@ -85,10 +85,12 @@ int messageDraftTextFieldMinLines = 1;
 
 int messageDraftTextFieldMaxLines = 10;
 
-var navigatorDelayTime = 300;
+var navigatorDelayTime = 500;
 
 var actionDelayTime = 350;
 
-String serverDomainAddress = 'https://flutter-social-media-app.serveo.net';
+//String serverDomainAddress = 'https://flutter-social-media-app.serveo.net';
+
+String serverDomainAddress = 'http://$IP:$PORT';
 
 double animateToTopMinHeight = getScreenHeight();

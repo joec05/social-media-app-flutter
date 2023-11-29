@@ -50,7 +50,7 @@ class _ProfilePageFollowersWidgetStatefulState extends State<_ProfilePageFollowe
   void initState(){
     super.initState();
     userID = widget.userID;
-    fetchProfileFollowers(users.value.length, false);
+    runDelay(() async => fetchProfileFollowers(users.value.length, false), actionDelayTime);
     userDataStreamClassSubscription = UserDataStreamClass().userDataStream.listen((UserDataStreamControllerClass data) {
       if(data.uniqueID == userID && data.actionType.name == UserDataStreamsUpdateType.addFollowers.name){
         if(mounted){

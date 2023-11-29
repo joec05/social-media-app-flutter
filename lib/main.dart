@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:social_media_app/Chats.dart';
@@ -13,6 +14,7 @@ import 'package:social_media_app/SignUp.dart';
 import 'package:social_media_app/caching/sqfliteConfiguration.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
 import 'package:social_media_app/firebase/firebase_constants.dart';
+import 'package:social_media_app/firebase/firebase_options.dart';
 import 'package:social_media_app/observer/GlobalObserver.dart';
 import 'package:social_media_app/redux/reduxLibrary.dart';
 import 'package:social_media_app/socket/main.dart';
@@ -33,11 +35,11 @@ class MyHttpOverrides extends HttpOverrides {
 void main() async{
   try {
     WidgetsFlutterBinding.ensureInitialized();
-    await firebaseInitialization;
     HttpOverrides.global = MyHttpOverrides();
     await DatabaseHelper().initDatabase();
     GlobalObserver globalObserver = GlobalObserver();
     WidgetsBinding.instance.addObserver(globalObserver);
+    await firebaseInitialization;
     runApp(StoreProvider(store: store, child: const MyApp()));
   } on Exception catch (e) {
     doSomethingWithException(e);
@@ -64,8 +66,6 @@ class MyApp extends StatelessWidget {
       routes: {
         // When navigating to the "/" route, build the FirstScreen widget.
         '/': (context) => const MyHomePage(title: 'Social Media App'),
-        // When navigating to the "/second" route, build the SecondScreen widget.
-        '/chats-list': (context) => const ChatsWidget(),
       },
     );
   }
@@ -125,6 +125,10 @@ class _MyHomePageState extends State<MyHomePage> {
               isLoginToAccount.value = true;
             }
           }
+        }else{
+          if(mounted){
+            isLoginToAccount.value = false;
+          }
         }
       }else{
         if(mounted){
@@ -180,13 +184,15 @@ class _MyHomePageState extends State<MyHomePage> {
                       width: getScreenWidth() * 0.6, height: getScreenHeight() * 0.075, 
                       buttonColor: const Color.fromARGB(255, 151, 145, 87), buttonText: 'Sign Up', 
                       onTapped: (){
-                        resetReduxData(context);
-                        runDelay(() => Navigator.push(
-                          context,
-                          SliderRightToLeftRoute(
-                            page: const SignUpStateless()
-                          )
-                        ), navigatorDelayTime);
+                        runDelay((){
+                          resetReduxData(context);
+                          runDelay(() => Navigator.push(
+                            context,
+                            SliderRightToLeftRoute(
+                              page: const SignUpStateless()
+                            )
+                          ), navigatorDelayTime);
+                        }, actionDelayTime);
                       }, 
                       setBorderRadius: true
                     ),
@@ -195,13 +201,15 @@ class _MyHomePageState extends State<MyHomePage> {
                       width: getScreenWidth() * 0.6, height: getScreenHeight() * 0.075, 
                       buttonColor: const Color.fromARGB(255, 151, 145, 87), buttonText: 'Login With Email', 
                       onTapped: (){
-                        resetReduxData(context);
-                        runDelay(() => Navigator.push(
-                          context,
-                          SliderRightToLeftRoute(
-                            page: const LoginWithEmailStateless()
-                          )
-                        ), navigatorDelayTime);
+                        runDelay((){
+                          resetReduxData(context);
+                          runDelay(() => Navigator.push(
+                            context,
+                            SliderRightToLeftRoute(
+                              page: const LoginWithEmailStateless()
+                            )
+                          ), navigatorDelayTime);
+                        }, actionDelayTime);
                       },
                       setBorderRadius: true
                     ),
@@ -210,13 +218,15 @@ class _MyHomePageState extends State<MyHomePage> {
                       width: getScreenWidth() * 0.6, height: getScreenHeight() * 0.075, 
                       buttonColor: const Color.fromARGB(255, 151, 145, 87), buttonText: 'Login With Username', 
                       onTapped: (){
-                        resetReduxData(context);
-                        runDelay(() => Navigator.push(
-                          context,
-                          SliderRightToLeftRoute(
-                            page: const LoginWithUsernameStateless()
-                          )
-                        ), navigatorDelayTime);
+                        runDelay((){
+                          resetReduxData(context);
+                          runDelay(() => Navigator.push(
+                            context,
+                            SliderRightToLeftRoute(
+                              page: const LoginWithUsernameStateless()
+                            )
+                          ), navigatorDelayTime);
+                        }, actionDelayTime);
                       },
                       setBorderRadius: true
                     ),
@@ -250,7 +260,6 @@ class _MyHomePageState extends State<MyHomePage> {
           );
         }
       }
-    
     );
   }
 }

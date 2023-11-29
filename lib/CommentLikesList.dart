@@ -52,7 +52,7 @@ class _CommentLikesListWidgetStatefulState extends State<_CommentLikesListWidget
   void initState(){
     super.initState();
     commentID = widget.commentID;
-    fetchCommentsLikes(users.value.length, false);
+    runDelay(() async => fetchCommentsLikes(users.value.length, false), actionDelayTime);
     userDataStreamClassSubscription = UserDataStreamClass().userDataStream.listen((UserDataStreamControllerClass data) {
       if(mounted){
         if(data.uniqueID == commentID && data.actionType.name == UserDataStreamsUpdateType.addCommentLikes.name){

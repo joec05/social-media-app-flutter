@@ -63,7 +63,7 @@ class __EditPostWidgetStatefulState extends State<_EditPostWidgetStateful> with 
   @override
   void initState(){
     super.initState();
-    initializeEditedPost();
+    runDelay(() async => initializeEditedPost(), actionDelayTime);
     postController.addListener(() {
       if(mounted){
         String postText = postController.text;

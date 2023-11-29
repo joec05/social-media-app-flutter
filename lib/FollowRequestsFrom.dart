@@ -46,7 +46,7 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
   @override
   void initState(){
     super.initState();
-    fetchFollowRequestsFrom(users.value.length, false, false);
+    runDelay(() async => fetchFollowRequestsFrom(users.value.length, false, false), actionDelayTime);
     requestsFromDataStreamClassSubscription = RequestsFromDataStreamClass().requestsFromDataStream.listen((RequestsFromDataStreamControllerClass data) {
       if(mounted){
         if(data.uniqueID == 'send_follow_request_${fetchReduxDatabase().currentID}'){

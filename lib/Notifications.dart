@@ -40,7 +40,7 @@ class _NotificationsWidgetStatefulState extends State<_NotificationsWidgetStatef
   @override
   void initState(){
     super.initState();
-    fetchNotificationsData(notifications.value.length, false, false);
+    runDelay(() async => fetchNotificationsData(notifications.value.length, false, false), actionDelayTime);
     notificationDataStreamClassSubscription = NotificationDataStreamClass().notificationDataStream.listen((NotificationDataStreamControllerClass data) {
       if(mounted){
         if(data.uniqueID == 'delete_content_notifications'){

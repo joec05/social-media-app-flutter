@@ -55,7 +55,7 @@ class _ProfilePageRepliesWidgetStatefulState extends State<_ProfilePageRepliesWi
   void initState(){
     super.initState();
     userID = widget.userID;
-    fetchProfileReplies(comments.value.length, false);
+    runDelay(() async => fetchProfileReplies(comments.value.length, false), actionDelayTime);
     commentDataStreamClassSubscription = CommentDataStreamClass().commentDataStream.listen((CommentDataStreamControllerClass data) {
       if(data.uniqueID == fetchReduxDatabase().currentID && mounted){
         comments.value = [data.commentClass, ...comments.value];

@@ -69,7 +69,7 @@ class _CustomFollowRequestWidgetState extends State<CustomFollowRequestWidget>{
               SliderRightToLeftRoute(
                 page: ProfilePageWidget(userID: userData.userID)
               )
-            ), navigatorDelayTime);
+            ), 0);
           },
           splashFactory: InkRipple.splashFactory,
           child: Container(
@@ -91,7 +91,7 @@ class _CustomFollowRequestWidgetState extends State<CustomFollowRequestWidget>{
                                 SliderRightToLeftRoute(
                                   page: ProfilePageWidget(userID: userData.userID)
                                 )
-                              ), navigatorDelayTime);
+                              ), 0);
                             },
                             child: Container(
                               width: getScreenWidth() * 0.125, height: getScreenWidth() * 0.125,

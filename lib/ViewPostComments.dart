@@ -60,7 +60,7 @@ class _ViewPostCommentsWidgetStatefulState extends State<ViewPostCommentsWidgetS
   void initState(){
     super.initState();
     selectedPostData = widget.selectedPostData;
-    fetchPostData(comments.value.length, false, false);
+    runDelay(() async => fetchPostData(comments.value.length, false, false), actionDelayTime);
     commentDataStreamClassSubscription = CommentDataStreamClass().commentDataStream.listen((CommentDataStreamControllerClass data) {
       if(mounted){
         if(data.uniqueID == selectedPostData.postID){

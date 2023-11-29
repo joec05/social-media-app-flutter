@@ -68,13 +68,17 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
                               GestureDetector(
                                 behavior: HitTestBehavior.opaque,
                                 onTap: (){
-                                  Navigator.pop(context);
-                                  runDelay(() => Navigator.push(
-                                    parentContext,
-                                    SliderRightToLeftRoute(
-                                      page: ProfilePageWidget(userID: userData.userID)
-                                    )
-                                  ), navigatorDelayTime);
+                                  runDelay((){
+                                    if(mounted){
+                                      Navigator.pop(context);
+                                    }
+                                    runDelay(() => Navigator.push(
+                                      parentContext,
+                                      SliderRightToLeftRoute(
+                                        page: ProfilePageWidget(userID: userData.userID)
+                                      )
+                                    ), navigatorDelayTime);
+                                  }, navigatorDelayTime);
                                 },
                                 child: Container(
                                   width: getScreenWidth() * 0.15, height: getScreenWidth() * 0.15,
@@ -164,13 +168,17 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
               ),
             ),
             onTap: () {
-              Navigator.pop(context);
-              runDelay(() => Navigator.push(
-                parentContext,
-                SliderRightToLeftRoute(
-                  page: const WritePostWidget()
-                )
-              ), navigatorDelayTime);
+              runDelay((){
+                if(mounted){
+                  Navigator.pop(context);
+                }
+                runDelay(() => Navigator.push(
+                  parentContext,
+                  SliderRightToLeftRoute(
+                    page: const WritePostWidget()
+                  )
+                ), navigatorDelayTime);
+              }, navigatorDelayTime);
             },
           ),
           ListTile(
@@ -192,8 +200,12 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
               ),
             ),
             onTap: () {
-              Navigator.pop(context);
-              runDelay(() => Navigator.pushNamed(parentContext, '/chats-list'), navigatorDelayTime);
+              runDelay((){
+                if(mounted){
+                  Navigator.pop(context);
+                }
+                runDelay(() => Navigator.pushNamed(parentContext, '/chats-list'), navigatorDelayTime);
+              }, navigatorDelayTime);
             }
           ),
           ListTile(
@@ -215,15 +227,17 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
               ),
             ),
             onTap: () {
-              Future.delayed(Duration(milliseconds: navigatorDelayTime), (){}).then((value){
-                Navigator.pop(context);
+              runDelay((){
+                if(mounted){
+                  Navigator.pop(context);
+                }
                 runDelay(() => Navigator.push(
                   parentContext,
                   SliderRightToLeftRoute(
                     page: ProfilePageBookmarksWidget(userID: fetchReduxDatabase().currentID)
                   )
                 ), navigatorDelayTime);
-              });
+              }, navigatorDelayTime);
             }
           ),
           ListTile(
@@ -245,15 +259,17 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
               ),
             ),
             onTap: () {
-              Future.delayed(Duration(milliseconds: navigatorDelayTime), (){}).then((value){
-                Navigator.pop(context);
+              runDelay((){
+                if(mounted){
+                  Navigator.pop(context);
+                }
                 runDelay(() => Navigator.push(
                   parentContext,
                   SliderRightToLeftRoute(
                     page: const FollowRequestsWidget()
                   )
                 ), navigatorDelayTime);
-              });
+              }, navigatorDelayTime);
             }
           ),
           ListTile(
@@ -275,10 +291,12 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
               ),
             ),
             onTap: (){
-              Future.delayed(Duration(milliseconds: navigatorDelayTime), (){}).then((value){
-                Navigator.pop(context);
+              runDelay((){
+                if(mounted){
+                  Navigator.pop(context);
+                }
                 runDelay(() => logOut(parentContext), actionDelayTime);
-              });
+              }, navigatorDelayTime);
             },
           ),
           ListTile(
@@ -300,10 +318,12 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
               ),
             ),
             onTap: () {
-              Future.delayed(Duration(milliseconds: navigatorDelayTime), (){}).then((value){
-                Navigator.pop(context);
+              runDelay((){
+                if(mounted){
+                  Navigator.pop(context);
+                }
                 runDelay(() => deleteAccount(parentContext), actionDelayTime);
-              });
+              }, navigatorDelayTime);
             },
           ),
         ],

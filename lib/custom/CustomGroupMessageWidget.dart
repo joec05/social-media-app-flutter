@@ -189,7 +189,7 @@ class _CustomGroupMessageState extends State<CustomGroupMessage> {
                               SliderRightToLeftRoute(
                                 page: ProfilePageWidget(userID: groupMessageData.sender)
                               )
-                            ), navigatorDelayTime);
+                            ), 0);
                           },
                           child: Container(
                             width: getScreenWidth() * 0.075,

@@ -39,7 +39,7 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
   @override
   void initState(){
     super.initState();
-    fetchHashtagsData();
+    runDelay(() async => fetchHashtagsData(), actionDelayTime);
     searchedController.addListener(() {
       if(mounted){
         verifySearchedFormat.value = searchedController.text.isNotEmpty;

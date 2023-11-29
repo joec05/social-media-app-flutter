@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:social_media_app/firebase/firebase_options.dart';
 
 final Future<FirebaseApp> firebaseInitialization = Firebase.initializeApp(
-  name: "flutter-social-media-app-f6b17",
+  name: "flutter-social-media-app-7aac7",
   options: DefaultFirebaseOptions.currentPlatform
 ).whenComplete((){
   debugPrint('Completed initialization to Firebase');

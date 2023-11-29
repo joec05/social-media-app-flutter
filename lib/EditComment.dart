@@ -64,7 +64,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
   @override
   void initState(){
     super.initState();
-    initializeEditedPost();
+    runDelay(() async => initializeEditedPost(), actionDelayTime);
     commentController.addListener(() {
       if(mounted){
         String commentText = commentController.text;

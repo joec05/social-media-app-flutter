@@ -108,7 +108,6 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
                     Flexible(
                       child: Row(
                         children: [
-                          
                           GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTap: (){

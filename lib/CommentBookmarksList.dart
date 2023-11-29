@@ -52,7 +52,7 @@ class _CommentBookmarksListWidgetStatefulState extends State<_CommentBookmarksLi
   void initState(){
     super.initState();
     commentID = widget.commentID;
-    fetchCommentsBookmarks(users.value.length, false);
+    runDelay(() async => fetchCommentsBookmarks(users.value.length, false), actionDelayTime);
     userDataStreamClassSubscription = UserDataStreamClass().userDataStream.listen((UserDataStreamControllerClass data) {
       if(mounted){
         if(data.uniqueID == commentID && data.actionType.name == UserDataStreamsUpdateType.addCommentBookmarks.name){
@@ -154,6 +154,9 @@ class _CommentBookmarksListWidgetStatefulState extends State<_CommentBookmarksLi
       appBar: AppBar(
         title: const Text('Users'), 
         titleSpacing: defaultAppBarTitleSpacing,
+        flexibleSpace: Container(
+          decoration: defaultAppBarDecoration
+        )
       ),
       body: Stack(
         children: [

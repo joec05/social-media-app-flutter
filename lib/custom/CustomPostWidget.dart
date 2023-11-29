@@ -231,7 +231,7 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
                                 SliderRightToLeftRoute(
                                   page: ProfilePageWidget(userID: postData.sender)
                                 )
-                              ), navigatorDelayTime);
+                              ), 0);
                             },
                             child: Container(
                               width: getScreenWidth() * 0.125, height: getScreenWidth() * 0.125,
@@ -294,9 +294,6 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
                                       Icon(Icons.more_horiz, size: moreIconProfileWidgetSize)
                                     )
                                   ],
-                                ),
-                                SizedBox(
-                                  height: getScreenHeight() * 0.0015
                                 ),
                                 Text('@${senderData.username}', style: TextStyle(fontSize: defaultTextFontSize, color: Colors.lightBlue))
                               ],

@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:social_media_app/CommentBookmarksList.dart';
+import 'package:social_media_app/CommentLikesList.dart';
 import 'package:social_media_app/ProfilePage.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/class/MediaDataClass.dart';
@@ -65,6 +67,58 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [ 
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: (){},
+                    splashFactory: InkRipple.splashFactory,
+                    child: CustomButton(
+                      onTapped: (){
+                        Navigator.pop(bottomSheetContext);
+                        runDelay(() => Navigator.push(
+                          context,
+                          SliderRightToLeftRoute(
+                            page: CommentLikesListWidget(
+                              commentID: commentData.commentID, 
+                              commentSender: commentData.sender
+                            )
+                          )
+                        ), navigatorDelayTime);
+                      },
+                      buttonText: 'View likes',
+                      width: double.infinity,
+                      height: getScreenHeight() * 0.075,
+                      buttonColor: Colors.transparent,
+                      setBorderRadius: false,
+                    )
+                  )
+                ),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: (){},
+                    splashFactory: InkRipple.splashFactory,
+                    child: CustomButton(
+                      onTapped: (){
+                        Navigator.pop(bottomSheetContext);
+                        runDelay(() => Navigator.push(
+                          context,
+                          SliderRightToLeftRoute(
+                            page: CommentBookmarksListWidget(
+                              commentID: commentData.commentID, 
+                              commentSender: commentData.sender
+                            )
+                          )
+                        ), navigatorDelayTime);
+                      },
+                      buttonText: 'View bookmarks',
+                      width: double.infinity,
+                      height: getScreenHeight() * 0.075,
+                      buttonColor: Colors.transparent,
+                      setBorderRadius: false,
+                    )
+                  )
+                ),
                 Container(
                   child: commentDataClass.sender == fetchReduxDatabase().currentID ? 
                     Material(
@@ -176,7 +230,7 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                                 SliderRightToLeftRoute(
                                   page: ProfilePageWidget(userID: commentData.sender)
                                 )
-                              ), navigatorDelayTime);
+                              ), 0);
                             },
                             child: Container(
                               width: getScreenWidth() * 0.125, height: getScreenWidth() * 0.125,
@@ -233,9 +287,6 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                                       Icon(Icons.more_horiz, size: moreIconProfileWidgetSize)
                                     )
                                   ],
-                                ),
-                                SizedBox(
-                                  height: getScreenHeight() * 0.0015
                                 ),
                                 Text('@${senderData.username}', style: TextStyle(fontSize: defaultTextFontSize, color: Colors.lightBlue))
                               ],
@@ -324,7 +375,7 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                               page: WriteCommentWidget(
                                 parentPostSender: commentData.sender,
                                 parentPostID: commentData.commentID,
-                                parentPostType: 'post',
+                                parentPostType: 'comment',
                               )
                             )
                           );

@@ -55,7 +55,7 @@ class _SearchedCommentsWidgetStatefulState extends State<_SearchedCommentsWidget
   void initState(){
     super.initState();
     searchedText = widget.searchedText;
-    fetchSearchedComments(comments.value.length, false, false);
+    runDelay(() async => fetchSearchedComments(comments.value.length, false, false), actionDelayTime);
     _scrollController.addListener(() {
       if(mounted){
         if(_scrollController.position.pixels > animateToTopMinHeight){

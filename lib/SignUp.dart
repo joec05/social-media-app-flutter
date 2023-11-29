@@ -10,6 +10,7 @@ import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
+import 'package:social_media_app/firebase/firebase_constants.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import '../redux/reduxLibrary.dart';
 import 'caching/sqfliteConfiguration.dart';
@@ -174,65 +175,65 @@ class _SignUpStatefulState extends State<SignUpStateful> {
               if(verifyAccountExistence['exists']){
                 displayAlertDialog('Email or username has already been used', ['Ok']);
               }else{
-
                 // this is not a proper solution for sign up as the user can leave the app anytime during verification process
                 // and when that happens the user's written email address will still be logged into the firebase authentication system
                 // even when the user isn't verified yet
                 
-                await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                await auth.createUserWithEmailAndPassword(
                   email: emailController.text, password: passwordController.text
-                ).then((value){
-                  runDelay(() async{
-                    var verified = await Navigator.push(
-                      context,
-                      SliderRightToLeftRoute(
-                        page: const EmailVerificationPage()
-                      )
-                    );
-                    if(verified == true){
-                      String stringified = jsonEncode({
-                        'name': nameController.text.trim(),
-                        'username': usernameController.text.trim(),
-                        'profilePicLink': defaultUserProfilePicLink,
-                        'email': emailController.text.trim(),
-                        'password': passwordController.text.trim(),
-                        'birthDate': selectedBirthDate.toString()
-                      });
-                      if(mounted){
-                        isLoading.value = true;
-                      }
-                      var res = await dio.post('$serverDomainAddress/users/signUp', data: stringified);
-                      if(res.data.isNotEmpty){
-                        if(res.data['message'] == 'Successfully signed up'){
-                          StoreProvider.of<AppState>(context).dispatch(CurrentID(res.data['userID']));
-                          UserDataClass userDataClass = UserDataClass(
-                            res.data['userID'], nameController.text.trim(), usernameController.text.trim(), defaultUserProfilePicLink,
-                            DateTime.now().toString(), selectedBirthDate.toString(), '',  false, false, false, false,
-                            false, false, false, false, false
-                          );
-                          UserSocialClass userSocialClass = UserSocialClass(
-                            0, 0, false, false
-                          );
-                          if(mounted){
-                            updateUserData(userDataClass, context);
-                            updateUserSocials(userDataClass, userSocialClass, context);
-                          }
-                          await DatabaseHelper().replaceCurrentUser(res.data['userID']);
-                          runDelay(() => Navigator.push(
-                            context,
-                            SliderRightToLeftRoute(
-                              page: const CompleteSignUpProfileStateless()
-                            )
-                          ), navigatorDelayTime);
-                        }else{
-                          displayAlertDialog(res.data['message'], ['Ok']);
-                        }
+                ).then((value) async{
+                  for(int i = 0; i < 50; i++){
+                    print('BENCONG ANJING');
+                  }
+                  var verified = await Navigator.push(
+                    context,
+                    SliderRightToLeftRoute(
+                      page: const EmailVerificationPage()
+                    )
+                  );
+                  if(verified == true){
+                    String stringified = jsonEncode({
+                      'name': nameController.text.trim(),
+                      'username': usernameController.text.trim(),
+                      'profilePicLink': defaultUserProfilePicLink,
+                      'email': emailController.text.trim(),
+                      'password': passwordController.text.trim(),
+                      'birthDate': selectedBirthDate.toString()
+                    });
+                    if(mounted){
+                      isLoading.value = true;
+                    }
+                    var res = await dio.post('$serverDomainAddress/users/signUp', data: stringified);
+                    if(res.data.isNotEmpty){
+                      if(res.data['message'] == 'Successfully signed up'){
+                        StoreProvider.of<AppState>(context).dispatch(CurrentID(res.data['userID']));
+                        UserDataClass userDataClass = UserDataClass(
+                          res.data['userID'], nameController.text.trim(), usernameController.text.trim(), defaultUserProfilePicLink,
+                          DateTime.now().toString(), selectedBirthDate.toString(), '',  false, false, false, false,
+                          false, false, false, false, false
+                        );
+                        UserSocialClass userSocialClass = UserSocialClass(
+                          0, 0, false, false
+                        );
                         if(mounted){
-                          isLoading.value = false;
+                          updateUserData(userDataClass, context);
+                          updateUserSocials(userDataClass, userSocialClass, context);
                         }
+                        await DatabaseHelper().replaceCurrentUser(res.data['userID']);
+                        runDelay(() => Navigator.push(
+                          context,
+                          SliderRightToLeftRoute(
+                            page: const CompleteSignUpProfileStateless()
+                          )
+                        ), navigatorDelayTime);
+                      }else{
+                        displayAlertDialog(res.data['message'], ['Ok']);
+                      }
+                      if(mounted){
+                        isLoading.value = false;
                       }
                     }
-                  }, navigatorDelayTime);
+                  }
                 });
               }
             }
@@ -363,9 +364,11 @@ class _SignUpStatefulState extends State<SignUpStateful> {
                                             builder: (context, isLoadingValue, child) {
                                               return CustomButton(
                                                 width: defaultTextFieldButtonSize.width, height: defaultTextFieldButtonSize.height,
-                                                buttonColor: Colors.red, buttonText: 'Sign Up', 
+                                                buttonColor: nameVerified && usernameVerified && emailVerified 
+                                                && passwordVerified && birthDateVerified && !isLoadingValue ? Colors.red : Colors.grey, 
+                                                buttonText: 'Sign Up', 
                                                 onTapped: nameVerified && usernameVerified && emailVerified 
-                                                && passwordVerified && birthDateVerified && !isLoadingValue ? signUp : null,
+                                                && passwordVerified && birthDateVerified && !isLoadingValue ? signUp : () {},
                                                 setBorderRadius: true,
                                               );
                                             }

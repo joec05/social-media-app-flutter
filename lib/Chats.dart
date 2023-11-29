@@ -49,7 +49,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
   @override
   void initState(){
     super.initState();
-    fetchChatsData(chats.value.length, false, false);
+    runDelay(() async => fetchChatsData(chats.value.length, false, false), actionDelayTime);
     socket.on("update-latest-private-message-${fetchReduxDatabase().currentID}", ( data ) async{
       if(mounted && data != null){
         bool chatDataFound = false;

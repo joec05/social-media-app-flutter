@@ -61,7 +61,7 @@ class _ViewCommentCommentsWidgetStatefulState extends State<ViewCommentCommentsW
   void initState(){
     super.initState();
     selectedCommentData = widget.selectedCommentData;
-    fetchCommentData(comments.value.length, false, false);
+    runDelay(() async => fetchCommentData(comments.value.length, false, false), actionDelayTime);
     commentDataStreamClassSubscription = CommentDataStreamClass().commentDataStream.listen((CommentDataStreamControllerClass data) {
       if(mounted){
         if(data.uniqueID == selectedCommentData.commentID){

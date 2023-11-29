@@ -54,7 +54,7 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
   @override
   void initState(){
     super.initState();
-    fetchUserProfileData();
+    runDelay(() async => fetchUserProfileData(), actionDelayTime);
     nameController.addListener(() {
       if(mounted){
         String nameText = nameController.text;

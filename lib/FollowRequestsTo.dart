@@ -47,7 +47,7 @@ class _FollowRequestsToWidgetStatefulState extends State<_FollowRequestsToWidget
   @override
   void initState(){
     super.initState();
-    fetchFollowRequestsTo(users.value.length, false, false);
+    runDelay(() async => fetchFollowRequestsTo(users.value.length, false, false), actionDelayTime);
     requestsToDataStreamClassSubscription = RequestsToDataStreamClass().requestsToDataStream.listen((RequestsToDataStreamControllerClass data) {
       if(data.uniqueID == 'unlock_account_${fetchReduxDatabase().currentID}' && mounted){
         List<String> usersIdList = [...users.value];
