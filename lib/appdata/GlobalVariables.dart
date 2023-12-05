@@ -61,9 +61,11 @@ int postsServerFetchLimit = 100;
 
 int usersServerFetchLimit = 100;
 
-int notificationsServerFetchLimit = 10;
+int notificationsServerFetchLimit = 100;
 
 int chatsServerFetchLimit = 30;
+
+int messagesPaginationLimit = 10;
 
 int messagesServerFetchLimit = 50;
 
@@ -77,9 +79,9 @@ String defaultGroupChatProfilePicLink = 'https://as2.ftcdn.net/v2/jpg/03/13/82/5
 
 String defaultWebsiteCardImageLink = 'https://github.com/joec05/files/blob/main/social_media_app/websiteCardLinkLogo.jpg?raw=true';
 
-int postDraftTextFieldMinLines = 15;
+int postDraftTextFieldMinLines = 1;
 
-int postDraftTextFieldMaxLines = 20;
+int postDraftTextFieldMaxLines = 15;
 
 int messageDraftTextFieldMinLines = 1;
 

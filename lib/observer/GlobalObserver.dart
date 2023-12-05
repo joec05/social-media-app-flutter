@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/caching/sqfliteConfiguration.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/streams/AutoNavigateLifecycleStreamClass.dart';
 import '../socket/main.dart';
 
@@ -28,11 +28,11 @@ class GlobalObserver extends WidgetsBindingObserver{
         break;
       case AppLifecycleState.paused:
         debugPrint('appLifeCycleState paused');
-        DatabaseHelper().updateUserLifecycleData(fetchReduxDatabase().currentID, AppLifecycleState.paused);
+        DatabaseHelper().updateUserLifecycleData(appStateClass.currentID, AppLifecycleState.paused);
         break;
       case AppLifecycleState.detached:
         debugPrint('appLifeCycleState detached');
-        DatabaseHelper().updateUserLifecycleData(fetchReduxDatabase().currentID, AppLifecycleState.detached);
+        DatabaseHelper().updateUserLifecycleData(appStateClass.currentID, AppLifecycleState.detached);
         socket.disconnect();
         break;
       case AppLifecycleState.hidden:

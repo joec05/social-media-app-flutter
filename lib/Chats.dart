@@ -11,13 +11,11 @@ import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomChatWidget.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
-import 'package:social_media_app/redux/reduxLibrary.dart';
 import 'package:social_media_app/socket/main.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
-import 'class/UserDataNotifier.dart';
-import 'class/UserSocialNotifier.dart';
 import 'custom/CustomPagination.dart';
 
 var dio = Dio();
@@ -50,7 +48,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
   void initState(){
     super.initState();
     runDelay(() async => fetchChatsData(chats.value.length, false, false), actionDelayTime);
-    socket.on("update-latest-private-message-${fetchReduxDatabase().currentID}", ( data ) async{
+    socket.on("update-latest-private-message-${appStateClass.currentID}", ( data ) async{
       if(mounted && data != null){
         bool chatDataFound = false;
         for(int i = 0; i < chats.value.length; i++){
@@ -73,7 +71,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
         }
       }
     });
-    socket.on("remove-latest-private-message-${fetchReduxDatabase().currentID}", ( data ) async{
+    socket.on("remove-latest-private-message-${appStateClass.currentID}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < chats.value.length; i++){
           ChatDataClass chatData = chats.value[i].notifier.value;
@@ -87,10 +85,10 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
         }
       }
     });
-    socket.on("update-latest-group-message-${fetchReduxDatabase().currentID}", ( data ) async{
+    socket.on("update-latest-group-message-${appStateClass.currentID}", ( data ) async{
       if(mounted && data != null){
-        if(fetchReduxDatabase().usersDatasNotifiers.value[data['senderData']['user_id']] != null){
-          UserDataClass userData = fetchReduxDatabase().usersDatasNotifiers.value[data['senderData']['user_id']]!.notifier.value;
+        if(appStateClass.usersDataNotifiers.value[data['senderData']['user_id']] != null){
+          UserDataClass userData = appStateClass.usersDataNotifiers.value[data['senderData']['user_id']]!.notifier.value;
           UserDataClass senderData = UserDataClass.fromMap(data['senderData']);
           if(userData.name != senderData.name){
             UserDataClass updatedUserData = UserDataClass(
@@ -132,7 +130,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
         }
       }
     });
-    socket.on("remove-latest-group-message-${fetchReduxDatabase().currentID}", ( data ) async{
+    socket.on("remove-latest-group-message-${appStateClass.currentID}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < chats.value.length; i++){
           ChatDataClass chatData = chats.value[i].notifier.value;
@@ -146,7 +144,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
         }
       }
     });
-    socket.on("update-latest-edit-group-profile-announcement-${fetchReduxDatabase().currentID}", ( data ) async{
+    socket.on("update-latest-edit-group-profile-announcement-${appStateClass.currentID}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < chats.value.length; i++){
           ChatDataClass chatData = chats.value[i].notifier.value;
@@ -163,7 +161,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
         }
       }
     });
-    socket.on("update-latest-leave-group-announcement-${fetchReduxDatabase().currentID}", ( data ) async{
+    socket.on("update-latest-leave-group-announcement-${appStateClass.currentID}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < chats.value.length; i++){
           ChatDataClass chatData = chats.value[i].notifier.value;
@@ -181,7 +179,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
         }
       }
     });
-    socket.on("leave-group-sender-${fetchReduxDatabase().currentID}", ( data ) async{
+    socket.on("leave-group-sender-${appStateClass.currentID}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < chats.value.length; i++){
           ChatDataClass chatData = chats.value[i].notifier.value;
@@ -201,7 +199,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
         }
       }
     });
-    socket.on("update-latest-add-users-to-group-announcement-${fetchReduxDatabase().currentID}", ( data ) async{
+    socket.on("update-latest-add-users-to-group-announcement-${appStateClass.currentID}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < chats.value.length; i++){
           ChatDataClass chatData = chats.value[i].notifier.value;
@@ -221,7 +219,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
         }
       }
     });
-    socket.on("add-new-chat-to-added-users-${fetchReduxDatabase().currentID}", ( data ) async{
+    socket.on("add-new-chat-to-added-users-${appStateClass.currentID}", ( data ) async{
       if(mounted && data != null){
         bool chatDataFound = false;
         for(int i = 0; i < chats.value.length; i++){
@@ -256,9 +254,9 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
         }
       }
     });
-    socket.on("update-is-blocked-by-sender-id-user-data-${fetchReduxDatabase().currentID}", ( data ) async{
+    socket.on("update-is-blocked-by-sender-id-user-data-${appStateClass.currentID}", ( data ) async{
       if(mounted && data != null){
-        UserDataClass userData = fetchReduxDatabase().usersDatasNotifiers.value[data['blockedUserID']]!.notifier.value;
+        UserDataClass userData = appStateClass.usersDataNotifiers.value[data['blockedUserID']]!.notifier.value;
         UserDataClass updatedUserData = UserDataClass(
           userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
           userData.birthDate, userData.bio, userData.mutedByCurrentID, true, userData.blocksCurrentID, 
@@ -268,9 +266,9 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
         updateUserData(updatedUserData, context);
       }
     });
-    socket.on("update-block-sender-id-user-data-${fetchReduxDatabase().currentID}", ( data ) async{
+    socket.on("update-block-sender-id-user-data-${appStateClass.currentID}", ( data ) async{
       if(mounted && data != null){
-        UserDataClass userData = fetchReduxDatabase().usersDatasNotifiers.value[data['senderID']]!.notifier.value;
+        UserDataClass userData = appStateClass.usersDataNotifiers.value[data['senderID']]!.notifier.value;
         UserDataClass updatedUserData = UserDataClass(
           userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
           userData.birthDate, userData.bio, userData.mutedByCurrentID, userData.blockedByCurrentID, true, 
@@ -280,9 +278,9 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
         updateUserData(updatedUserData, context);
       }
     });
-    socket.on("update-is-unblocked-by-sender-id-user-data-${fetchReduxDatabase().currentID}", ( data ) async{
+    socket.on("update-is-unblocked-by-sender-id-user-data-${appStateClass.currentID}", ( data ) async{
       if(mounted && data != null){
-        UserDataClass userData = fetchReduxDatabase().usersDatasNotifiers.value[data['unblockedUserID']]!.notifier.value;
+        UserDataClass userData = appStateClass.usersDataNotifiers.value[data['unblockedUserID']]!.notifier.value;
         UserDataClass updatedUserData = UserDataClass(
           userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
           userData.birthDate, userData.bio, userData.mutedByCurrentID, false, userData.blocksCurrentID, 
@@ -292,9 +290,9 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
         updateUserData(updatedUserData, context);
       }
     });
-    socket.on("update-unblock-sender-id-user-data-${fetchReduxDatabase().currentID}", ( data ) async{
+    socket.on("update-unblock-sender-id-user-data-${appStateClass.currentID}", ( data ) async{
       if(mounted && data != null){
-        UserDataClass userData = fetchReduxDatabase().usersDatasNotifiers.value[data['senderID']]!.notifier.value;
+        UserDataClass userData = appStateClass.usersDataNotifiers.value[data['senderID']]!.notifier.value;
         UserDataClass updatedUserData = UserDataClass(
           userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
           userData.birthDate, userData.bio, userData.mutedByCurrentID, userData.blockedByCurrentID, false, 
@@ -335,7 +333,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
       if(mounted){
         isLoading.value = true;
         String stringified = jsonEncode({
-          'userID': fetchReduxDatabase().currentID,
+          'userID': appStateClass.currentID,
           'currentLength': currentPostsLength,
           'paginationLimit': postsPaginationLimit,
           'maxFetchLimit': chatsServerFetchLimit
@@ -430,7 +428,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
       }
       String stringified = jsonEncode({
         'chatID': chatID,
-        'currentID': fetchReduxDatabase().currentID,
+        'currentID': appStateClass.currentID,
       });
       var res = await dio.patch('$serverDomainAddress/users/deletePrivateChat', data: stringified);
       if(res.data.isNotEmpty){
@@ -454,7 +452,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
       }
       String stringified = jsonEncode({
         'chatID': chatID,
-        'currentID': fetchReduxDatabase().currentID,
+        'currentID': appStateClass.currentID,
       });
       var res = await dio.patch('$serverDomainAddress/users/deleteGroupChat', data: stringified);
       if(res.data.isNotEmpty){
@@ -469,6 +467,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
     super.build(context);
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('Chats'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(
@@ -519,97 +518,86 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
       ),
       body: Stack(
         children: [
-          StoreConnector<AppState, ValueNotifier<Map<String, UserDataNotifier>>>(
-            converter: (store) => store.state.usersDatasNotifiers,
-            builder: (context, ValueNotifier<Map<String, UserDataNotifier>> usersDatasNotifiers){
-              return StoreConnector<AppState, ValueNotifier<Map<String, UserSocialNotifier>>>(
-                converter: (store) => store.state.usersSocialsNotifiers,
-                builder: (context, ValueNotifier<Map<String, UserSocialNotifier>> usersSocialsNotifiers){
+          ValueListenableBuilder(
+            valueListenable: loadingChatsStatus,
+            builder: (context, loadingStatusValue, child){
+              return ValueListenableBuilder(
+                valueListenable: canPaginate,
+                builder: (context, canPaginateValue, child){
                   return ValueListenableBuilder(
-                    valueListenable: loadingChatsStatus,
-                    builder: (context, loadingStatusValue, child){
-                      return ValueListenableBuilder(
-                        valueListenable: canPaginate,
-                        builder: (context, canPaginateValue, child){
-                          return ValueListenableBuilder(
-                            valueListenable: chats, 
-                            builder: ((context, chats, child) {
-                              return LoadMoreBottom(
-                                addBottomSpace: canPaginateValue,
-                                loadMore: () async{
-                                  if(canPaginateValue){
-                                    await loadMoreChats();
-                                  }
-                                },
-                                status: loadingStatusValue,
-                                refresh: refresh,
-                                child: CustomScrollView(
-                                  controller: _scrollController,
-                                  physics: const AlwaysScrollableScrollPhysics(),
-                                  slivers: <Widget>[
-                                    SliverList(delegate: SliverChildBuilderDelegate(
-                                      childCount: chats.length, 
-                                      (context, index) {
-                                        return ValueListenableBuilder(
-                                          valueListenable: chats[index].notifier, 
-                                          builder: ((context, chatData, child) {
-                                            if(chatData.type == 'private'){
-                                              return ValueListenableBuilder(
-                                                valueListenable: usersDatasNotifiers.value[chatData.recipient]!.notifier, 
-                                                builder: ((context, userData, child) {
-                                                  return ValueListenableBuilder(
-                                                    valueListenable: usersSocialsNotifiers.value[chatData.recipient]!.notifier, 
-                                                    builder: ((context, userSocials, child) {
-                                                      return CustomChatWidget(
-                                                        chatData: chatData, recipientData: userData, 
-                                                        recipientSocials: userSocials, key: UniqueKey(),
-                                                        deleteChat: deletePrivateChat
-                                                      );
-                                                    })
-                                                  );
-                                                })
+                    valueListenable: chats, 
+                    builder: ((context, chats, child) {
+                      return LoadMoreBottom(
+                        addBottomSpace: canPaginateValue,
+                        loadMore: () async{
+                          if(canPaginateValue){
+                            await loadMoreChats();
+                          }
+                        },
+                        status: loadingStatusValue,
+                        refresh: refresh,
+                        child: CustomScrollView(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          slivers: <Widget>[
+                            SliverList(delegate: SliverChildBuilderDelegate(
+                              childCount: chats.length, 
+                              (context, index) {
+                                return ValueListenableBuilder(
+                                  valueListenable: chats[index].notifier, 
+                                  builder: ((context, chatData, child) {
+                                    if(chatData.type == 'private'){
+                                      return ValueListenableBuilder(
+                                        valueListenable: appStateClass.usersDataNotifiers.value[chatData.recipient]!.notifier, 
+                                        builder: ((context, userData, child) {
+                                          return ValueListenableBuilder(
+                                            valueListenable: appStateClass.usersSocialsNotifiers.value[chatData.recipient]!.notifier, 
+                                            builder: ((context, userSocials, child) {
+                                              return CustomChatWidget(
+                                                chatData: chatData, recipientData: userData, 
+                                                recipientSocials: userSocials, key: UniqueKey(),
+                                                deleteChat: deletePrivateChat
                                               );
-                                            }else{
-                                              if(chatData.groupProfileData!.recipients.contains(fetchReduxDatabase().currentID)){
-                                                if(chatData.latestMessageData.messageID.isEmpty){
-                                                  return CustomChatWidget(
-                                                    chatData: chatData, recipientData: null, 
-                                                    recipientSocials: null, key: UniqueKey(),
-                                                    deleteChat: deleteGroupChat
-                                                  );
-                                                }
-                                                
-                                                return ValueListenableBuilder(
-                                                  valueListenable: usersDatasNotifiers.value[chatData.latestMessageData.sender]!.notifier, 
-                                                  builder: ((context, userData, child) {
-                                                    return ValueListenableBuilder(
-                                                      valueListenable: usersSocialsNotifiers.value[chatData.latestMessageData.sender]!.notifier, 
-                                                      builder: ((context, userSocials, child) {
-                                                        return CustomChatWidget(
-                                                          chatData: chatData, recipientData: null, 
-                                                          recipientSocials: null, key: UniqueKey(),
-                                                          deleteChat: deleteGroupChat
-                                                        );
-                                                      })
-                                                    );
-                                                  })
+                                            })
+                                          );
+                                        })
+                                      );
+                                    }else{
+                                      if(chatData.groupProfileData!.recipients.contains(appStateClass.currentID)){
+                                        if(chatData.latestMessageData.messageID.isEmpty){
+                                          return CustomChatWidget(
+                                            chatData: chatData, recipientData: null, 
+                                            recipientSocials: null, key: UniqueKey(),
+                                            deleteChat: deleteGroupChat
+                                          );
+                                        }
+                                        return ValueListenableBuilder(
+                                          valueListenable: appStateClass.usersDataNotifiers.value[chatData.latestMessageData.sender]!.notifier, 
+                                          builder: ((context, userData, child) {
+                                            return ValueListenableBuilder(
+                                              valueListenable: appStateClass.usersSocialsNotifiers.value[chatData.latestMessageData.sender]!.notifier, 
+                                              builder: ((context, userSocials, child) {
+                                                return CustomChatWidget(
+                                                  chatData: chatData, recipientData: null, 
+                                                  recipientSocials: null, key: UniqueKey(),
+                                                  deleteChat: deleteGroupChat
                                                 );
-                                              }
-                                            }
-                                            return Container();
+                                              })
+                                            );
                                           })
                                         );
-                                        
                                       }
-                                    ))
-                                  ]
-                                )
-                              );
-                            })
-                          );
-                        }
+                                    }
+                                    return Container();
+                                  })
+                                );
+                                
+                              }
+                            ))
+                          ]
+                        )
                       );
-                    }
+                    })
                   );
                 }
               );

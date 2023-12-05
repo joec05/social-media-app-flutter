@@ -18,6 +18,7 @@ import 'package:social_media_app/class/MediaDataClass.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
 import 'package:social_media_app/custom/CustomTextEditingController.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/streams/PostDataStreamClass.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import 'package:uuid/uuid.dart';
@@ -114,7 +115,7 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
                 MediaDatasClass(MediaType.image, imageUrl, null, '', MediaSourceType.file, null, scaledDimension)
               ];
               mediasComponents.value = [
-                ...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last)
+                ...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last, scaledDimension)
               ];
             }
           }
@@ -153,7 +154,7 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
             if(mounted){
               mediasDatas.value = [...mediasDatas.value, MediaDatasClass(MediaType.video, file.path, playerController, '', MediaSourceType.file, null, scaledDimension)];
               mediasComponents.value = [
-                ...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last)
+                ...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last, scaledDimension)
               ];
             }
           }else{
@@ -183,7 +184,7 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
             mediasDatasList[index] = MediaDatasClass(MediaType.image, imageUrl, null, '', MediaSourceType.file, null, scaledDimension);
             mediasDatas.value = [...mediasDatasList];
             List<Widget> mediasComponentsList = [...mediasComponents.value];
-            mediasComponentsList[index] = mediaDataDraftPostComponentWidget(mediasDatas.value[index]);
+            mediasComponentsList[index] = mediaDataDraftPostComponentWidget(mediasDatas.value[index], scaledDimension);
             mediasComponents.value = [...mediasComponentsList];
           }
         }
@@ -211,7 +212,7 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
             mediasDatasList[index] = MediaDatasClass(MediaType.video, updatedRes.url, playerController, '', MediaSourceType.file, null, scaledDimension);
             mediasDatas.value = [...mediasDatasList];
             List<Widget> mediasComponentsList = [...mediasComponents.value];
-            mediasComponentsList[index] = mediaDataDraftPostComponentWidget(mediasDatas.value[index]);
+            mediasComponentsList[index] = mediaDataDraftPostComponentWidget(mediasDatas.value[index], scaledDimension);
             mediasComponents.value = [...mediasComponentsList];
           }
         }
@@ -244,7 +245,7 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
     try {
       File mediaFilePath = File(mediasDatas.value[index].url);
       FirebaseStorage storage = FirebaseStorage.instance;
-      String childDirectory = '/${fetchReduxDatabase().currentID}/${const Uuid().v4()}';
+      String childDirectory = '/${appStateClass.currentID}/${const Uuid().v4()}';
       mediasDatas.value[index].storagePath = childDirectory;
       Reference ref = storage.ref('/videos').child(childDirectory);
       UploadTask uploadTask = ref.putFile(mediaFilePath, SettableMetadata(contentType: 'video/mp4'));
@@ -269,6 +270,7 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
             if(mediasDatas.value[i].mediaType == MediaType.image){
               storageUrl = await uploadImageToAppWrite(storageBucketIDs['image'], i);
             }else if(mediasDatas.value[i].mediaType == MediaType.video){
+              mediaData.playerController!.pause();
               storageUrl = await uploadVideoToFirebase(context, i);
             }else if(mediasDatas.value[i].mediaType == MediaType.websiteCard){
               storageUrl = mediaData.url;
@@ -289,7 +291,7 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
           String stringified = jsonEncode({
             'postId': postID,
             'content': postController.text,
-            'sender': fetchReduxDatabase().currentID,
+            'sender': appStateClass.currentID,
             'mediasDatas': serverMediasDatas,
             'hashtags': hashtags.toSet().toList(),
             'taggedUsers': taggedUsersID.value.toSet().toList()
@@ -298,14 +300,14 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
           if(res.data.isNotEmpty){
             if(res.data['message'] == 'Successfully uploaded the post'){
               PostClass postDataClass = PostClass(
-                postID, 'post', postController.text, fetchReduxDatabase().currentID, DateTime.now().toString(),
+                postID, 'post', postController.text, appStateClass.currentID, DateTime.now().toString(),
                 updatedMediasDatas, 0, false, 0, false, 0, false 
               );
               updatePostData(postDataClass, context);
               PostDataStreamClass().emitData(
                 PostDataStreamControllerClass(
                   DisplayPostDataClass(postDataClass.sender, postDataClass.postID),
-                  fetchReduxDatabase().currentID
+                  appStateClass.currentID
                 )
               );
               Navigator.pop(context);
@@ -323,15 +325,14 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
 
   Widget mediaComponentIndex(mediaComponent, index){
     return Container(
-      margin: EdgeInsets.symmetric(vertical: mediaComponentMargin),
+      margin: EdgeInsets.only(top: mediaComponentMargin),
       child: Stack(
         children: [
           SizedBox(
-            width: double.infinity,
             child: mediaComponent
           ),
           Positioned(
-            top: 0, right: getScreenWidth() * 0.02,
+            top: 0, right: 0,
             child: Container(
               width: getScreenWidth() * 0.1,
               height: getScreenWidth() * 0.1,
@@ -358,7 +359,7 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
             )
           ),
           Positioned(
-            top: 0, right: getScreenWidth() * 0.145,
+            top: 0, right: getScreenWidth() * 0.125,
             child: Container(
               width: getScreenWidth() * 0.1,
               height: getScreenWidth() * 0.1,
@@ -405,7 +406,7 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
                     mediasDatas.value = [...mediasDatas.value, MediaDatasClass(
                       MediaType.websiteCard, lines[j], null, '', MediaSourceType.network, linkPreview, null
                     )];
-                    mediasComponents.value = [...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last)];
+                    mediasComponents.value = [...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last, null)];
                     textList = text.split(' ');
                     textList[i] = textList[i].replaceFirst(lines[j], '');
                     postController.value = TextEditingValue(
@@ -431,6 +432,7 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return SearchTagUsersWidget(onUserIsSelected: userIsTagged,);
       },
@@ -462,6 +464,7 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('Upload Post'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(
@@ -477,11 +480,14 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
                   return ValueListenableBuilder<List<MediaDatasClass>>(
                     valueListenable: mediasDatas,
                     builder: (context, List<MediaDatasClass> mediasDatasValue, child){
-                      return CustomButton(
-                        width: getScreenWidth() * 0.25, height: kToolbarHeight, 
-                        buttonColor: Colors.red, buttonText: 'Upload',
-                        onTapped: !isLoadingValue && (mediasDatasValue.isNotEmpty || postVerified) ? () => uploadPost() : null,
-                        setBorderRadius: false
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: kToolbarHeight * 0.15, horizontal: getScreenWidth() * 0.025),
+                        child: CustomButton(
+                          width: getScreenWidth() * 0.25, height: kToolbarHeight, 
+                          buttonColor: Colors.red, buttonText: 'Upload',
+                          onTapped: !isLoadingValue && (mediasDatasValue.isNotEmpty || postVerified) ? () => uploadPost() : null,
+                          setBorderRadius: true
+                        )
                       );
                     }
                   );
@@ -497,25 +503,25 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Flexible(
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding, vertical: defaultVerticalPadding),
-                  child: ListView(
-                    children: [
-                      TextField(
-                        controller: postController,
-                        decoration: generatePostTextFieldDecoration('your post'),
-                        minLines: postDraftTextFieldMinLines,
-                        maxLines: postDraftTextFieldMaxLines,
-                        maxLength: maxPostWordLimit,
-                        onChanged: (value){
-                          listenTextField(value);
-                          listenTextController(value);
-                        },
-                        onEditingComplete: (){
-                          listenTextController(postController.text);
-                        },
-                      ),
-                      ValueListenableBuilder<List>(
+                child: ListView(
+                  children: [
+                    TextField(
+                      controller: postController,
+                      decoration: generatePostTextFieldDecoration('your post', FontAwesomeIcons.pencil),
+                      minLines: postDraftTextFieldMinLines,
+                      maxLines: postDraftTextFieldMaxLines,
+                      maxLength: maxPostWordLimit,
+                      onChanged: (value){
+                        listenTextField(value);
+                        listenTextController(value);
+                      },
+                      onEditingComplete: (){
+                        listenTextController(postController.text);
+                      },
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2),
+                      child: ValueListenableBuilder<List>(
                         valueListenable: mediasComponents,
                         builder: ((context, mediasComponentsList, child) {
                           return Column(
@@ -525,10 +531,9 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
                             ],
                           );
                         }),
-                      ),
-                      
-                    ],
-                  ),
+                      )
+                    ),
+                  ],
                 ),
               ),
               Container(

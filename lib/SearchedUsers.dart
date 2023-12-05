@@ -6,10 +6,8 @@ import 'dart:math';
 import 'package:dio/dio.dart' as d;
 import 'package:flutter/material.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
-import 'package:social_media_app/class/UserDataNotifier.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
-import 'package:social_media_app/class/UserSocialNotifier.dart';
-import 'package:social_media_app/redux/reduxLibrary.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'caching/sqfliteConfiguration.dart';
@@ -87,7 +85,7 @@ class _SearchedUsersWidgetStatefulState extends State<_SearchedUsersWidgetStatef
         if(!isPaginating){
           stringified = jsonEncode({
             'searchedText': widget.searchedText,
-            'currentID': fetchReduxDatabase().currentID,
+            'currentID': appStateClass.currentID,
             'currentLength': currentUsersLength,
             'paginationLimit': usersPaginationLimit,
             'maxFetchLimit': usersServerFetchLimit
@@ -98,7 +96,7 @@ class _SearchedUsersWidgetStatefulState extends State<_SearchedUsersWidgetStatef
           stringified = jsonEncode({
             'searchedText': widget.searchedText,
             'searchedUsersEncoded': jsonEncode(paginatedSearchedUsers),
-            'currentID': fetchReduxDatabase().currentID,
+            'currentID': appStateClass.currentID,
             'currentLength': currentUsersLength,
             'paginationLimit': usersPaginationLimit,
             'maxFetchLimit': usersServerFetchLimit
@@ -174,72 +172,62 @@ class _SearchedUsersWidgetStatefulState extends State<_SearchedUsersWidgetStatef
             bottom: false,
             child: Builder(
               builder: (BuildContext context) {
-                return StoreConnector<AppState, ValueNotifier<Map<String, UserDataNotifier>>>(
-                  converter: (store) => store.state.usersDatasNotifiers,
-                  builder: (context, ValueNotifier<Map<String, UserDataNotifier>> usersDatasNotifiers){
-                    return StoreConnector<AppState, ValueNotifier<Map<String, UserSocialNotifier>>>(
-                      converter: (store) => store.state.usersSocialsNotifiers,
-                      builder: (context, ValueNotifier<Map<String, UserSocialNotifier>> usersSocialsNotifiers){
+                return ValueListenableBuilder(
+                  valueListenable: loadingUsersStatus,
+                  builder: (context, loadingStatusValue, child){
+                    return ValueListenableBuilder(
+                      valueListenable: totalUsersLength,
+                      builder: (context, totalUsersLengthValue, child){
                         return ValueListenableBuilder(
-                          valueListenable: loadingUsersStatus,
-                          builder: (context, loadingStatusValue, child){
-                            return ValueListenableBuilder(
-                              valueListenable: totalUsersLength,
-                              builder: (context, totalUsersLengthValue, child){
-                                return ValueListenableBuilder(
-                                  valueListenable: users,
-                                  builder: ((context, users, child) {
-                                    return LoadMoreBottom(
-                                      addBottomSpace: users.length < totalUsersLength.value,
-                                      loadMore: () async{
-                                        if(users.length < totalUsersLength.value){
-                                          await loadMoreUsers();
-                                        }
-                                      },
-                                      status: loadingStatusValue,
-                                      refresh: refresh,
-                                      child: CustomScrollView(
-                                        controller: _scrollController,
-                                        physics: const AlwaysScrollableScrollPhysics(),
-                                        slivers: <Widget>[
-                                          SliverOverlapInjector(
-                                            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
-                                          ),
-                                          SliverList(delegate: SliverChildBuilderDelegate(
-                                            childCount: users.length, 
-                                            (context, index) {
-                                              if(fetchReduxDatabase().usersDatasNotifiers.value[users[index]] != null){
-                                                return ValueListenableBuilder(
-                                                  valueListenable: fetchReduxDatabase().usersDatasNotifiers.value[users[index]]!.notifier, 
-                                                  builder: ((context, userData, child) {
-                                                    return ValueListenableBuilder(
-                                                      valueListenable: fetchReduxDatabase().usersSocialsNotifiers.value[users[index]]!.notifier, 
-                                                      builder: ((context, userSocial, child) {
-                                                        return CustomUserDataWidget(
-                                                          userData: userData,
-                                                          userSocials: userSocial,
-                                                          userDisplayType: UserDisplayType.searchedUsers,
-                                                          profilePageUserID: null,
-                                                          isLiked: null,
-                                                          isBookmarked: null,
-                                                          key: UniqueKey()
-                                                        );
-                                                      })
-                                                    );
-                                                  })
+                          valueListenable: users,
+                          builder: ((context, users, child) {
+                            return LoadMoreBottom(
+                              addBottomSpace: users.length < totalUsersLength.value,
+                              loadMore: () async{
+                                if(users.length < totalUsersLength.value){
+                                  await loadMoreUsers();
+                                }
+                              },
+                              status: loadingStatusValue,
+                              refresh: refresh,
+                              child: CustomScrollView(
+                                controller: _scrollController,
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                slivers: <Widget>[
+                                  SliverOverlapInjector(
+                                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
+                                  ),
+                                  SliverList(delegate: SliverChildBuilderDelegate(
+                                    childCount: users.length, 
+                                    (context, index) {
+                                      if(appStateClass.usersDataNotifiers.value[users[index]] != null){
+                                        return ValueListenableBuilder(
+                                          valueListenable: appStateClass.usersDataNotifiers.value[users[index]]!.notifier, 
+                                          builder: ((context, userData, child) {
+                                            return ValueListenableBuilder(
+                                              valueListenable: appStateClass.usersSocialsNotifiers.value[users[index]]!.notifier, 
+                                              builder: ((context, userSocial, child) {
+                                                return CustomUserDataWidget(
+                                                  userData: userData,
+                                                  userSocials: userSocial,
+                                                  userDisplayType: UserDisplayType.searchedUsers,
+                                                  profilePageUserID: null,
+                                                  isLiked: null,
+                                                  isBookmarked: null,
+                                                  key: UniqueKey()
                                                 );
-                                              }
-                                              return Container();  
-                                            }
-                                          ))                                    
-                                        ]
-                                      )
-                                    );
-                                  })
-                                );
-                              }
+                                              })
+                                            );
+                                          })
+                                        );
+                                      }
+                                      return Container();  
+                                    }
+                                  ))                                    
+                                ]
+                              )
                             );
-                          }
+                          })
                         );
                       }
                     );

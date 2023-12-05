@@ -1,15 +1,16 @@
 import 'dart:io';
+import 'dart:math';
+import 'package:social_media_app/custom/CustomVideoPlayer.dart' as cvp;
 import 'package:flutter/material.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/class/MediaDataClass.dart';
 import 'package:social_media_app/custom/CustomImageViewer.dart';
-import 'package:video_player/video_player.dart';
 import '../class/WebsiteCardClass.dart';
 import '../custom/CustomWebsiteCardWidget.dart';
 
 double defaultTextFontSize = 16;
 
-double defaultLoginAlternativeTextFontSize = 12;
+double defaultLoginAlternativeTextFontSize = 14;
 
 double defaultHorizontalPadding = getScreenWidth() * 0.045;
 
@@ -27,10 +28,6 @@ double defaultVerticalPadding = getScreenHeight() * 0.02;
 TextStyle textFieldPageTitleTextStyle = const TextStyle(fontSize: 22.5, fontWeight: FontWeight.bold);
 
 double regularTextFieldContentHorizontalPadding = getScreenWidth() * 0.02;
-
-double regularTextFieldContentVerticalPadding = getScreenHeight() * 0.01;
-
-double bioTextFieldContentVerticalPadding = getScreenHeight() * 0.01;
 
 Widget textFieldWithDescription(Widget textField, String description, String toolTipMessage){
   return Column(
@@ -63,64 +60,82 @@ double titleToContentMargin = getScreenHeight() * 0.0225;
 
 double textFieldToButtonMargin = getScreenHeight() * 0.03;
 
-InputDecoration generateProfileTextFieldDecoration(content){
-  OutlineInputBorder textFieldBorder = const OutlineInputBorder(
-    borderSide: BorderSide(width: 2, color: Colors.white),
-  );
-
-  OutlineInputBorder focusedTextFieldBorder = const OutlineInputBorder(
-    borderSide: BorderSide(width: 2, color: Colors.brown),
-  );
+InputDecoration generatePostTextFieldDecoration(content, prefixIcon){
   return InputDecoration(
     counterText: "",
-    contentPadding: EdgeInsets.symmetric(vertical: regularTextFieldContentVerticalPadding, horizontal: regularTextFieldContentHorizontalPadding),
-    focusedBorder: focusedTextFieldBorder,
-    enabledBorder: textFieldBorder,
-    disabledBorder: textFieldBorder,
-    hintText: 'Enter $content'
+    contentPadding: EdgeInsets.symmetric(vertical: getScreenHeight() * 0.0225, horizontal: getScreenWidth() * 0.02),
+    fillColor: const Color.fromARGB(255, 70, 64, 64),
+    filled: true,
+    border: InputBorder.none,
+    hintText: 'Enter $content',
+    prefixIcon: Icon(prefixIcon, size: 15),
+    prefixIconColor: Colors.blueGrey,
   );
 }
 
-InputDecoration generateSearchTextFieldDecoration(content){
-  OutlineInputBorder textFieldBorder = const OutlineInputBorder(
-    borderSide: BorderSide(width: 1, color: Colors.white),
-  );
-
-  OutlineInputBorder focusedTextFieldBorder = const OutlineInputBorder(
-    borderSide: BorderSide(width: 1, color: Colors.brown),
-  );
+InputDecoration generateBioTextFieldDecoration(content, prefixIcon){
   return InputDecoration(
     counterText: "",
-    contentPadding: EdgeInsets.symmetric(vertical: regularTextFieldContentVerticalPadding, horizontal: regularTextFieldContentHorizontalPadding),
-    focusedBorder: focusedTextFieldBorder,
-    enabledBorder: textFieldBorder,
-    disabledBorder: textFieldBorder,
-    hintText: 'Enter $content'
+    contentPadding: EdgeInsets.symmetric(vertical: getScreenHeight() * 0.0225, horizontal: getScreenWidth() * 0.02),
+    fillColor: const Color.fromARGB(255, 70, 64, 64),
+    filled: true,
+    border: InputBorder.none,
+    hintText: 'Talk about yourself',
+    prefixIcon: Icon(prefixIcon, size: 20),
+    prefixIconColor: Colors.blueGrey,
   );
 }
 
-InputDecoration generateBioTextFieldDecoration(){
-  OutlineInputBorder textFieldBorder = const OutlineInputBorder(
-    borderSide: BorderSide(width: 2, color: Colors.white),
-  );
-
-  OutlineInputBorder focusedTextFieldBorder = const OutlineInputBorder(
-    borderSide: BorderSide(width: 2, color: Colors.brown),
-  );
+InputDecoration generateProfileTextFieldDecoration(content, prefixIcon){
   return InputDecoration(
     counterText: "",
-    contentPadding: EdgeInsets.symmetric(vertical: bioTextFieldContentVerticalPadding, horizontal: regularTextFieldContentHorizontalPadding),
-    focusedBorder: focusedTextFieldBorder,
-    enabledBorder: textFieldBorder,
-    disabledBorder: textFieldBorder,
-    hintText: 'Say anything about yourself'
+    contentPadding: EdgeInsets.symmetric(vertical: getScreenHeight() * 0.0225, horizontal: getScreenWidth() * 0.02),
+    fillColor: const Color.fromARGB(255, 70, 64, 64),
+    filled: true,
+    border: InputBorder.none,
+    hintText: 'Enter $content',
+    prefixIcon: Icon(prefixIcon, size: 20),
+    prefixIconColor: Colors.blueGrey,
+  );
+}
+
+InputDecoration generateSearchTextFieldDecoration(content, suffixIcon, onPressedIcon){
+  return InputDecoration(
+    counterText: "",
+    contentPadding: EdgeInsets.symmetric(vertical: getScreenHeight() * 0.0225, horizontal: getScreenWidth() * 0.02),
+    fillColor: const Color.fromARGB(255, 70, 64, 64),
+    filled: true,
+    border: InputBorder.none,
+    hintText: 'Enter $content',
+    suffixIcon: Container(
+      color: Colors.grey, 
+      child: TextButton(
+        onPressed: onPressedIcon,
+        child: Icon(suffixIcon, size: 25)
+      ),
+    ),
+    suffixIconColor: Colors.blueGrey,
+  );
+}
+
+InputDecoration generateMessageTextFieldDecoration(content){
+  return InputDecoration(
+    counterText: "",
+    contentPadding: EdgeInsets.only(top: getScreenHeight() * 0.0225, bottom: getScreenHeight() * 0.0225, left: getScreenWidth() * 0.02),
+    fillColor: const Color.fromARGB(255, 70, 64, 64),
+    filled: true,
+    border: InputBorder.none,
+    hintText: 'Enter $content',
+    suffixIcon: Container(
+      width: 1
+    )
   );
 }
 
 Widget loadingSignWidget(){
   return Container(
     width: getScreenWidth(), height: getScreenHeight(),
-    color: Colors.white.withOpacity(0.5),
+    color: Colors.transparent,
     child: const Center(
       child: CircularProgressIndicator()
     )
@@ -133,77 +148,78 @@ Widget containerMargin(Widget child, EdgeInsets margin){
   );
 }
 
-
-InputDecoration generatePostTextFieldDecoration(content){
-  OutlineInputBorder textFieldBorder = const OutlineInputBorder(
-    borderSide: BorderSide(width: 2, color: Colors.white),
-  );
-
-  OutlineInputBorder focusedTextFieldBorder = const OutlineInputBorder(
-    borderSide: BorderSide(width: 2, color: Colors.brown),
-  );
-  return InputDecoration(
-    counterText: "",
-    contentPadding: EdgeInsets.symmetric(vertical: regularTextFieldContentVerticalPadding, horizontal: regularTextFieldContentHorizontalPadding),
-    focusedBorder: focusedTextFieldBorder,
-    enabledBorder: textFieldBorder,
-    disabledBorder: textFieldBorder,
-    hintText: 'Enter $content'
-  );
-}
-
 double writePostIconSize = 35;
 
 Widget loadingPageWidget(){
-  return Center(
-    child: Container(
-      padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding, vertical: defaultVerticalPadding),
-      child: const CircularProgressIndicator()
-    )
+  return Container(
+    color: Colors.transparent,
+    child: Center(
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding, vertical: defaultVerticalPadding),
+        child: const CircularProgressIndicator()
+      )
+    ),
   );
 }
 
 double defaultAppBarTitleSpacing = getScreenWidth()* 0.02;
 
-double verifiedIconProfileWidgetSize = 16;
+double verifiedIconProfileWidgetSize = 13;
 
-double lockIconProfileWidgetSize = 16;
+double lockIconProfileWidgetSize = 13;
 
-double muteIconProfileWidgetSize = 16;
+double muteIconProfileWidgetSize = 13;
 
 double moreIconProfileWidgetSize = 20;
 
-double iconsBesideNameProfileMargin = getScreenWidth() * 0.0125;
+double iconsBesideNameProfileMargin = getScreenWidth() * 0.0075;
 
-double mediaComponentMargin = 0.005 * getScreenHeight();
+double mediaComponentMargin = 0.01 * getScreenHeight();
 
 Widget mediaDataPostComponentWidget(MediaDatasClass mediaData, BuildContext context){
   if(mediaData.mediaType == MediaType.image){
     return InkWell(
       onTap: (){
-        Future.delayed(Duration(milliseconds: navigatorDelayTime), () { 
+        runDelay((){ 
           Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => CustomImageViewer(mediaSource: MediaSourceType.network, imageUrl: mediaData.url)));
-        });
+        }, navigatorDelayTime);
       },
       child: Container(
-        margin: EdgeInsets.symmetric(vertical: mediaComponentMargin),
-        constraints: const BoxConstraints(
-          maxHeight: 200,
-          maxWidth: double.infinity
+        margin: EdgeInsets.only(bottom: mediaComponentMargin),
+        constraints: BoxConstraints(
+          maxHeight: min(mediaData.mediaSize!.height, getScreenHeight() * 0.75),
+          maxWidth: min(mediaData.mediaSize!.width, getScreenWidth())
         ),
         child: Image.network(mediaData.url)
       ),
     );
   }else if(mediaData.mediaType == MediaType.video){
     return Container(
-      width: mediaData.mediaSize!.width,
-      height: mediaData.mediaSize!.height,
-      margin: EdgeInsets.symmetric(vertical: mediaComponentMargin),
-      child: VideoPlayer(mediaData.playerController!)
+      margin: EdgeInsets.only(bottom: mediaComponentMargin),
+      constraints: BoxConstraints(
+        maxHeight: min(mediaData.mediaSize!.height, getScreenHeight() * 0.75),
+        maxWidth: min(mediaData.mediaSize!.width, getScreenWidth())
+      ),
+      child: cvp.CustomVideoPlayer(
+        key: UniqueKey(),
+        playerController: mediaData.playerController!,
+        skipDuration: 10000, //how many milliseconds you want to skip
+        rewindDuration: 10000, //how many milliseconds you want to rewind
+        videoSourceType: cvp.VideoSourceType.network, //the source of the video: assets, file, network,
+        durationEndDisplay: cvp.DurationEndDisplay.totalDuration, //whether to display in total duration or remaining duration
+        displayMenu: false, //whether to display menu
+        thumbColor: Colors.red, //color of the slider's thumb
+        activeTrackColor: Colors.pink, //color of active tracks
+        inactiveTrackColor: Colors.green, //color of inactive tracks
+        overlayBackgroundColor: Colors.grey.withOpacity(0.5), //color of the overlay's background
+        pressablesBackgroundColor: Colors.teal, //background color of the pressable icons such as play, pause, replay, and menu
+        overlayDisplayDuration: 2500, //how long to display the overlay before it disappears, in ms,
+        defaultAlignment: Alignment.centerLeft
+      )
     );
   }else if(mediaData.mediaType == MediaType.websiteCard){
     return Container(
-      margin: EdgeInsets.symmetric(vertical: mediaComponentMargin),
+      margin: EdgeInsets.only(bottom: mediaComponentMargin),
       child: CustomWebsiteCardComponent(
         websiteCardData: mediaData.websiteCardData!, websiteCardState: WebsiteCardState.uploaded
       ),
@@ -216,29 +232,43 @@ Widget mediaDataMessageComponentWidget(MediaDatasClass mediaData, BuildContext c
   if(mediaData.mediaType == MediaType.image){
     return InkWell(
       onTap: (){
-        Future.delayed(Duration(milliseconds: navigatorDelayTime), () { 
+        runDelay((){ 
           Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => CustomImageViewer(mediaSource: MediaSourceType.network, imageUrl: mediaData.url)));
-        });
+        }, navigatorDelayTime);
       },
       child: Container(
-        margin: EdgeInsets.symmetric(vertical: mediaComponentMargin),
-        constraints: const BoxConstraints(
-          maxHeight: 200,
-          maxWidth: 200
+        constraints: BoxConstraints(
+          maxHeight: min(mediaData.mediaSize!.height, getScreenHeight() * 0.75),
+          maxWidth: min(mediaData.mediaSize!.width, getScreenWidth() * 0.7)
         ),
         child: Image.network(mediaData.url)
       ),
     );
   }else if(mediaData.mediaType == MediaType.video){
     return Container(
-      width: mediaData.mediaSize!.width,
-      height: mediaData.mediaSize!.height,
-      margin: EdgeInsets.symmetric(vertical: mediaComponentMargin),
-      child: VideoPlayer(mediaData.playerController!)
+      constraints: BoxConstraints(
+        maxHeight: min(mediaData.mediaSize!.height, getScreenHeight() * 0.75),
+        maxWidth: min(mediaData.mediaSize!.width, getScreenWidth() * 0.7)
+      ),
+      child: cvp.CustomVideoPlayer(
+        key: UniqueKey(),
+        playerController: mediaData.playerController!,
+        skipDuration: 10000, //how many milliseconds you want to skip
+        rewindDuration: 10000, //how many milliseconds you want to rewind
+        videoSourceType: cvp.VideoSourceType.network, //the source of the video: assets, file, network,
+        durationEndDisplay: cvp.DurationEndDisplay.totalDuration, //whether to display in total duration or remaining duration
+        displayMenu: false, //whether to display menu
+        thumbColor: Colors.red, //color of the slider's thumb
+        activeTrackColor: Colors.pink, //color of active tracks
+        inactiveTrackColor: Colors.green, //color of inactive tracks
+        overlayBackgroundColor: Colors.grey.withOpacity(0.5), //color of the overlay's background
+        pressablesBackgroundColor: Colors.teal, //background color of the pressable icons such as play, pause, replay, and menu
+        overlayDisplayDuration: 2500, //how long to display the overlay before it disappears, in ms,
+        defaultAlignment: Alignment.centerLeft
+      )
     );
   }else if(mediaData.mediaType == MediaType.websiteCard){
     return Container(
-      margin: EdgeInsets.symmetric(vertical: mediaComponentMargin),
       child: CustomWebsiteCardComponent(
         websiteCardData: mediaData.websiteCardData!, websiteCardState: WebsiteCardState.uploaded
       ),
@@ -247,20 +277,37 @@ Widget mediaDataMessageComponentWidget(MediaDatasClass mediaData, BuildContext c
   return Container();
 }
 
-Widget mediaDataDraftPostComponentWidget(MediaDatasClass mediaData){
+Widget mediaDataDraftPostComponentWidget(MediaDatasClass mediaData, Size? scaledDimension){
   if(mediaData.mediaType == MediaType.image){
     return Container(
-      constraints: const BoxConstraints(
-        maxHeight: 200,
-        maxWidth: double.infinity
+      constraints: BoxConstraints(
+        maxHeight: min(scaledDimension!.height, getScreenHeight() * 0.75),
+        maxWidth: min(scaledDimension.width, getScreenWidth())
       ),
       child: Image.file(File(mediaData.url))
     );
   }else if(mediaData.mediaType == MediaType.video){
-    return SizedBox(
-      width: mediaData.mediaSize!.width,
-      height: mediaData.mediaSize!.height,
-      child: VideoPlayer(mediaData.playerController!)
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: min(scaledDimension!.height, getScreenHeight() * 0.75),
+        maxWidth: min(scaledDimension.width, getScreenWidth())
+      ),
+      child: cvp.CustomVideoPlayer(
+        key: UniqueKey(),
+        playerController: mediaData.playerController!,
+        skipDuration: 10000, //how many milliseconds you want to skip
+        rewindDuration: 10000, //how many milliseconds you want to rewind
+        videoSourceType: cvp.VideoSourceType.network, //the source of the video: assets, file, network,
+        durationEndDisplay: cvp.DurationEndDisplay.totalDuration, //whether to display in total duration or remaining duration
+        displayMenu: false, //whether to display menu
+        thumbColor: Colors.red, //color of the slider's thumb
+        activeTrackColor: Colors.pink, //color of active tracks
+        inactiveTrackColor: Colors.green, //color of inactive tracks
+        overlayBackgroundColor: Colors.grey.withOpacity(0.5), //color of the overlay's background
+        pressablesBackgroundColor: Colors.teal, //background color of the pressable icons such as play, pause, replay, and menu
+        overlayDisplayDuration: 2500, //how long to display the overlay before it disappears, in ms,
+        defaultAlignment: Alignment.center
+      )
     );
   }else if(mediaData.mediaType == MediaType.websiteCard){
     return CustomWebsiteCardComponent(
@@ -270,20 +317,37 @@ Widget mediaDataDraftPostComponentWidget(MediaDatasClass mediaData){
   return Container();
 }
 
-Widget mediaDataDraftMessageComponentWidget(MediaDatasClass mediaData){
+Widget mediaDataDraftMessageComponentWidget(MediaDatasClass mediaData, Size? scaledDimension){
   if(mediaData.mediaType == MediaType.image){
     return Container(
-      constraints: const BoxConstraints(
-        maxHeight: 200,
-        maxWidth: double.infinity
+      constraints: BoxConstraints(
+        maxHeight: min(scaledDimension!.height, getScreenHeight() * 0.35),
+        maxWidth: min(scaledDimension.width, getScreenWidth())
       ),
       child: Image.file(File(mediaData.url))
     );
   }else if(mediaData.mediaType == MediaType.video){
-    return SizedBox(
-      width: mediaData.mediaSize!.width,
-      height: mediaData.mediaSize!.height,
-      child: VideoPlayer(mediaData.playerController!)
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: min(scaledDimension!.height, getScreenHeight() * 0.35),
+        maxWidth: min(scaledDimension.width, getScreenWidth())
+      ),
+      child: cvp.CustomVideoPlayer(
+        key: UniqueKey(),
+        playerController: mediaData.playerController!,
+        skipDuration: 10000, //how many milliseconds you want to skip
+        rewindDuration: 10000, //how many milliseconds you want to rewind
+        videoSourceType: cvp.VideoSourceType.network, //the source of the video: assets, file, network,
+        durationEndDisplay: cvp.DurationEndDisplay.totalDuration, //whether to display in total duration or remaining duration
+        displayMenu: false, //whether to display menu
+        thumbColor: Colors.red, //color of the slider's thumb
+        activeTrackColor: Colors.pink, //color of active tracks
+        inactiveTrackColor: Colors.green, //color of inactive tracks
+        overlayBackgroundColor: Colors.grey.withOpacity(0.5), //color of the overlay's background
+        pressablesBackgroundColor: Colors.teal, //background color of the pressable icons such as play, pause, replay, and menu
+        overlayDisplayDuration: 2500, //how long to display the overlay before it disappears, in ms,
+        defaultAlignment: Alignment.center
+      )
     );
   }else if(mediaData.mediaType == MediaType.websiteCard){
     return CustomWebsiteCardComponent(
@@ -320,15 +384,18 @@ BoxDecoration defaultAppBarDecoration = const BoxDecoration(
 );
 
 Widget generatePostActionWidget(Function onTap, Widget child){
-  return Material(
-    color: Colors.transparent,
-    child: InkWell(
-      onTap: () => onTap(),
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: getScreenHeight() * 0.008, horizontal: getScreenWidth() * 0.03),
-        child: child,
+  return Container(
+    margin: EdgeInsets.only(right: getScreenWidth() * 0.015),
+    child: Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => onTap(),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: getScreenHeight() * 0.008, horizontal: getScreenWidth() * 0.015),
+          child: child,
+        )
       )
-    )
+    ),
   );
 }
 
@@ -342,5 +409,13 @@ Widget generatePostMoreOptionsWidget(Function onTap, Widget child){
         child: child,
       )
     )
+  );
+}
+
+Widget defaultLeadingWidget(BuildContext context){
+  return InkWell(
+    splashFactory: InkRipple.splashFactory,
+    onTap: () => context.mounted ? runDelay(() => Navigator.pop(context), 60) : (){},
+    child: const Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.white)
   );
 }

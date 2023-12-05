@@ -7,11 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:social_media_app/ProfileRepliesPage.dart';
 import 'package:social_media_app/ProfilePostsPage.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
-import 'package:social_media_app/class/UserDataNotifier.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
-import 'package:social_media_app/class/UserSocialNotifier.dart';
 import 'package:social_media_app/custom/CustomProfileHeader.dart';
-import 'package:social_media_app/redux/reduxLibrary.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'mixin/LifecycleListenerMixin.dart';
@@ -84,7 +82,7 @@ class _ProfilePageWidgetStatefulState extends State<_ProfilePageWidgetStateful> 
         profileRepliesWidgetUniqueKey.value = UniqueKey();
         String stringified = jsonEncode({
           'userID': userID,
-          'currentID': fetchReduxDatabase().currentID,
+          'currentID': appStateClass.currentID,
         });
         var res = await dio.get('$serverDomainAddress/users/fetchUserProfileSocials', data: stringified);
         if(res.data.isNotEmpty){
@@ -115,78 +113,68 @@ class _ProfilePageWidgetStatefulState extends State<_ProfilePageWidgetStateful> 
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('User Account'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(
           decoration: defaultAppBarDecoration
         ),
         actions: <Widget>[
-          StoreConnector<AppState, ValueNotifier<Map<String, UserDataNotifier>>>(
-            converter: (store) => store.state.usersDatasNotifiers,
-            builder: (context, ValueNotifier<Map<String, UserDataNotifier>> usersDatasNotifiers){
-              return StoreConnector<AppState, ValueNotifier<Map<String, UserSocialNotifier>>>(
-                converter: (store) => store.state.usersSocialsNotifiers,
-                builder: (context, ValueNotifier<Map<String, UserSocialNotifier>> usersSocialsNotifiers){
-                  if(usersDatasNotifiers.value[userID] != null){
+          appStateClass.usersDataNotifiers.value[userID] != null ?
+            ValueListenableBuilder(
+              valueListenable: appStateClass.usersDataNotifiers.value[userID]!.notifier,
+              builder: ((context, userData, child) {
+                if(!userData.suspended && !userData.deleted){
+                  if(userData.userID != appStateClass.currentID){
                     return ValueListenableBuilder(
-                      valueListenable: usersDatasNotifiers.value[userID]!.notifier,
-                      builder: ((context, userData, child) {
-                        if(!userData.suspended && !userData.deleted){
-                          if(userData.userID != fetchReduxDatabase().currentID){
-                            return ValueListenableBuilder(
-                              valueListenable: usersSocialsNotifiers.value[userID]!.notifier,
-                              builder: ((context, userSocials, child) {
-                                return PopupMenuButton(
-                                  onSelected: (result) {
-                                    if(result == 'Unmute'){
-                                      runDelay(() => unmuteUser(userData), actionDelayTime);
-                                    }else if(result == 'Mute'){
-                                      runDelay(() => muteUser(userData), actionDelayTime);
-                                    }else if(result == 'Unblock'){
-                                      runDelay(() => unblockUser(userData), actionDelayTime);
-                                    }else if(result == 'Block'){
-                                      runDelay(() => blockUser(userData, userSocials), actionDelayTime);
-                                    }
-                                  },
-                                  itemBuilder: (context) => <PopupMenuEntry>[
-                                    PopupMenuItem(
-                                      value: userData.mutedByCurrentID ? 'Unmute' : 'Mute',
-                                      child: Text(userData.mutedByCurrentID ? 'Unmute ${userData.name}' : 'Mute ${userData.name}')
-                                    ),
-                                    PopupMenuItem(
-                                      value: userData.blockedByCurrentID ? 'Unblock' : 'Block',
-                                      child: Text(userData.blockedByCurrentID ? 'Unblock ${userData.name}' : 'Block ${userData.name}')
-                                    ),
-                                  ]
-                                );
-                              }),
-                            );
-                          }
-                          return PopupMenuButton(
-                            onSelected: (result) {
-                              if(result == 'Lock Account'){
-                                runDelay(() => lockAccount(userData), actionDelayTime);
-                              }else if(result == 'Unlock Account'){
-                                runDelay(() => unlockAccount(userData), actionDelayTime);
-                              }
-                            },
-                            itemBuilder: (context) => <PopupMenuEntry>[
-                              PopupMenuItem(
-                                value: userData.private ? 'Unlock Account' : 'Lock Account',
-                                child: Text(userData.private ? 'Unlock Account' : 'Lock Account')
-                              ),
-                            ]
-                          );
-                        }
-                        return Container();
-                      })
+                      valueListenable: appStateClass.usersSocialsNotifiers.value[userID]!.notifier,
+                      builder: ((context, userSocials, child) {
+                        return PopupMenuButton(
+                          onSelected: (result) {
+                            if(result == 'Unmute'){
+                              runDelay(() => unmuteUser(userData), actionDelayTime);
+                            }else if(result == 'Mute'){
+                              runDelay(() => muteUser(userData), actionDelayTime);
+                            }else if(result == 'Unblock'){
+                              runDelay(() => unblockUser(userData), actionDelayTime);
+                            }else if(result == 'Block'){
+                              runDelay(() => blockUser(userData, userSocials), actionDelayTime);
+                            }
+                          },
+                          itemBuilder: (context) => <PopupMenuEntry>[
+                            PopupMenuItem(
+                              value: userData.mutedByCurrentID ? 'Unmute' : 'Mute',
+                              child: Text(userData.mutedByCurrentID ? 'Unmute ${userData.name}' : 'Mute ${userData.name}')
+                            ),
+                            PopupMenuItem(
+                              value: userData.blockedByCurrentID ? 'Unblock' : 'Block',
+                              child: Text(userData.blockedByCurrentID ? 'Unblock ${userData.name}' : 'Block ${userData.name}')
+                            ),
+                          ]
+                        );
+                      }),
                     );
                   }
-                  return Container();
+                  return PopupMenuButton(
+                    onSelected: (result) {
+                      if(result == 'Lock Account'){
+                        runDelay(() => lockAccount(userData), actionDelayTime);
+                      }else if(result == 'Unlock Account'){
+                        runDelay(() => unlockAccount(userData), actionDelayTime);
+                      }
+                    },
+                    itemBuilder: (context) => <PopupMenuEntry>[
+                      PopupMenuItem(
+                        value: userData.private ? 'Unlock Account' : 'Lock Account',
+                        child: Text(userData.private ? 'Unlock Account' : 'Lock Account')
+                      ),
+                    ]
+                  );
                 }
-              );
-            }
-          )
+                return Container();
+              })
+            )
+          : Container()
         ]
       ),
       body: RefreshIndicator(
@@ -206,32 +194,17 @@ class _ProfilePageWidgetStatefulState extends State<_ProfilePageWidgetStateful> 
                     valueListenable: isLoading,
                     builder: (context, isLoadingValue, child) {
                       if(!isLoadingValue){
-                        return StoreConnector<AppState, ValueNotifier<Map<String, UserDataNotifier>>>(
-                          converter: (store) => store.state.usersDatasNotifiers,
-                          builder: (context, ValueNotifier<Map<String, UserDataNotifier>> usersDatasNotifiers){
-                            return StoreConnector<AppState, ValueNotifier<Map<String, UserSocialNotifier>>>(
-                              converter: (store) => store.state.usersSocialsNotifiers,
-                              builder: (context, ValueNotifier<Map<String, UserSocialNotifier>> usersSocialsNotifiers){
-                                if(usersDatasNotifiers.value[userID] != null){
-                                  return ValueListenableBuilder(
-                                    valueListenable: usersDatasNotifiers.value[userID]!.notifier,
-                                    builder: ((context, userData, child) {
-                                      return ValueListenableBuilder(
-                                        valueListenable: usersSocialsNotifiers.value[userID]!.notifier,
-                                        builder: ((context, userSocials, child) {
-                                          return CustomProfileHeader(
-                                            userID: userID, userData: userData, userSocials: userSocials, key: UniqueKey()
-                                          );
-                                        }),
-                                      );
-                                    }),
-                                  );
-                                }
-                                return loadingPageWidget();
-                              }
-                            );
-                          }
-                        );
+                        if(appStateClass.usersDataNotifiers.value[userID] != null){
+                          return ValueListenableBuilder(
+                            valueListenable: appStateClass.usersDataNotifiers.value[userID]!.notifier,
+                            builder: ((context, userData, child) {
+                              return CustomProfileHeader(
+                                userID: userID, userData: userData, key: UniqueKey()
+                              );
+                            }),
+                          );
+                        }
+                        return Container();
                       }else{
                         return loadingPageWidget();
                       }

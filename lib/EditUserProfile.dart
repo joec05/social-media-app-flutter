@@ -10,6 +10,7 @@ import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
+import 'package:social_media_app/state/main.dart';
 import 'styles/AppStyles.dart';
 import 'package:permission_handler/permission_handler.dart' as ph;
 import 'package:device_info_plus/device_info_plus.dart';
@@ -103,7 +104,7 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
       if(mounted){
         isLoading.value = true;
         String stringified = jsonEncode({
-          'currentID': fetchReduxDatabase().currentID
+          'currentID': appStateClass.currentID
         });
         var res = await dio.get('$serverDomainAddress/users/fetchCurrentUserProfile', data: stringified);
         if(res.data.isNotEmpty){
@@ -249,12 +250,12 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
             },
           );
         }else{  
-          String currentID = fetchReduxDatabase().currentID;
+          String currentID = appStateClass.currentID;
           String nameText = nameController.text.trim();
           String usernameText = usernameController.text.trim();
           String imagePath = '';
           if(imageFilePath.value.isNotEmpty){
-            imagePath = await uploadMediaToAppWrite(fetchReduxDatabase().currentID, storageBucketIDs['image'], imageFilePath.value);
+            imagePath = await uploadMediaToAppWrite(appStateClass.currentID, storageBucketIDs['image'], imageFilePath.value);
           }else{
             imagePath = imageNetworkPath.value;
           }
@@ -269,7 +270,7 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
           var res = await dio.patch('$serverDomainAddress/users/editUserProfile', data: stringified);
           if(res.data.isNotEmpty){
             if(res.data['message'] == 'Successfully updated user profile'){
-              UserDataClass currentUserProfileDataClass = fetchReduxDatabase().usersDatasNotifiers.value[currentID]!.notifier.value;
+              UserDataClass currentUserProfileDataClass = appStateClass.usersDataNotifiers.value[currentID]!.notifier.value;
               UserDataClass updatedCurrentUserProfileDataClass = UserDataClass(
                 currentID, nameText, usernameText, imagePath, currentUserProfileDataClass.dateJoined, 
                 selectedBirthDate.toString(), bioController.text.trim(),
@@ -278,7 +279,7 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
                 currentUserProfileDataClass.requestedByCurrentID, currentUserProfileDataClass.requestsToCurrentID,
                 currentUserProfileDataClass.verified, currentUserProfileDataClass.suspended, currentUserProfileDataClass.deleted
               );
-              fetchReduxDatabase().usersDatasNotifiers.value[currentID]!.notifier.value = updatedCurrentUserProfileDataClass;
+              appStateClass.usersDataNotifiers.value[currentID]!.notifier.value = updatedCurrentUserProfileDataClass;
               Navigator.pop(context);
             }else{
               showDialog(
@@ -318,6 +319,7 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('Edit Profile'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(
@@ -426,7 +428,7 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
                     textFieldWithDescription(
                       TextField(
                         controller: nameController,
-                        decoration: generateProfileTextFieldDecoration('your name'),
+                        decoration: generateProfileTextFieldDecoration('your name', Icons.person),
                         maxLength: nameCharacterMaxLimit,
                       ),
                       'Name',
@@ -436,7 +438,7 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
                     textFieldWithDescription(
                         TextField(
                         controller: usernameController,
-                        decoration: generateProfileTextFieldDecoration('username'),
+                        decoration: generateProfileTextFieldDecoration('username', Icons.person),
                         maxLength: usernameCharacterMaxLimit
                       ),
                       'Username',
@@ -450,7 +452,7 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
                         onTap: () => _selectBirthDate(context),
                         child: TextField(
                           controller: birthDateController,
-                          decoration: generateProfileTextFieldDecoration('birth date'),
+                          decoration: generateProfileTextFieldDecoration('birth date', Icons.cake),
                           enabled: false,
                         ),
                       ),
@@ -463,10 +465,10 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
                     textFieldWithDescription(
                       TextField(
                         controller: bioController,
-                        decoration: generateBioTextFieldDecoration(),
+                        decoration: generateBioTextFieldDecoration('bio', Icons.person),
                         maxLength: bioCharacterMaxLimit,
-                        maxLines: 15,
-                        minLines: 10,
+                        maxLines: 5,
+                        minLines: 1,
                       ),
                       'Bio',
                       "Your bio is optional and should not exceed $bioCharacterMaxLimit characters",

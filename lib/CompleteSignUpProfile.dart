@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import 'MainPage.dart';
 import 'styles/AppStyles.dart';
@@ -82,16 +83,16 @@ class _CompleteSignUpProfileStatefulState extends State<CompleteSignUpProfileSta
       if(mounted){
         if(!isLoading.value){
           isLoading.value = true;
-          String uploadProfilePic = await uploadMediaToAppWrite(fetchReduxDatabase().currentID, storageBucketIDs['image'], imageFilePath.value);
+          String uploadProfilePic = await uploadMediaToAppWrite(appStateClass.currentID, storageBucketIDs['image'], imageFilePath.value);
           String stringified = jsonEncode({
-            'userId': fetchReduxDatabase().currentID,
+            'userId': appStateClass.currentID,
             'profilePicLink': uploadProfilePic,
             'bio': bioController.text.trim(),
           });
           var res = await dio.post('$serverDomainAddress/users/completeSignUpProfile', data: stringified);
           if(res.data.isNotEmpty){
             if(res.data['message'] == 'Successfully updated your account'){
-              fetchReduxDatabase().usersDatasNotifiers.value[fetchReduxDatabase().currentID]!.notifier.value.profilePicLink = uploadProfilePic;
+              appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.profilePicLink = uploadProfilePic;
               runDelay(() => Navigator.pushAndRemoveUntil(
                 context,
                 SliderRightToLeftRoute(
@@ -169,6 +170,7 @@ class _CompleteSignUpProfileStatefulState extends State<CompleteSignUpProfileSta
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('Complete Sign Up'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(
@@ -259,15 +261,15 @@ class _CompleteSignUpProfileStatefulState extends State<CompleteSignUpProfileSta
                     textFieldWithDescription(
                       TextField(
                         controller: bioController,
-                        decoration: generateBioTextFieldDecoration(),
+                        decoration: generateBioTextFieldDecoration('bio', Icons.person),
                         maxLength: bioCharacterMaxLimit,
-                        maxLines: 15,
-                        minLines: 10,
+                        maxLines: 5,
+                        minLines: 1,
                       ),
                       'Bio',
                       "Your bio is optional and should not exceed $bioCharacterMaxLimit characters",
                     ),
-                    EdgeInsets.only(top: getScreenHeight() * 0.0075, bottom: defaultTextFieldVerticalMargin)
+                    EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
                   ),
                   SizedBox(
                     height: textFieldToButtonMargin

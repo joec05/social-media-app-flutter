@@ -6,10 +6,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
-import 'package:social_media_app/redux/reduxLibrary.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
+import 'package:social_media_app/state/main.dart';
 import 'class/UserDataClass.dart';
-import 'class/UserDataNotifier.dart';
 import 'custom/CustomSimpleUserDataWidget.dart';
 import 'styles/AppStyles.dart';
 
@@ -67,7 +66,7 @@ class __SearchTagUsersWidgetStatefulState extends State<_SearchTagUsersWidgetSta
         isSearching.value = true;
         String stringified = jsonEncode({
           'searchedText': searchedController.text,
-          'currentID': fetchReduxDatabase().currentID,
+          'currentID': appStateClass.currentID,
           'currentLength': isPaginating ? users.value.length : 0,
           'paginationLimit': searchTagUsersFetchLimit
         });
@@ -118,64 +117,53 @@ class __SearchTagUsersWidgetStatefulState extends State<_SearchTagUsersWidgetSta
 
   @override
   Widget build(BuildContext context){
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tag Users'), 
-        titleSpacing: defaultAppBarTitleSpacing,
-        flexibleSpace: Container(
-          decoration: defaultAppBarDecoration
-        ),
-        actions: [
-          ValueListenableBuilder(
-            valueListenable: selectedUsersID,
-            builder: (context, selectedUsersID, child){
-              return CustomButton(
-                width: getScreenWidth() * 0.25, height: kToolbarHeight, 
-                buttonColor: Colors.red, buttonText: 'Continue',
-                onTapped: selectedUsersID.isNotEmpty ? () => continueTag() : null,
-                setBorderRadius: false
-              );
-            }
-          )
-        ]
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.9,
+      decoration: const BoxDecoration(
+        color: Color.fromARGB(255, 56, 54, 54),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(15.0),
+          topRight: Radius.circular(15.0)
+        )
       ),
-      body: ListView(
+      child: Column(
         children: [
-          containerMargin(
-            Row(
-              children: [
-                SizedBox(
-                  width: getScreenWidth() * 0.75,
-                  height: getScreenHeight() * 0.075,
-                  child: TextField(
-                    controller: searchedController,
-                    decoration: generateSearchTextFieldDecoration('user'),
-                  )
-                ),
-                ValueListenableBuilder<bool>(
-                  valueListenable: isSearching,
-                  builder: (context, bool isSearchingValue, child){
-                    return ValueListenableBuilder<bool>(
-                      valueListenable: verifySearchedFormat,
-                      builder: (context, bool searchedVerified, child){
-                        return CustomButton(
-                          width: getScreenWidth() * 0.25, height: getScreenHeight() * 0.075, 
-                          buttonColor: Colors.red, buttonText: 'Search',
-                          onTapped: !isSearchingValue && searchedVerified ? () => searchUsers(false) : null,
-                          setBorderRadius: false
-                        );
-                      }
-                    );
-                  }
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: getScreenHeight() * 0.015),
+              Container(
+                height: getScreenHeight() * 0.01,
+                width: getScreenWidth() * 0.15,
+                decoration: const BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.all(Radius.circular(10))
                 )
-              ],
-            ),
-            EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
+              ),
+              SizedBox(height: getScreenHeight() * 0.015),
+              ValueListenableBuilder<bool>(
+                valueListenable: isSearching,
+                builder: (context, bool isSearchingValue, child){
+                  return ValueListenableBuilder<bool>(
+                    valueListenable: verifySearchedFormat,
+                    builder: (context, bool searchedVerified, child){
+                      return SizedBox(
+                        width: getScreenWidth(),
+                        height: getScreenHeight() * 0.075,
+                        child: TextField(
+                          controller: searchedController,
+                          decoration: generateSearchTextFieldDecoration('user', Icons.search, !isSearchingValue && searchedVerified ? () => searchUsers(false) : null),
+                        )
+                      );
+                    }
+                  );
+                }
+              ),
+            ]
           ),
-          StoreConnector<AppState, ValueNotifier<Map<String, UserDataNotifier>>>(
-            converter: (store) => store.state.usersDatasNotifiers,
-            builder: (context, ValueNotifier<Map<String, UserDataNotifier>> usersDatasNotifiers){
-              return ValueListenableBuilder(
+          Flexible(
+            child: SingleChildScrollView(
+              child: ValueListenableBuilder(
                 valueListenable: users, 
                 builder: (context, users, child){
                   return ValueListenableBuilder(
@@ -190,12 +178,12 @@ class __SearchTagUsersWidgetStatefulState extends State<_SearchTagUsersWidgetSta
                             },
                             child: GestureDetector(
                               onTap: (){
-                                toggleSelectUser(users[i], usersDatasNotifiers.value[users[i]]!.notifier.value.username);
+                                toggleSelectUser(users[i], appStateClass.usersDataNotifiers.value[users[i]]!.notifier.value.username);
                               },
                               child: Container(
                                 color: selectedUsersID.contains(users[i]) ? Colors.grey.withOpacity(0.5) : Colors.transparent,
                                 child: CustomSimpleUserDataWidget(
-                                  userData: usersDatasNotifiers.value[users[i]]!.notifier.value,
+                                  userData: appStateClass.usersDataNotifiers.value[users[i]]!.notifier.value,
                                   key: UniqueKey()
                                 )
                               )
@@ -206,8 +194,26 @@ class __SearchTagUsersWidgetStatefulState extends State<_SearchTagUsersWidgetSta
                     }
                   );
                 }
-              );
-            }
+              ),
+            ),
+          ),
+          Column(
+            children: [
+              ValueListenableBuilder(
+                valueListenable: selectedUsersID,
+                builder: (context, selectedUsersID, child){
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: getScreenHeight() * 0.025, horizontal: getScreenWidth() * 0.025),
+                    child: CustomButton(
+                      width: double.infinity, height: getScreenHeight() * 0.08,
+                      buttonColor: Colors.red, buttonText: 'Continue',
+                      onTapped: selectedUsersID.isNotEmpty ? () => continueTag() : null,
+                      setBorderRadius: true
+                    ),
+                  );
+                }
+              )
+            ]
           )
         ],
       ),

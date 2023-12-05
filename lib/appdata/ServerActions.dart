@@ -7,7 +7,7 @@ import 'package:social_media_app/class/CommentClass.dart';
 import 'package:social_media_app/class/DisplayCommentDataClass.dart';
 import 'package:social_media_app/class/DisplayPostDataClass.dart';
 import 'package:social_media_app/class/NotificationClass.dart';
-import 'package:social_media_app/redux/reduxLibrary.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/streams/BookmarkDataStreamClass.dart';
 import 'package:social_media_app/streams/NotificationDataStreamClass.dart';
 import '../caching/sqfliteConfiguration.dart';
@@ -19,13 +19,13 @@ import '../streams/RequestsFromDataStreamClass.dart';
 import '../streams/RequestsToDataStreamClass.dart';
 import '../streams/UserDataStreamClass.dart';
 import 'NavigationActions.dart';
-import 'ReduxActions.dart';
+import 'AppStateActions.dart';
 
 var dio = Dio();
 
 void followUser(UserDataClass userData, UserSocialClass userSocials) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
+    String currentID = appStateClass.currentID;
     if(userData.private){
       RequestsFromDataStreamClass().emitData(
         RequestsFromDataStreamControllerClass(
@@ -33,7 +33,7 @@ void followUser(UserDataClass userData, UserSocialClass userSocials) async{
           'send_follow_request_$currentID'
         )
       );
-      fetchReduxDatabase().usersDatasNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
+      appStateClass.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
         userData.userID, userData.name, userData.username, userData.profilePicLink, 
         userData.dateJoined, userData.birthDate, userData.bio, userData.mutedByCurrentID, 
         userData.blockedByCurrentID, userData.blocksCurrentID, userData.private, 
@@ -41,11 +41,11 @@ void followUser(UserDataClass userData, UserSocialClass userSocials) async{
       );
     }else{
       UserSocialClass updatedFollowedUserSocialDataClass = UserSocialClass(userSocials.followersCount+ 1, userSocials.followingCount, true, userSocials.followsCurrentID);
-      fetchReduxDatabase().usersSocialsNotifiers.value[userData.userID]!.notifier.value = updatedFollowedUserSocialDataClass;
+      appStateClass.usersSocialsNotifiers.value[userData.userID]!.notifier.value = updatedFollowedUserSocialDataClass;
     
-      UserSocialClass currentUserSocialDataClass = fetchReduxDatabase().usersSocialsNotifiers.value[currentID]!.notifier.value;    
+      UserSocialClass currentUserSocialDataClass = appStateClass.usersSocialsNotifiers.value[currentID]!.notifier.value;    
       UserSocialClass updatedCurrentUserSocialDataClass = UserSocialClass(currentUserSocialDataClass.followersCount, currentUserSocialDataClass.followingCount+ 1, false, false);
-      fetchReduxDatabase().usersSocialsNotifiers.value[currentID]!.notifier.value = updatedCurrentUserSocialDataClass;
+      appStateClass.usersSocialsNotifiers.value[currentID]!.notifier.value = updatedCurrentUserSocialDataClass;
     
       UserDataStreamClass().emitData(
         UserDataStreamControllerClass(
@@ -72,13 +72,13 @@ void followUser(UserDataClass userData, UserSocialClass userSocials) async{
 
 void unfollowUser(UserDataClass userData, UserSocialClass userSocials) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
+    String currentID = appStateClass.currentID;
     UserSocialClass updatedFollowedUserSocialDataClass = UserSocialClass(userSocials.followersCount- 1, userSocials.followingCount, false, userSocials.followsCurrentID);
-    fetchReduxDatabase().usersSocialsNotifiers.value[userData.userID]!.notifier.value = updatedFollowedUserSocialDataClass;
+    appStateClass.usersSocialsNotifiers.value[userData.userID]!.notifier.value = updatedFollowedUserSocialDataClass;
     
-    UserSocialClass currentUserSocialDataClass = fetchReduxDatabase().usersSocialsNotifiers.value[currentID]!.notifier.value;    
+    UserSocialClass currentUserSocialDataClass = appStateClass.usersSocialsNotifiers.value[currentID]!.notifier.value;    
     UserSocialClass updatedCurrentUserSocialDataClass = UserSocialClass(currentUserSocialDataClass.followersCount, currentUserSocialDataClass.followingCount- 1, false, false);
-    fetchReduxDatabase().usersSocialsNotifiers.value[currentID]!.notifier.value = updatedCurrentUserSocialDataClass;
+    appStateClass.usersSocialsNotifiers.value[currentID]!.notifier.value = updatedCurrentUserSocialDataClass;
     
     UserDataStreamClass().emitData(
       UserDataStreamControllerClass(
@@ -105,8 +105,8 @@ void unfollowUser(UserDataClass userData, UserSocialClass userSocials) async{
 
 void likePost(PostClass postData) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
-    fetchReduxDatabase().postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
+    String currentID = appStateClass.currentID;
+    appStateClass.postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
       postData.postID, postData.type, postData.content, postData.sender, postData.uploadTime, 
       postData.mediasDatas, postData.likesCount+ 1, true, postData.bookmarksCount, postData.bookmarkedByCurrentID, 
       postData.commentsCount, postData.deleted
@@ -133,8 +133,8 @@ void likePost(PostClass postData) async{
 
 void unlikePost(PostClass postData) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
-    fetchReduxDatabase().postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
+    String currentID = appStateClass.currentID;
+    appStateClass.postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
       postData.postID, postData.type, postData.content, postData.sender, postData.uploadTime, 
       postData.mediasDatas, postData.likesCount- 1, false, postData.bookmarksCount, postData.bookmarkedByCurrentID, 
       postData.commentsCount, postData.deleted
@@ -161,8 +161,8 @@ void unlikePost(PostClass postData) async{
 
 void bookmarkPost(PostClass postData) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
-    fetchReduxDatabase().postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
+    String currentID = appStateClass.currentID;
+    appStateClass.postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
       postData.postID, postData.type, postData.content, postData.sender, postData.uploadTime, 
       postData.mediasDatas, postData.likesCount, postData.likedByCurrentID, postData.bookmarksCount+ 1, true, 
       postData.commentsCount, postData.deleted
@@ -196,8 +196,8 @@ void bookmarkPost(PostClass postData) async{
 
 void unbookmarkPost(PostClass postData) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
-    fetchReduxDatabase().postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
+    String currentID = appStateClass.currentID;
+    appStateClass.postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
       postData.postID, postData.type, postData.content, postData.sender, postData.uploadTime, 
       postData.mediasDatas, postData.likesCount, postData.likedByCurrentID, postData.bookmarksCount- 1, false, 
       postData.commentsCount, postData.deleted
@@ -225,8 +225,8 @@ void unbookmarkPost(PostClass postData) async{
 
 void deletePost(PostClass postData) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
-    fetchReduxDatabase().postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
+    String currentID = appStateClass.currentID;
+    appStateClass.postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
       postData.postID, postData.type, postData.content, postData.sender, postData.uploadTime, 
       postData.mediasDatas, postData.likesCount, postData.likedByCurrentID, postData.bookmarksCount,
       postData.bookmarkedByCurrentID, postData.commentsCount, true
@@ -253,8 +253,8 @@ void deletePost(PostClass postData) async{
 
 void likeComment(CommentClass commentData) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
-    fetchReduxDatabase().commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
+    String currentID = appStateClass.currentID;
+    appStateClass.commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
       commentData.commentID, commentData.type, commentData.content, commentData.sender, commentData.uploadTime, 
       commentData.mediasDatas, commentData.likesCount+ 1, true, commentData.bookmarksCount, commentData.bookmarkedByCurrentID, commentData.commentsCount, 
       commentData.parentPostType, commentData.parentPostID, commentData.parentPostSender, 
@@ -281,8 +281,8 @@ void likeComment(CommentClass commentData) async{
 
 void unlikeComment(CommentClass commentData) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
-    fetchReduxDatabase().commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
+    String currentID = appStateClass.currentID;
+    appStateClass.commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
       commentData.commentID, commentData.type, commentData.content, commentData.sender, commentData.uploadTime, 
       commentData.mediasDatas, commentData.likesCount- 1, false, commentData.bookmarksCount, commentData.bookmarkedByCurrentID, commentData.commentsCount, 
       commentData.parentPostType, commentData.parentPostID, commentData.parentPostSender, 
@@ -310,8 +310,8 @@ void unlikeComment(CommentClass commentData) async{
 
 void bookmarkComment(CommentClass commentData) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
-    fetchReduxDatabase().commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
+    String currentID = appStateClass.currentID;
+    appStateClass.commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
       commentData.commentID, commentData.type, commentData.content, commentData.sender, commentData.uploadTime, 
       commentData.mediasDatas, commentData.likesCount, commentData.likedByCurrentID, commentData.bookmarksCount+ 1, true, commentData.commentsCount, 
       commentData.parentPostType, commentData.parentPostID, commentData.parentPostSender, 
@@ -346,8 +346,8 @@ void bookmarkComment(CommentClass commentData) async{
 
 void unbookmarkComment(CommentClass commentData) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
-    fetchReduxDatabase().commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
+    String currentID = appStateClass.currentID;
+    appStateClass.commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
       commentData.commentID, commentData.type, commentData.content, commentData.sender, commentData.uploadTime, 
       commentData.mediasDatas, commentData.likesCount, commentData.likedByCurrentID, commentData.bookmarksCount- 1, false, commentData.commentsCount, 
       commentData.parentPostType, commentData.parentPostID, commentData.parentPostSender, 
@@ -375,8 +375,8 @@ void unbookmarkComment(CommentClass commentData) async{
 
 void deleteComment(CommentClass commentData, BuildContext context) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
-    fetchReduxDatabase().commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = 
+    String currentID = appStateClass.currentID;
+    appStateClass.commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = 
     CommentClass(
       commentData.commentID, commentData.type, commentData.content, commentData.sender, commentData.uploadTime, 
       commentData.mediasDatas, commentData.likesCount, commentData.likedByCurrentID, commentData.bookmarksCount, commentData.bookmarkedByCurrentID, commentData.commentsCount, 
@@ -385,8 +385,8 @@ void deleteComment(CommentClass commentData, BuildContext context) async{
     );
     
     if(commentData.parentPostType == 'post'){
-      if(fetchReduxDatabase().postsNotifiers.value[commentData.parentPostSender] != null && fetchReduxDatabase().postsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID] != null){
-        PostClass parentPostClass = fetchReduxDatabase().postsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID]!.notifier.value;
+      if(appStateClass.postsNotifiers.value[commentData.parentPostSender] != null && appStateClass.postsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID] != null){
+        PostClass parentPostClass = appStateClass.postsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID]!.notifier.value;
         updatePostData(
           PostClass(
             parentPostClass.postID, parentPostClass.type, parentPostClass.content, parentPostClass.sender, 
@@ -396,8 +396,8 @@ void deleteComment(CommentClass commentData, BuildContext context) async{
         );
       }
     }else{
-      if(fetchReduxDatabase().commentsNotifiers.value[commentData.parentPostSender] != null && fetchReduxDatabase().commentsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID] != null){
-        CommentClass parentCommentClass = fetchReduxDatabase().commentsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID]!.notifier.value;
+      if(appStateClass.commentsNotifiers.value[commentData.parentPostSender] != null && appStateClass.commentsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID] != null){
+        CommentClass parentCommentClass = appStateClass.commentsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID]!.notifier.value;
         updateCommentData(
           CommentClass(
             parentCommentClass.commentID, parentCommentClass.type, parentCommentClass.content, parentCommentClass.sender, 
@@ -435,17 +435,12 @@ void deleteAccount(context) async{
   try {
 
     String stringified = jsonEncode({
-      'currentID': fetchReduxDatabase().currentID,
+      'currentID': appStateClass.currentID,
     });
     var res = await dio.delete('$serverDomainAddress/users/deleteAccount', data: stringified);
     if(res.data.isNotEmpty){
       await DatabaseHelper().deleteCurrentUser();
-      StoreProvider.of<AppState>(context).dispatch(CurrentID(''));
-      StoreProvider.of<AppState>(context).dispatch(PostsNotifiers(ValueNotifier({})));
-      StoreProvider.of<AppState>(context).dispatch(CommentsNotifiers(ValueNotifier({})));
-      StoreProvider.of<AppState>(context).dispatch(UsersDatasNotifiers(ValueNotifier({})));
-      StoreProvider.of<AppState>(context).dispatch(UsersSocialsNotifiers(ValueNotifier({})));
-      StoreProvider.of<AppState>(context).dispatch(UsersProfilePostsNotifiers(ValueNotifier({})));
+      appStateClass.resetSession();
       navigateBackToInitialScreen(context);
     }
   } on Exception catch (e) {
@@ -455,8 +450,8 @@ void deleteAccount(context) async{
 
 void muteUser(UserDataClass userData) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
-    fetchReduxDatabase().usersDatasNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
+    String currentID = appStateClass.currentID;
+    appStateClass.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
       userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
       userData.birthDate, userData.bio, true, userData.blockedByCurrentID, userData.blocksCurrentID,
       userData.private, userData.requestedByCurrentID, userData.requestsToCurrentID, 
@@ -486,8 +481,8 @@ void muteUser(UserDataClass userData) async{
 
 void unmuteUser(UserDataClass userData) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
-    fetchReduxDatabase().usersDatasNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
+    String currentID = appStateClass.currentID;
+    appStateClass.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
       userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
       userData.birthDate, userData.bio, false, userData.blockedByCurrentID, userData.blocksCurrentID,
       userData.private, userData.requestedByCurrentID, userData.requestsToCurrentID,
@@ -508,22 +503,22 @@ void unmuteUser(UserDataClass userData) async{
 
 void blockUser(UserDataClass userData, UserSocialClass userSocials) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
-    UserSocialClass currentUserSocialClass = fetchReduxDatabase().usersSocialsNotifiers.value[currentID]!.notifier.value;
+    String currentID = appStateClass.currentID;
+    UserSocialClass currentUserSocialClass = appStateClass.usersSocialsNotifiers.value[currentID]!.notifier.value;
     
-    fetchReduxDatabase().usersDatasNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
+    appStateClass.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
       userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
       userData.birthDate, userData.bio, userData.mutedByCurrentID, true, userData.blocksCurrentID,
       userData.private, false, false, userData.verified, userData.suspended, userData.deleted
     );
     
-    fetchReduxDatabase().usersSocialsNotifiers.value[userData.userID]!.notifier.value = UserSocialClass(
+    appStateClass.usersSocialsNotifiers.value[userData.userID]!.notifier.value = UserSocialClass(
       userSocials.followedByCurrentID ? userSocials.followersCount - 1 : userSocials.followersCount, 
       userSocials.followsCurrentID ? userSocials.followingCount - 1 : userSocials.followingCount, 
       false, false
     );
     
-    fetchReduxDatabase().usersSocialsNotifiers.value[currentID]!.notifier.value = UserSocialClass(
+    appStateClass.usersSocialsNotifiers.value[currentID]!.notifier.value = UserSocialClass(
       userSocials.followsCurrentID ? currentUserSocialClass.followersCount - 1 : currentUserSocialClass.followersCount, 
       userSocials.followedByCurrentID ? currentUserSocialClass.followingCount - 1 : currentUserSocialClass.followingCount, 
       false, 
@@ -558,8 +553,8 @@ void blockUser(UserDataClass userData, UserSocialClass userSocials) async{
 
 void unblockUser(UserDataClass userData) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
-    fetchReduxDatabase().usersDatasNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
+    String currentID = appStateClass.currentID;
+    appStateClass.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
       userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
       userData.birthDate, userData.bio, userData.mutedByCurrentID, false, userData.blocksCurrentID,
       userData.private, userData.requestedByCurrentID, userData.requestsToCurrentID,
@@ -586,7 +581,7 @@ void unblockUser(UserDataClass userData) async{
 void lockAccount(UserDataClass userData) async{
   try {
     String currentID = userData.userID;
-    fetchReduxDatabase().usersDatasNotifiers.value[currentID]!.notifier.value = UserDataClass(
+    appStateClass.usersDataNotifiers.value[currentID]!.notifier.value = UserDataClass(
       userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
       userData.birthDate, userData.bio, userData.mutedByCurrentID, false, userData.blocksCurrentID,
       true, userData.requestedByCurrentID, userData.requestsToCurrentID,
@@ -607,7 +602,7 @@ void lockAccount(UserDataClass userData) async{
 void unlockAccount(UserDataClass userData) async{
   try {
     String currentID = userData.userID;
-    fetchReduxDatabase().usersDatasNotifiers.value[currentID]!.notifier.value = UserDataClass(
+    appStateClass.usersDataNotifiers.value[currentID]!.notifier.value = UserDataClass(
       userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
       userData.birthDate, userData.bio, userData.mutedByCurrentID, false, userData.blocksCurrentID,
       false, userData.requestedByCurrentID, userData.requestsToCurrentID,
@@ -633,18 +628,18 @@ void unlockAccount(UserDataClass userData) async{
 
 void acceptFollowRequest(String userID) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
+    String currentID = appStateClass.currentID;
     
-    UserDataClass userData = fetchReduxDatabase().usersDatasNotifiers.value[userID]!.notifier.value;
-    fetchReduxDatabase().usersDatasNotifiers.value[userID]!.notifier.value = UserDataClass(
+    UserDataClass userData = appStateClass.usersDataNotifiers.value[userID]!.notifier.value;
+    appStateClass.usersDataNotifiers.value[userID]!.notifier.value = UserDataClass(
       userData.userID, userData.name, userData.username, userData.profilePicLink, 
       userData.dateJoined, userData.birthDate, userData.bio, userData.mutedByCurrentID, 
       userData.blockedByCurrentID, userData.blocksCurrentID, userData.private, 
       userData.requestedByCurrentID, false, userData.verified, userData.suspended, userData.deleted
     );
     
-    UserSocialClass userSocialClass = fetchReduxDatabase().usersSocialsNotifiers.value[userID]!.notifier.value;
-    fetchReduxDatabase().usersSocialsNotifiers.value[userID]!.notifier.value = UserSocialClass(
+    UserSocialClass userSocialClass = appStateClass.usersSocialsNotifiers.value[userID]!.notifier.value;
+    appStateClass.usersSocialsNotifiers.value[userID]!.notifier.value = UserSocialClass(
       userSocialClass.followersCount, userSocialClass.followingCount + 1, userSocialClass.followedByCurrentID, 
       true
     );
@@ -663,9 +658,9 @@ void acceptFollowRequest(String userID) async{
 
 void rejectFollowRequest(UserDataClass userData) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
+    String currentID = appStateClass.currentID;
     
-    fetchReduxDatabase().usersDatasNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
+    appStateClass.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
       userData.userID, userData.name, userData.username, userData.profilePicLink, 
       userData.dateJoined, userData.birthDate, userData.bio, userData.mutedByCurrentID, 
       userData.blockedByCurrentID, userData.blocksCurrentID, userData.private, 
@@ -686,9 +681,9 @@ void rejectFollowRequest(UserDataClass userData) async{
 
 void cancelFollowRequest(UserDataClass userData) async{
   try {
-    String currentID = fetchReduxDatabase().currentID;
+    String currentID = appStateClass.currentID;
     
-    fetchReduxDatabase().usersDatasNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
+    appStateClass.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
       userData.userID, userData.name, userData.username, userData.profilePicLink, 
       userData.dateJoined, userData.birthDate, userData.bio, userData.mutedByCurrentID, 
       userData.blockedByCurrentID, userData.blocksCurrentID, userData.private, 

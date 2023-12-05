@@ -7,13 +7,13 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:social_media_app/appdata/GlobalEnums.dart';
 import 'package:social_media_app/appdata/GlobalVariables.dart';
 import 'package:video_player/video_player.dart';
 import '../class/MediaDataClass.dart';
 import '../class/WebsiteCardClass.dart';
 import '../custom/CustomTextEditingController.dart';
-import '../redux/reduxLibrary.dart';
 import 'dart:ui' as ui;
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
@@ -35,10 +35,6 @@ bool checkEmailValid(email){
 bool checkUsernameValid(username){
   var usernamePattern = RegExp(r"^(?=.*[a-zA-Z])[\w\d_]+$");
   return usernamePattern.hasMatch(username);
-}
-
-ViewModel fetchReduxDatabase(){
-  return ViewModel.fromStore(store);
 }
 
 Client updateAppWriteClient(){
@@ -90,8 +86,22 @@ String getTimeDifference(String day) {
   }
 }
 
+String convertDateTimeDisplay(String dateTime){
+  List<String> separatedDateTime = DateTime.parse(dateTime).toLocal().toIso8601String().substring(0, 10).split('-').reversed.toList();
+  List<String> months = [
+    '',
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  separatedDateTime[1] = months[int.parse(separatedDateTime[1])];
+  return separatedDateTime.join(' ');
+}
+
 String getCleanTimeFormat(String day) {
   return DateFormat('HH:mm').format(DateTime.parse(day).toLocal());
+}
+
+String getDateFormat(String day) {
+  return DateFormat('yyyy-MM-dd').format(DateTime.parse(day).toLocal());
 }
 
 Future<List<MediaDatasClass>> loadMediasDatas(List<dynamic> mediasDatasFromServer) async{
@@ -232,5 +242,31 @@ PageRouteBuilder generatePageRouteBuilder(RouteSettings? settings, Widget child)
       ).animate(animation), child: child
     )
   );
+}
+
+Future<String> downloadAndSaveImage(String imageUrl, String fileName) async{
+  http.Response response = await http.get(Uri.parse(imageUrl));
+  http.get(Uri.parse(imageUrl));
+  Uint8List imageData = response.bodyBytes;
+
+  Directory directory = await getTemporaryDirectory();
+  String path = directory.path;
+
+  File file = File('$path/$fileName.png');
+  await file.writeAsBytes(imageData);
+  return file.path;
+}
+
+Future<String> downloadAndSaveVideo(String videoLink, String fileName) async {
+  http.Response response = await http.get(Uri.parse(videoLink));
+  http.get(Uri.parse(videoLink));
+  Uint8List imageData = response.bodyBytes;
+  
+  Directory directory = await getTemporaryDirectory();
+  String path = directory.path;
+
+  File file = File('$path/$fileName.mp4');
+  await file.writeAsBytes(imageData);
+  return file.path;
 }
 

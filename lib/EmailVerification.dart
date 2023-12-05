@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:social_media_app/appdata/GlobalFunctions.dart';
@@ -28,16 +27,17 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
   }
 
   void checkEmailVerified() async {
-    await auth.currentUser?.reload();
-    if(mounted){
-      setState(() {
-        verified = auth.currentUser!.emailVerified;
-      });
-      if(verified) {
-        timer?.cancel();
-        Navigator.pop(context, verified);
+    await auth.currentUser?.reload().then((value){
+      if(mounted){
+        setState(() {
+          verified = auth.currentUser!.emailVerified;
+        });
+        if(verified) {
+          timer?.cancel();
+          Navigator.pop(context, verified);
+        }
       }
-    }
+    });
   }
 
   @override
@@ -50,6 +50,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('Verify Email'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(

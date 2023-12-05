@@ -5,13 +5,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
-import 'package:social_media_app/redux/reduxLibrary.dart';
 import 'package:social_media_app/socket/main.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:uuid/uuid.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'class/GroupProfileClass.dart';
-import 'class/UserDataNotifier.dart';
 import 'custom/CustomButton.dart';
 import 'custom/CustomSimpleUserDataWidget.dart';
 
@@ -85,7 +84,6 @@ class _AddUsersToGroupWidgetStatefulState extends State<_AddUsersToGroupWidgetSt
     selectedUsersID.dispose();
     selectedUsersName.dispose();
     verifySearchedFormat.dispose();
-    groupProfile.dispose();
   }
 
   Future<void> searchUsers(bool isPaginating) async{
@@ -95,7 +93,7 @@ class _AddUsersToGroupWidgetStatefulState extends State<_AddUsersToGroupWidgetSt
         String stringified = jsonEncode({
           'searchedText': searchedController.text,
           'recipients': groupProfile.value.recipients,
-          'currentID': fetchReduxDatabase().currentID,
+          'currentID': appStateClass.currentID,
           'currentLength': isPaginating ? users.value.length : 0,
           'paginationLimit': searchTagUsersFetchLimit
         });
@@ -169,18 +167,18 @@ class _AddUsersToGroupWidgetStatefulState extends State<_AddUsersToGroupWidgetSt
         );
       }else{
         List<String> messagesID = List.filled(selectedUsersName.value.length, 0).map((e) => const Uuid().v4()).toList();
-        String senderName = fetchReduxDatabase().usersDatasNotifiers.value[fetchReduxDatabase().currentID]!.notifier.value.name;
+        String senderName = appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.name;
         List<String> contentsList = selectedUsersName.value.map((e) => '$senderName has added $e to the group').toList();
         List<Map> addedUsersDataList = [];
         for(int i = 0; i < selectedUsersID.value.length; i++){
-          addedUsersDataList.add(fetchReduxDatabase().usersDatasNotifiers.value[selectedUsersID.value[i]]!.notifier.value.toMap());
+          addedUsersDataList.add(appStateClass.usersDataNotifiers.value[selectedUsersID.value[i]]!.notifier.value.toMap());
         }
         socket.emit("add-users-to-group-to-server", {
           'chatID': chatID,
           'messagesID': messagesID,
           'contentsList': contentsList,
           'type': 'add_users_to_group',
-          'sender': fetchReduxDatabase().currentID,
+          'sender': appStateClass.currentID,
           'recipients': groupProfile.value.recipients,
           'mediasDatas': [],
           'addedUsersID': selectedUsersID.value,
@@ -195,7 +193,7 @@ class _AddUsersToGroupWidgetStatefulState extends State<_AddUsersToGroupWidgetSt
         String stringified = jsonEncode({
           'chatID': chatID,
           'messagesID': messagesID,
-          'sender': fetchReduxDatabase().currentID,
+          'sender': appStateClass.currentID,
           'recipients': groupProfile.value.recipients,
           'addedUsersID': selectedUsersID.value,
           
@@ -213,6 +211,7 @@ class _AddUsersToGroupWidgetStatefulState extends State<_AddUsersToGroupWidgetSt
   Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('Add Users'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(
@@ -222,11 +221,14 @@ class _AddUsersToGroupWidgetStatefulState extends State<_AddUsersToGroupWidgetSt
           ValueListenableBuilder(
             valueListenable: selectedUsersID,
             builder: (context, selectedUsersID, child){
-              return CustomButton(
-                width: getScreenWidth() * 0.25, height: kToolbarHeight, 
-                buttonColor: Colors.red, buttonText: 'Continue',
-                onTapped: selectedUsersID.isNotEmpty ? () => addUsersToGroup() : null,
-                setBorderRadius: false,
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: kToolbarHeight * 0.15, horizontal: getScreenWidth() * 0.025),
+                child: CustomButton(
+                  width: getScreenWidth() * 0.25, height: kToolbarHeight, 
+                  buttonColor: Colors.red, buttonText: 'Continue',
+                  onTapped: selectedUsersID.isNotEmpty ? () => addUsersToGroup() : null,
+                  setBorderRadius: true,
+                ),
               );
             }
           )
@@ -234,69 +236,54 @@ class _AddUsersToGroupWidgetStatefulState extends State<_AddUsersToGroupWidgetSt
       ),
       body: ListView(
         children: [
-          containerMargin(
-            Row(
-              children: [
-                SizedBox(
-                  width: getScreenWidth() * 0.75,
-                  height: getScreenHeight() * 0.075,
-                  child: TextField(
-                    controller: searchedController,
-                    decoration: generateSearchTextFieldDecoration('user'),
-                  )
-                ),
-                ValueListenableBuilder<bool>(
-                  valueListenable: isSearching,
-                  builder: (context, bool isSearchingValue, child){
-                    return ValueListenableBuilder<bool>(
-                      valueListenable: verifySearchedFormat,
-                      builder: (context, bool searchedVerified, child){
-                        return CustomButton(
-                          width: getScreenWidth() * 0.25, height: getScreenHeight() * 0.075, 
-                          buttonColor: Colors.red, buttonText: 'Search',
-                          onTapped: !isSearchingValue && searchedVerified ? () => searchUsers(false) : null,
-                          setBorderRadius: false,
-                        );
-                      }
-                    );
-                  }
-                )
-              ],
-            ),
-            EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
+          ValueListenableBuilder<bool>(
+            valueListenable: isSearching,
+            builder: (context, bool isSearchingValue, child){
+              return ValueListenableBuilder<bool>(
+                valueListenable: verifySearchedFormat,
+                builder: (context, bool searchedVerified, child){
+                  return SizedBox(
+                    width: getScreenWidth(),
+                    height: getScreenHeight() * 0.075,
+                    child: TextField(
+                      controller: searchedController,
+                      decoration: generateSearchTextFieldDecoration(
+                        'user', Icons.search,
+                        !isSearchingValue && searchedVerified ? () => searchUsers(false) : null
+                      ),
+                    )
+                  );
+                }
+              );
+            }
           ),
-          StoreConnector<AppState, ValueNotifier<Map<String, UserDataNotifier>>>(
-            converter: (store) => store.state.usersDatasNotifiers,
-            builder: (context, ValueNotifier<Map<String, UserDataNotifier>> usersDatasNotifiers){
+          ValueListenableBuilder(
+            valueListenable: users, 
+            builder: (context, users, child){
               return ValueListenableBuilder(
-                valueListenable: users, 
-                builder: (context, users, child){
-                  return ValueListenableBuilder(
-                    valueListenable: selectedUsersID, 
-                    builder: (context2, selectedUsersID, child2){
-                      return Column(
-                        children: [
-                          for(int i = 0; i < users.length; i++)
-                          InkWell(
-                            splashFactory: InkRipple.splashFactory,
-                            onTap: (){
-                            },
-                            child: GestureDetector(
-                              onTap: (){
-                                toggleSelectUser(users[i], usersDatasNotifiers.value[users[i]]!.notifier.value.name);
-                              },
-                              child: Container(
-                                color: selectedUsersID.contains(users[i]) ? Colors.white.withOpacity(0.5) : Colors.transparent,
-                                child: CustomSimpleUserDataWidget(
-                                  userData: usersDatasNotifiers.value[users[i]]!.notifier.value,
-                                  key: UniqueKey()
-                                )
-                              )
+                valueListenable: selectedUsersID, 
+                builder: (context2, selectedUsersID, child2){
+                  return Column(
+                    children: [
+                      for(int i = 0; i < users.length; i++)
+                      InkWell(
+                        splashFactory: InkRipple.splashFactory,
+                        onTap: (){
+                        },
+                        child: GestureDetector(
+                          onTap: (){
+                            toggleSelectUser(users[i], appStateClass.usersDataNotifiers.value[users[i]]!.notifier.value.name);
+                          },
+                          child: Container(
+                            color: selectedUsersID.contains(users[i]) ? Colors.white.withOpacity(0.5) : Colors.transparent,
+                            child: CustomSimpleUserDataWidget(
+                              userData: appStateClass.usersDataNotifiers.value[users[i]]!.notifier.value,
+                              key: UniqueKey()
                             )
                           )
-                        ],
-                      );
-                    }
+                        )
+                      )
+                    ],
                   );
                 }
               );

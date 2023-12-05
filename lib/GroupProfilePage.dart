@@ -8,6 +8,7 @@ import 'package:social_media_app/EditGroupProfile.dart';
 import 'package:social_media_app/GroupMembersPage.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
 import 'package:social_media_app/socket/main.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import 'package:uuid/uuid.dart';
@@ -79,22 +80,22 @@ class _GroupProfilePageWidgetStatefulState extends State<_GroupProfilePageWidget
   void leaveGroup() async{
     try {
       String messageID = const Uuid().v4();
-      String senderName = fetchReduxDatabase().usersDatasNotifiers.value[fetchReduxDatabase().currentID]!.notifier.value.name;
+      String senderName = appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.name;
       String content = '$senderName has left the group';
-      groupProfile.value.recipients.remove(fetchReduxDatabase().currentID);
+      groupProfile.value.recipients.remove(appStateClass.currentID);
       socket.emit("leave-group-to-server", {
         'chatID': chatID,
         'messageID': messageID,
         'content': content,
         'type': 'leave_group',
-        'sender': fetchReduxDatabase().currentID,
+        'sender': appStateClass.currentID,
         'recipients': groupProfile.value.recipients,
         'mediasDatas': [],
       });
       String stringified = jsonEncode({
         'chatID': chatID,
         'messageID': messageID,
-        'sender': fetchReduxDatabase().currentID,
+        'sender': appStateClass.currentID,
         'recipients': groupProfile.value.recipients,
       });
       var res = await dio.patch('$serverDomainAddress/users/leaveGroup', data: stringified);
@@ -112,137 +113,151 @@ class _GroupProfilePageWidgetStatefulState extends State<_GroupProfilePageWidget
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('Group Profile'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(
           decoration: defaultAppBarDecoration
         )
       ),
-      body: Center(
-        child: ListView(
-          children: [
-            ValueListenableBuilder(
-              valueListenable: groupProfile, 
-              builder: (context, groupProfileData, widget){
-                return Column(
-                  children: [
-                    Container(
-                      width: getScreenWidth() * 0.25,
-                      height: getScreenWidth() * 0.25,
-                      decoration: BoxDecoration(
-                        border: Border.all(width: 2, color: Colors.white),
-                        borderRadius: BorderRadius.circular(100),
-                        image: DecorationImage(
-                          image: NetworkImage(
-                            groupProfileData.profilePicLink
-                          ), fit: BoxFit.fill
-                        )
+      body: Container(
+        padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding, vertical: defaultVerticalPadding),
+        child:Center(
+          child: ListView(
+            children: [
+              ValueListenableBuilder(
+                valueListenable: groupProfile, 
+                builder: (context, groupProfileData, widget){
+                  return Column(
+                    children: [
+                      Container(
+                        width: getScreenWidth() * 0.2,
+                        height: getScreenWidth() * 0.2,
+                        decoration: BoxDecoration(
+                          border: Border.all(width: 2, color: Colors.white),
+                          borderRadius: BorderRadius.circular(100),
+                          image: DecorationImage(
+                            image: NetworkImage(
+                              groupProfileData.profilePicLink
+                            ), fit: BoxFit.fill
+                          )
+                        ),
                       ),
-                    ),
-                    Text('${groupProfileData.recipients.length} members')
-                  ],
-                );
-              }
-            ),
-            SizedBox(
-              height: getScreenHeight() * 0.0075
-            ),
-            ValueListenableBuilder(
-              valueListenable: groupProfile, 
-              builder: (context, groupProfileData, widget){
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Flexible(child: Text(groupProfileData.name, style: const TextStyle(fontSize: 22.5), textAlign: TextAlign.center))
-                  ]
-                );
-              }
-            ),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: (){},
-                splashFactory: InkRipple.splashFactory,
-                child: CustomButton(
-                  onTapped: (){
-                    runDelay(() => Navigator.push(
-                      context,
-                      SliderRightToLeftRoute(
-                        page: GroupMembersPage(usersID: groupProfile.value.recipients)
-                      )
-                    ), navigatorDelayTime);
-                  },
-                  buttonText: 'View members',
-                  width: double.infinity,
-                  height: getScreenHeight() * 0.075,
-                  buttonColor: Colors.transparent,
-                  setBorderRadius: false,
+                      SizedBox(
+                        height: getScreenHeight() * 0.02
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Flexible(child: Text(groupProfileData.name, style: const TextStyle(fontSize: 21), textAlign: TextAlign.center)),
+                        ],
+                      ),
+                      SizedBox(
+                        height: getScreenHeight() * 0.015
+                      ),
+                      Text(groupProfileData.recipients.length == 1 ? '1 member' : '${groupProfileData.recipients.length} members', style: TextStyle(fontSize: defaultTextFontSize * 0.9, fontWeight: FontWeight.w600, color: Colors.blueGrey))
+                    ],
+                  );
+                }
+              ),
+              SizedBox(
+                height: getScreenHeight() * 0.015
+              ),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: (){},
+                  splashFactory: InkRipple.splashFactory,
+                  child: CustomButton(
+                    onTapped: (){
+                      runDelay(() => Navigator.push(
+                        context,
+                        SliderRightToLeftRoute(
+                          page: GroupMembersPage(usersID: groupProfile.value.recipients)
+                        )
+                      ), navigatorDelayTime);
+                    },
+                    buttonText: 'View members',
+                    width: double.infinity,
+                    height: getScreenHeight() * 0.065,
+                    buttonColor: const Color.fromARGB(255, 70, 125, 170),
+                    setBorderRadius: false,
+                  )
+                )
+              ),
+              SizedBox(
+                height: getScreenHeight() * 0.015
+              ),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: (){},
+                  splashFactory: InkRipple.splashFactory,
+                  child: CustomButton(
+                    onTapped: (){
+                      runDelay(() => Navigator.push(
+                        context,
+                        SliderRightToLeftRoute(
+                          page: EditGroupProfileStateful(chatID: chatID, groupProfileData: groupProfile.value,)
+                        )
+                      ), navigatorDelayTime);
+                    },
+                    buttonText: 'Edit group profile',
+                    width: double.infinity,
+                    height: getScreenHeight() * 0.065,
+                    buttonColor: const Color.fromARGB(255, 70, 125, 170),
+                    setBorderRadius: false,
+                  )
+                )
+              ),
+              SizedBox(
+                height: getScreenHeight() * 0.015
+              ),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: (){},
+                  splashFactory: InkRipple.splashFactory,
+                  child: CustomButton(
+                    onTapped: (){
+                      runDelay(() => Navigator.push(
+                        context,
+                        SliderRightToLeftRoute(
+                          page: AddUsersToGroupWidget(chatID: chatID, groupProfileData: groupProfile.value,)
+                        )
+                      ), navigatorDelayTime);
+                    },
+                    buttonText: 'Add user to group',
+                    width: double.infinity,
+                    height: getScreenHeight() * 0.065,
+                    buttonColor: const Color.fromARGB(255, 70, 125, 170),
+                    setBorderRadius: false,
+                  )
+                )
+              ),
+              SizedBox(
+                height: getScreenHeight() * 0.015
+              ),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: (){},
+                  splashFactory: InkRipple.splashFactory,
+                  child: CustomButton(
+                    onTapped: (){
+                      leaveGroup();
+                    },
+                    buttonText: 'Leave group',
+                    width: double.infinity,
+                    height: getScreenHeight() * 0.065,
+                    buttonColor: const Color.fromARGB(255, 70, 125, 170),
+                    setBorderRadius: false,
+                  )
                 )
               )
-            ),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: (){},
-                splashFactory: InkRipple.splashFactory,
-                child: CustomButton(
-                  onTapped: (){
-                    runDelay(() => Navigator.push(
-                      context,
-                      SliderRightToLeftRoute(
-                        page: EditGroupProfileStateful(chatID: chatID, groupProfileData: groupProfile.value,)
-                      )
-                    ), navigatorDelayTime);
-                  },
-                  buttonText: 'Edit group profile',
-                  width: double.infinity,
-                  height: getScreenHeight() * 0.075,
-                  buttonColor: Colors.transparent,
-                  setBorderRadius: false,
-                )
-              )
-            ),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: (){},
-                splashFactory: InkRipple.splashFactory,
-                child: CustomButton(
-                  onTapped: (){
-                    runDelay(() => Navigator.push(
-                      context,
-                      SliderRightToLeftRoute(
-                        page: AddUsersToGroupWidget(chatID: chatID, groupProfileData: groupProfile.value,)
-                      )
-                    ), navigatorDelayTime);
-                  },
-                  buttonText: 'Add user to group',
-                  width: double.infinity,
-                  height: getScreenHeight() * 0.075,
-                  buttonColor: Colors.transparent,
-                  setBorderRadius: false,
-                )
-              )
-            ),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: (){},
-                splashFactory: InkRipple.splashFactory,
-                child: CustomButton(
-                  onTapped: (){
-                    leaveGroup();
-                  },
-                  buttonText: 'Leave group',
-                  width: double.infinity,
-                  height: getScreenHeight() * 0.075,
-                  buttonColor: Colors.transparent,
-                  setBorderRadius: false,
-                )
-              )
-            )
-          ],
-        )
+            ],
+          )
+        ),
       ),
     );
   }

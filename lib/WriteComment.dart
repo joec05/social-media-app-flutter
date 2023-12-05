@@ -19,6 +19,7 @@ import 'package:social_media_app/class/PostClass.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
 import 'package:social_media_app/custom/CustomTextEditingController.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/streams/CommentDataStreamClass.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import 'package:uuid/uuid.dart';
@@ -121,7 +122,7 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
                 MediaDatasClass(MediaType.image, imageUrl, null, '', MediaSourceType.file, null, scaledDimension)
               ];
               mediasComponents.value = [
-                ...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last)
+                ...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last, scaledDimension)
               ];
             }
           }
@@ -160,7 +161,7 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
             if(mounted){
               mediasDatas.value = [...mediasDatas.value, MediaDatasClass(MediaType.video, file.path, playerController, '', MediaSourceType.file, null, scaledDimension)];
               mediasComponents.value = [
-                ...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last)
+                ...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last, scaledDimension)
               ];
             }
           }else{
@@ -190,7 +191,7 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
             mediasDatasList[index] = MediaDatasClass(MediaType.image, imageUrl, null, '', MediaSourceType.file, null, scaledDimension);
             mediasDatas.value = [...mediasDatasList];
             List<Widget> mediasComponentsList = [...mediasComponents.value];
-            mediasComponentsList[index] = mediaDataDraftPostComponentWidget(mediasDatas.value[index]);
+            mediasComponentsList[index] = mediaDataDraftPostComponentWidget(mediasDatas.value[index], scaledDimension);
             mediasComponents.value = [...mediasComponentsList];
           }
         }
@@ -218,7 +219,7 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
             mediasDatasList[index] = MediaDatasClass(MediaType.video, updatedRes.url, playerController, '', MediaSourceType.file, null, scaledDimension);
             mediasDatas.value = [...mediasDatasList];
             List<Widget> mediasComponentsList = [...mediasComponents.value];
-            mediasComponentsList[index] = mediaDataDraftPostComponentWidget(mediasDatas.value[index]);
+            mediasComponentsList[index] = mediaDataDraftPostComponentWidget(mediasDatas.value[index], scaledDimension);
             mediasComponents.value = [...mediasComponentsList];
           }
         }
@@ -251,7 +252,7 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
     try {
       File mediaFilePath = File(mediasDatas.value[index].url);
       FirebaseStorage storage = FirebaseStorage.instance;
-      String childDirectory = '/${fetchReduxDatabase().currentID}/${const Uuid().v4()}';
+      String childDirectory = '/${appStateClass.currentID}/${const Uuid().v4()}';
       mediasDatas.value[index].storagePath = childDirectory;
       Reference ref = storage.ref('/videos').child(childDirectory);
       UploadTask uploadTask = ref.putFile(mediaFilePath, SettableMetadata(contentType: 'video/mp4'));
@@ -276,6 +277,7 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
             if(mediasDatas.value[i].mediaType == MediaType.image){
               storageUrl = await uploadImageToAppWrite(storageBucketIDs['image'], i);
             }else if(mediasDatas.value[i].mediaType == MediaType.video){
+              mediaData.playerController!.pause();
               storageUrl = await uploadVideoToFirebase(context, i);
             }else if(mediasDatas.value[i].mediaType == MediaType.websiteCard){
               storageUrl = mediaData.url;
@@ -295,7 +297,7 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
           String stringified = jsonEncode({
             'commentID': commentID,
             'content': commentController.text,
-            'sender': fetchReduxDatabase().currentID,
+            'sender': appStateClass.currentID,
             'mediasDatas': serverMediasDatas,
             'parentPostID': widget.parentPostID,
             'parentPostSender': widget.parentPostSender,
@@ -307,22 +309,22 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
           if(res.data.isNotEmpty){
             if(res.data['message'] == 'Successfully uploaded the comment'){
               CommentClass commentDataClass = CommentClass(
-                commentID, 'comment', commentController.text, fetchReduxDatabase().currentID, DateTime.now().toString(),
+                commentID, 'comment', commentController.text, appStateClass.currentID, DateTime.now().toString(),
                 updatedMediasDatas, 0, false, 0, false, 0, widget.parentPostType, widget.parentPostID, widget.parentPostSender, false 
               );
               if(mounted){
                 updateCommentData(commentDataClass, context);
               };
               if(widget.parentPostType == 'post'){
-                PostClass parentPostData = fetchReduxDatabase().postsNotifiers.value[widget.parentPostSender]![widget.parentPostID]!.notifier.value;
-                fetchReduxDatabase().postsNotifiers.value[parentPostData.sender]![parentPostData.postID]!.notifier.value = PostClass(
+                PostClass parentPostData = appStateClass.postsNotifiers.value[widget.parentPostSender]![widget.parentPostID]!.notifier.value;
+                appStateClass.postsNotifiers.value[parentPostData.sender]![parentPostData.postID]!.notifier.value = PostClass(
                   parentPostData.postID, parentPostData.type, parentPostData.content, parentPostData.sender, parentPostData.uploadTime, 
                   parentPostData.mediasDatas, parentPostData.likesCount, parentPostData.likedByCurrentID, 
                   parentPostData.bookmarksCount, parentPostData.bookmarkedByCurrentID, parentPostData.commentsCount + 1, parentPostData.deleted
                 );
               }else{
-                CommentClass parentCommentData = fetchReduxDatabase().commentsNotifiers.value[widget.parentPostSender]![widget.parentPostID]!.notifier.value;
-                fetchReduxDatabase().commentsNotifiers.value[parentCommentData.sender]![parentCommentData.commentID]!.notifier.value = CommentClass(
+                CommentClass parentCommentData = appStateClass.commentsNotifiers.value[widget.parentPostSender]![widget.parentPostID]!.notifier.value;
+                appStateClass.commentsNotifiers.value[parentCommentData.sender]![parentCommentData.commentID]!.notifier.value = CommentClass(
                   parentCommentData.commentID, parentCommentData.type, parentCommentData.content, 
                   parentCommentData.sender, parentCommentData.uploadTime, 
                   parentCommentData.mediasDatas, parentCommentData.likesCount, parentCommentData.likedByCurrentID, 
@@ -334,7 +336,7 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
               CommentDataStreamClass().emitData(
                 CommentDataStreamControllerClass(
                   DisplayCommentDataClass(commentDataClass.sender, commentDataClass.commentID),
-                  fetchReduxDatabase().currentID
+                  appStateClass.currentID
                 )
               );
               CommentDataStreamClass().emitData(
@@ -359,15 +361,14 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
 
   Widget mediaComponentIndex(mediaComponent, index){
     return Container(
-      margin: EdgeInsets.symmetric(vertical: mediaComponentMargin),
+      margin: EdgeInsets.only(top: mediaComponentMargin),
       child: Stack(
         children: [
           SizedBox(
-            width: double.infinity,
             child: mediaComponent
           ),
           Positioned(
-            top: 0, right: getScreenWidth() * 0.02,
+            top: 0, right: 0,
             child: Container(
               width: getScreenWidth() * 0.1,
               height: getScreenWidth() * 0.1,
@@ -394,7 +395,7 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
             )
           ),
           Positioned(
-            top: 0, right: getScreenWidth() * 0.145,
+            top: 0, right: getScreenWidth() * 0.125,
             child: Container(
               width: getScreenWidth() * 0.1,
               height: getScreenWidth() * 0.1,
@@ -441,7 +442,7 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
                     mediasDatas.value = [...mediasDatas.value, MediaDatasClass(
                       MediaType.websiteCard, lines[j], null, '', MediaSourceType.network, linkPreview, null
                     )];
-                    mediasComponents.value = [...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last)];
+                    mediasComponents.value = [...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last, null)];
                     textList = text.split(' ');
                     textList[i] = textList[i].replaceFirst(lines[j], '');
                     commentController.value = TextEditingValue(
@@ -498,6 +499,7 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('Upload Comment'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(
@@ -513,11 +515,14 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
                   return ValueListenableBuilder<List<MediaDatasClass>>(
                     valueListenable: mediasDatas,
                     builder: (context, List<MediaDatasClass> mediasDatasValue, child){
-                      return CustomButton(
-                        width: getScreenWidth() * 0.25, height: kToolbarHeight, 
-                        buttonColor: Colors.red, buttonText: 'Upload',
-                        onTapped: !isLoadingValue && (mediasDatasValue.isNotEmpty || commentVerified) ? () => uploadComment() : null,
-                        setBorderRadius: false
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: kToolbarHeight * 0.15, horizontal: getScreenWidth() * 0.025),
+                        child: CustomButton(
+                          width: getScreenWidth() * 0.25, height: kToolbarHeight, 
+                          buttonColor: Colors.red, buttonText: 'Upload',
+                          onTapped: !isLoadingValue && (mediasDatasValue.isNotEmpty || commentVerified) ? () => uploadComment() : null,
+                          setBorderRadius: true
+                        ),
                       );
                     }
                   );
@@ -533,38 +538,35 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Flexible(
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding, vertical: defaultVerticalPadding),
-                  child: ListView(
-                    children: [
-                      TextField(
-                        controller: commentController,
-                        decoration: generatePostTextFieldDecoration('your comment'),
-                        minLines: postDraftTextFieldMinLines,
-                        maxLines: postDraftTextFieldMaxLines,
-                        maxLength: maxPostWordLimit,
-                        onChanged: (value){
-                          listenTextField(value);
-                          listenTextController(value);
-                        },
-                        onEditingComplete: (){
-                          listenTextController(commentController.text);
-                        },
-                      ),
-                      ValueListenableBuilder<List>(
-                        valueListenable: mediasComponents,
-                        builder: ((context, mediasComponentsList, child) {
-                          return Column(
-                            children: [
-                              for(int i = 0; i < mediasComponentsList.length; i++)
-                              mediaComponentIndex(mediasComponentsList[i], i)
-                            ],
-                          );
-                        }),
-                      ),
-                      
-                    ],
-                  ),
+                child: ListView(
+                  children: [
+                    TextField(
+                      controller: commentController,
+                      decoration: generatePostTextFieldDecoration('your comment', FontAwesomeIcons.pencil),
+                      minLines: postDraftTextFieldMinLines,
+                      maxLines: postDraftTextFieldMaxLines,
+                      maxLength: maxPostWordLimit,
+                      onChanged: (value){
+                        listenTextField(value);
+                        listenTextController(value);
+                      },
+                      onEditingComplete: (){
+                        listenTextController(commentController.text);
+                      },
+                    ),
+                    ValueListenableBuilder<List>(
+                      valueListenable: mediasComponents,
+                      builder: ((context, mediasComponentsList, child) {
+                        return Column(
+                          children: [
+                            for(int i = 0; i < mediasComponentsList.length; i++)
+                            mediaComponentIndex(mediasComponentsList[i], i)
+                          ],
+                        );
+                      }),
+                    ),
+                    
+                  ],
                 ),
               ),
               Container(

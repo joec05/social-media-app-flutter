@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:social_media_app/class/NotificationClass.dart';
 import 'package:social_media_app/custom/CustomNotificationWidget.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/streams/NotificationDataStreamClass.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
@@ -98,7 +99,7 @@ class _NotificationsWidgetStatefulState extends State<_NotificationsWidgetStatef
       if(mounted){
         isLoading.value = true;
         String stringified = jsonEncode({
-          'currentID': fetchReduxDatabase().currentID,
+          'currentID': appStateClass.currentID,
           'currentLength': currentPostsLength,
           'paginationLimit': postsPaginationLimit,
           'maxFetchLimit': notificationsServerFetchLimit

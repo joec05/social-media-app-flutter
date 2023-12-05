@@ -8,15 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:social_media_app/class/MediaDataClass.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
-import 'package:social_media_app/redux/reduxLibrary.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'caching/sqfliteConfiguration.dart';
 import 'class/DisplayCommentDataClass.dart';
 import 'class/CommentClass.dart';
-import 'class/CommentNotifier.dart';
-import 'class/UserDataNotifier.dart';
-import 'class/UserSocialNotifier.dart';
 import 'custom/CustomPagination.dart';
 import 'custom/CustomCommentWidget.dart';
 
@@ -90,7 +87,7 @@ class _SearchedCommentsWidgetStatefulState extends State<_SearchedCommentsWidget
         if(!isPaginating){
           stringified = jsonEncode({
             'searchedText': widget.searchedText,
-            'currentID': fetchReduxDatabase().currentID,
+            'currentID': appStateClass.currentID,
             'currentLength': currentCommentsLength,
             'paginationLimit': postsPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
@@ -101,7 +98,7 @@ class _SearchedCommentsWidgetStatefulState extends State<_SearchedCommentsWidget
           stringified = jsonEncode({
             'searchedText': widget.searchedText,
             'searchedCommentsEncoded': jsonEncode(paginatedSearchedComments),
-            'currentID': fetchReduxDatabase().currentID,
+            'currentID': appStateClass.currentID,
             'currentLength': currentCommentsLength,
             'paginationLimit': postsPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
@@ -188,87 +185,72 @@ class _SearchedCommentsWidgetStatefulState extends State<_SearchedCommentsWidget
             bottom: false,
             child: Builder(
               builder: (BuildContext context) {
-                return StoreConnector<AppState, ValueNotifier<Map<String, Map<String, CommentNotifier>>>>(
-                  converter: (store) => store.state.commentsNotifiers,
-                  builder: (context, ValueNotifier<Map<String, Map<String, CommentNotifier>>> commentsNotifiers){
-                    return StoreConnector<AppState, ValueNotifier<Map<String, UserDataNotifier>>>(
-                      converter: (store) => store.state.usersDatasNotifiers,
-                      builder: (context, ValueNotifier<Map<String, UserDataNotifier>> usersDatasNotifiers){
-                        return StoreConnector<AppState, ValueNotifier<Map<String, UserSocialNotifier>>>(
-                          converter: (store) => store.state.usersSocialsNotifiers,
-                          builder: (context, ValueNotifier<Map<String, UserSocialNotifier>> usersSocialsNotifiers){
-                            return ValueListenableBuilder(
-                              valueListenable: loadingCommentsStatus,
-                              builder: (context, loadingStatusValue, child){
-                                return ValueListenableBuilder(
-                                  valueListenable: totalCommentsLength,
-                                  builder: (context, totalCommentsLengthValue, child){
-                                    return ValueListenableBuilder(
-                                      valueListenable: comments,
-                                      builder: ((context, comments, child) {
-                                        return LoadMoreBottom(
-                                          addBottomSpace: comments.length < totalCommentsLengthValue,
-                                          loadMore: () async{
-                                            if(comments.length < totalCommentsLengthValue){
-                                              await loadMoreComments();
-                                            }
-                                          },
-                                          status: loadingStatusValue,
-                                          refresh: refresh,
-                                          child: CustomScrollView(
-                                            controller: _scrollController,
-                                            physics: const AlwaysScrollableScrollPhysics(),
-                                            slivers: <Widget>[
-                                              SliverOverlapInjector(
-                                                handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
-                                              ),
-                                              SliverList(delegate: SliverChildBuilderDelegate(
-                                                childCount: comments.length, 
-                                                (context, index) {
-                                                  if(commentsNotifiers.value[comments[index].sender] == null){
-                                                    return Container();
-                                                  }
-                                                  if(commentsNotifiers.value[comments[index].sender]![comments[index].commentID] == null){
-                                                    return Container();
-                                                  }
-                                                  return ValueListenableBuilder<CommentClass>(
-                                                    valueListenable: commentsNotifiers.value[comments[index].sender]![comments[index].commentID]!.notifier,
-                                                    builder: ((context, commentData, child) {
-                                                      return ValueListenableBuilder(
-                                                        valueListenable: usersDatasNotifiers.value[comments[index].sender]!.notifier, 
-                                                        builder: ((context, userData, child) {
-                                                          if(!commentData.deleted){
-                                                            return ValueListenableBuilder(
-                                                              valueListenable: usersSocialsNotifiers.value[comments[index].sender]!.notifier, 
-                                                              builder: ((context, userSocials, child) {
-                                                                return CustomCommentWidget(
-                                                                  commentData: commentData, 
-                                                                  senderData: userData,
-                                                                  senderSocials: userSocials,
-                                                                  pageDisplayType: CommentDisplayType.searchedComment,
-                                                                  key: UniqueKey()
-                                                                );
-                                                              })
-                                                            );
-                                                          }
-                                                          return Container();
-                                                        })
-                                                      );
-                                                    }),
-                                                  );
-                                                  
-                                                }
-                                              ))                                    
-                                            ]
-                                          )
-                                        );
-                                      })
-                                    );
-                                  }
-                                );
-                              }
+                return ValueListenableBuilder(
+                  valueListenable: loadingCommentsStatus,
+                  builder: (context, loadingStatusValue, child){
+                    return ValueListenableBuilder(
+                      valueListenable: totalCommentsLength,
+                      builder: (context, totalCommentsLengthValue, child){
+                        return ValueListenableBuilder(
+                          valueListenable: comments,
+                          builder: ((context, comments, child) {
+                            return LoadMoreBottom(
+                              addBottomSpace: comments.length < totalCommentsLengthValue,
+                              loadMore: () async{
+                                if(comments.length < totalCommentsLengthValue){
+                                  await loadMoreComments();
+                                }
+                              },
+                              status: loadingStatusValue,
+                              refresh: refresh,
+                              child: CustomScrollView(
+                                controller: _scrollController,
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                slivers: <Widget>[
+                                  SliverOverlapInjector(
+                                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
+                                  ),
+                                  SliverList(delegate: SliverChildBuilderDelegate(
+                                    childCount: comments.length, 
+                                    (context, index) {
+                                      if(appStateClass.commentsNotifiers.value[comments[index].sender] == null){
+                                        return Container();
+                                      }
+                                      if(appStateClass.commentsNotifiers.value[comments[index].sender]![comments[index].commentID] == null){
+                                        return Container();
+                                      }
+                                      return ValueListenableBuilder<CommentClass>(
+                                        valueListenable: appStateClass.commentsNotifiers.value[comments[index].sender]![comments[index].commentID]!.notifier,
+                                        builder: ((context, commentData, child) {
+                                          return ValueListenableBuilder(
+                                            valueListenable: appStateClass.usersDataNotifiers.value[comments[index].sender]!.notifier, 
+                                            builder: ((context, userData, child) {
+                                              if(!commentData.deleted){
+                                                return ValueListenableBuilder(
+                                                  valueListenable: appStateClass.usersSocialsNotifiers.value[comments[index].sender]!.notifier, 
+                                                  builder: ((context, userSocials, child) {
+                                                    return CustomCommentWidget(
+                                                      commentData: commentData, 
+                                                      senderData: userData,
+                                                      senderSocials: userSocials,
+                                                      pageDisplayType: CommentDisplayType.searchedComment,
+                                                      key: UniqueKey()
+                                                    );
+                                                  })
+                                                );
+                                              }
+                                              return Container();
+                                            })
+                                          );
+                                        }),
+                                      );
+                                      
+                                    }
+                                  ))                                    
+                                ]
+                              )
                             );
-                          }
+                          })
                         );
                       }
                     );

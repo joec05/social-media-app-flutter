@@ -7,12 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:social_media_app/GroupChatRoom.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
-import 'package:social_media_app/redux/reduxLibrary.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import 'PrivateChatRoom.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'class/UserDataClass.dart';
-import 'class/UserDataNotifier.dart';
 import 'custom/CustomSimpleUserDataWidget.dart';
 import 'styles/AppStyles.dart';
 
@@ -68,7 +67,7 @@ class __SearchChatUsersWidgetStatefulState extends State<_SearchChatUsersWidgetS
         isSearching.value = true;
         String stringified = jsonEncode({
           'searchedText': searchedController.text,
-          'currentID': fetchReduxDatabase().currentID,
+          'currentID': appStateClass.currentID,
           'currentLength': isPaginating ? users.value.length : 0,
           'paginationLimit': searchChatUsersFetchLimit
         });
@@ -122,7 +121,7 @@ class __SearchChatUsersWidgetStatefulState extends State<_SearchChatUsersWidgetS
       runDelay(() => Navigator.push(
         context,
         SliderRightToLeftRoute(
-          page: GroupChatRoomWidget(chatID: null, recipients: [fetchReduxDatabase().currentID, ...selectedUsersID.value],)
+          page: GroupChatRoomWidget(chatID: null, recipients: [appStateClass.currentID, ...selectedUsersID.value],)
         )
       ), navigatorDelayTime);
     }
@@ -132,6 +131,7 @@ class __SearchChatUsersWidgetStatefulState extends State<_SearchChatUsersWidgetS
   Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('Message Users'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(
@@ -141,11 +141,14 @@ class __SearchChatUsersWidgetStatefulState extends State<_SearchChatUsersWidgetS
           ValueListenableBuilder(
             valueListenable: selectedUsersID,
             builder: (context, selectedUsersID, child){
-              return CustomButton(
-                width: getScreenWidth() * 0.25, height: kToolbarHeight, 
-                buttonColor: Colors.red, buttonText: 'Continue',
-                onTapped: selectedUsersID.isNotEmpty ? () => navigateToChat() : null,
-                setBorderRadius: false
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: kToolbarHeight * 0.15, horizontal: getScreenWidth() * 0.025),
+                child: CustomButton(
+                  width: getScreenWidth() * 0.25, height: kToolbarHeight, 
+                  buttonColor: Colors.red, buttonText: 'Continue',
+                  onTapped: selectedUsersID.isNotEmpty ? () => navigateToChat() : null,
+                  setBorderRadius: true
+                ),
               );
             }
           )
@@ -153,69 +156,51 @@ class __SearchChatUsersWidgetStatefulState extends State<_SearchChatUsersWidgetS
       ),
       body: ListView(
         children: [
-          containerMargin(
-            Row(
-              children: [
-                SizedBox(
-                  width: getScreenWidth() * 0.75,
-                  height: getScreenHeight() * 0.075,
-                  child: TextField(
-                    controller: searchedController,
-                    decoration: generateSearchTextFieldDecoration('user'),
-                  )
-                ),
-                ValueListenableBuilder<bool>(
-                  valueListenable: isSearching,
-                  builder: (context, bool isSearchingValue, child){
-                    return ValueListenableBuilder<bool>(
-                      valueListenable: verifySearchedFormat,
-                      builder: (context, bool searchedVerified, child){
-                        return CustomButton(
-                          width: getScreenWidth() * 0.25, height: getScreenHeight() * 0.075, 
-                          buttonColor: Colors.red, buttonText: 'Search',
-                          onTapped: !isSearchingValue && searchedVerified ? () => searchUsers(false) : null,
-                          setBorderRadius: false
-                        );
-                      }
-                    );
-                  }
-                )
-              ],
-            ),
-            EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
+          ValueListenableBuilder<bool>(
+            valueListenable: isSearching,
+            builder: (context, bool isSearchingValue, child){
+              return ValueListenableBuilder<bool>(
+                valueListenable: verifySearchedFormat,
+                builder: (context, bool searchedVerified, child){
+                  return SizedBox(
+                    width: getScreenWidth(),
+                    height: getScreenHeight() * 0.075,
+                    child: TextField(
+                      controller: searchedController,
+                      decoration: generateSearchTextFieldDecoration('user', Icons.search, !isSearchingValue && searchedVerified ? () => searchUsers(false) : null),
+                    )
+                  );
+                }
+              );
+            }
           ),
-          StoreConnector<AppState, ValueNotifier<Map<String, UserDataNotifier>>>(
-            converter: (store) => store.state.usersDatasNotifiers,
-            builder: (context, ValueNotifier<Map<String, UserDataNotifier>> usersDatasNotifiers){
+          ValueListenableBuilder(
+            valueListenable: users, 
+            builder: (context, users, child){
               return ValueListenableBuilder(
-                valueListenable: users, 
-                builder: (context, users, child){
-                  return ValueListenableBuilder(
-                    valueListenable: selectedUsersID, 
-                    builder: (context2, selectedUsersID, child2){
-                      return Column(
-                        children: [
-                          for(int i = 0; i < users.length; i++)
-                          InkWell(
-                            splashFactory: InkRipple.splashFactory,
-                            onTap: (){
-                            },
-                            child: GestureDetector(
-                              onTap: (){
-                                toggleSelectUser(users[i]);
-                              },
-                              child: Container(
-                                color: selectedUsersID.contains(users[i]) ? Colors.grey.withOpacity(0.5) : Colors.transparent,
-                                child: CustomSimpleUserDataWidget(
-                                  userData: usersDatasNotifiers.value[users[i]]!.notifier.value,
-                                  key: UniqueKey()
-                                )
-                              )
+                valueListenable: selectedUsersID, 
+                builder: (context2, selectedUsersID, child2){
+                  return Column(
+                    children: [
+                      for(int i = 0; i < users.length; i++)
+                      InkWell(
+                        splashFactory: InkRipple.splashFactory,
+                        onTap: (){
+                        },
+                        child: GestureDetector(
+                          onTap: (){
+                            toggleSelectUser(users[i]);
+                          },
+                          child: Container(
+                            color: selectedUsersID.contains(users[i]) ? Colors.grey.withOpacity(0.5) : Colors.transparent,
+                            child: CustomSimpleUserDataWidget(
+                              userData: appStateClass.usersDataNotifiers.value[users[i]]!.notifier.value,
+                              key: UniqueKey()
                             )
                           )
-                        ],
-                      );
-                    }
+                        )
+                      )
+                    ],
                   );
                 }
               );

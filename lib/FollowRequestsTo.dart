@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomFollowRequestWidget.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'custom/CustomPagination.dart';
@@ -49,15 +50,15 @@ class _FollowRequestsToWidgetStatefulState extends State<_FollowRequestsToWidget
     super.initState();
     runDelay(() async => fetchFollowRequestsTo(users.value.length, false, false), actionDelayTime);
     requestsToDataStreamClassSubscription = RequestsToDataStreamClass().requestsToDataStream.listen((RequestsToDataStreamControllerClass data) {
-      if(data.uniqueID == 'unlock_account_${fetchReduxDatabase().currentID}' && mounted){
+      if(data.uniqueID == 'unlock_account_${appStateClass.currentID}' && mounted){
         List<String> usersIdList = [...users.value];
         users.value = [];
         for(int i = 0; i < usersIdList.length; i++){
           String userID = usersIdList[i];
           acceptFollowRequest(userID);
         }
-        UserSocialClass currentUserSocialClass = fetchReduxDatabase().usersSocialsNotifiers.value[fetchReduxDatabase().currentID]!.notifier.value;
-        fetchReduxDatabase().usersSocialsNotifiers.value[fetchReduxDatabase().currentID]!.notifier.value = UserSocialClass(
+        UserSocialClass currentUserSocialClass = appStateClass.usersSocialsNotifiers.value[appStateClass.currentID]!.notifier.value;
+        appStateClass.usersSocialsNotifiers.value[appStateClass.currentID]!.notifier.value = UserSocialClass(
           currentUserSocialClass.followersCount + usersIdList.length, currentUserSocialClass.followingCount, 
           false, false
         );
@@ -92,7 +93,7 @@ class _FollowRequestsToWidgetStatefulState extends State<_FollowRequestsToWidget
       if(mounted){
         isLoading.value = true;
         String stringified = jsonEncode({
-          'currentID': fetchReduxDatabase().currentID,
+          'currentID': appStateClass.currentID,
           'currentLength': currentPostsLength,
           'paginationLimit': postsPaginationLimit,
           'maxFetchLimit': usersServerFetchLimit
@@ -185,12 +186,12 @@ class _FollowRequestsToWidgetStatefulState extends State<_FollowRequestsToWidget
                             SliverList(delegate: SliverChildBuilderDelegate(
                               childCount: users.length, 
                               (context, index) {
-                                if(fetchReduxDatabase().usersDatasNotifiers.value[users[index]] != null){
+                                if(appStateClass.usersDataNotifiers.value[users[index]] != null){
                                   return ValueListenableBuilder(
-                                    valueListenable: fetchReduxDatabase().usersDatasNotifiers.value[users[index]]!.notifier, 
+                                    valueListenable: appStateClass.usersDataNotifiers.value[users[index]]!.notifier, 
                                     builder: ((context, userData, child) {
                                       return ValueListenableBuilder(
-                                        valueListenable: fetchReduxDatabase().usersSocialsNotifiers.value[users[index]]!.notifier, 
+                                        valueListenable: appStateClass.usersSocialsNotifiers.value[users[index]]!.notifier, 
                                         builder: ((context, userSocial, child) {
                                           return CustomFollowRequestWidget(
                                             userData: userData, userSocials: userSocial,

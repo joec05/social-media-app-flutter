@@ -57,8 +57,9 @@ class _CustomHashtagDataWidgetState extends State<CustomHashtagDataWidget>{
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(StringEllipsis.convertToEllipsis('#${hashtagData.hashtag}'), style: const TextStyle(fontSize: 17.5, fontWeight: FontWeight.bold),),
-                    Text('${displayShortenedCount(hashtagData.hashtagCount)} posts', style: const TextStyle(fontSize: 14),)
+                    Text(StringEllipsis.convertToEllipsis('#${hashtagData.hashtag}',), style: TextStyle(fontSize: defaultTextFontSize * 0.9, fontWeight: FontWeight.bold),),
+                    SizedBox(height: getScreenHeight() * 0.005),
+                    Text(hashtagData.hashtagCount == 1 ? '1 post' : '${displayShortenedCount(hashtagData.hashtagCount)} posts', style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.lightBlue),)
                   ]
                 ),
               ],

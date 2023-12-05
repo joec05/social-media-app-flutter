@@ -4,10 +4,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:social_media_app/EditUserProfile.dart';
 import 'package:social_media_app/ProfileFollowersPage.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
-import 'package:social_media_app/class/UserSocialClass.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
-import '../PrivateChatRoom.dart';
 import '../ProfileFollowingPage.dart';
 import '../class/UserDataClass.dart';
 import 'CustomButton.dart';
@@ -15,11 +14,10 @@ import 'CustomButton.dart';
 var dio = Dio();
 
 class CustomProfileHeader extends StatefulWidget{
-  final UserSocialClass userSocials;
   final UserDataClass userData;
   final String userID;
   
-  const CustomProfileHeader({super.key, required this.userID, required this.userData, required this.userSocials});
+  const CustomProfileHeader({super.key, required this.userID, required this.userData});
 
   @override
   State<CustomProfileHeader> createState() =>_CustomProfileHeaderState();
@@ -27,7 +25,6 @@ class CustomProfileHeader extends StatefulWidget{
 
 class _CustomProfileHeaderState extends State<CustomProfileHeader>{
   late UserDataClass userData;
-  late UserSocialClass userSocials;
   late String userID;
 
   @override
@@ -35,34 +32,21 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
     super.initState();
     userID = widget.userID;
     userData = widget.userData;
-    userSocials = widget.userSocials;
   }
 
   @override void dispose(){
     super.dispose();
   }
 
-  String convertDateTimeDisplay(String dateTime){
-    List<String> separatedDateTime = dateTime.substring(0, 10).split('-').reversed.toList();
-    List<String> months = [
-      '',
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    separatedDateTime[1] = months[int.parse(separatedDateTime[1])];
-    return separatedDateTime.join(' ');
-  }
-
-  
-
   @override
   Widget build(BuildContext context) {
-    String currentID = fetchReduxDatabase().currentID;
+    String currentID = appStateClass.currentID;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding, vertical: defaultVerticalPadding),
       child: Column(
         children: [
           Container(
-            width: getScreenWidth() * 0.25, height: getScreenWidth() * 0.25,
+            width: getScreenWidth() * 0.2, height: getScreenWidth() * 0.2,
             decoration: BoxDecoration(
               border: Border.all(width: 2, color: Colors.white),
               borderRadius: BorderRadius.circular(100),
@@ -74,7 +58,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
             ),
           ),
           SizedBox(
-            height: getScreenHeight() * 0.0075
+            height: getScreenHeight() * 0.01
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -86,7 +70,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
                     children: <InlineSpan>[
                       TextSpan(
                         text: userData.name,
-                        style: const TextStyle(fontSize: 22.5),
+                        style: const TextStyle(fontSize: 21),
                       ),
                       WidgetSpan(
                         alignment: PlaceholderAlignment.middle, 
@@ -136,7 +120,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
           SizedBox(
             height: getScreenHeight() * 0.005
           ),
-          Text(userData.suspended || userData.deleted ? '@' : '@${userData.username}', style: TextStyle(fontSize: defaultTextFontSize, color: Colors.lightBlue)),
+          Text(userData.suspended || userData.deleted ? '@' : '@${userData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.825, color: Color.fromARGB(255, 117, 167, 192))),
           !userData.blocksCurrentID && !userData.suspended && !userData.deleted ?
             Column(
               children: [
@@ -144,125 +128,24 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
                   Column(
                     children: [
                       SizedBox(
-                        height: getScreenHeight() * 0.0175
+                        height: getScreenHeight() * 0.0225
                       ),
-                      Text(userData.bio, style: TextStyle(fontSize: defaultTextFontSize), textAlign: TextAlign.left,)
+                      Text(userData.bio, style: TextStyle(fontSize: defaultTextFontSize), textAlign: TextAlign.center,)
                     ]
                   )
                   : Container(),
                 SizedBox(
-                  height: getScreenHeight() * 0.0175
+                  height: getScreenHeight() * 0.0225
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    GestureDetector(
-                      onTap: (){
-                        runDelay(() => Navigator.push(
-                          context,
-                          SliderRightToLeftRoute(
-                            page: ProfilePageFollowersWidget(userID: userID)
-                          )
-                        ), navigatorDelayTime);
-                      },
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(displayShortenedCount(userSocials.followersCount), style: const TextStyle(fontSize: 17.5)),
-                          Text('Followers', style: TextStyle(fontSize: defaultTextFontSize),)
-                        ],
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: (){
-                        runDelay(() => Navigator.push(
-                          context,
-                          SliderRightToLeftRoute(
-                            page: ProfilePageFollowingWidget(userID: userID)
-                          )
-                        ), navigatorDelayTime);
-                      },
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(displayShortenedCount(userSocials.followingCount), style: const TextStyle(fontSize: 17.5)),
-                          Text('Following', style: TextStyle(fontSize: defaultTextFontSize),)
-                        ],
-                      ),
-                    ),
-                    
-                  ],
-                ),
-                SizedBox(
-                  height: getScreenHeight() * 0.0175
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end, 
-                      children: [
-                        const Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.end, 
-                          children: [
-                            Icon(Icons.person, size: 20)
-                          ]
-                        ),
-                        SizedBox(
-                          width: getScreenWidth() * 0.0075,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.end, 
-                          children: [
-                            Text('Joined at ${convertDateTimeDisplay(userData.dateJoined)}', style: const TextStyle(fontSize: 14.5))      
-                          ]
-                        )
-                      ]
-                    ),
-                    SizedBox(height: getScreenHeight() * 0.004),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end, 
-                      children: [
-                        const Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.end, 
-                          children: [
-                            Icon(Icons.cake, size: 20)
-                          ]
-                        ),
-                        SizedBox(
-                          width: getScreenWidth() * 0.0075,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.end, 
-                          children: [
-                            Text('Born at ${convertDateTimeDisplay(userData.birthDate)}', style: const TextStyle(fontSize: 14.5))      
-                          ]
-                        )
-                      ]
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: getScreenHeight() * 0.0175
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    CustomButton(
-                      width: userID == fetchReduxDatabase().currentID ? getScreenWidth() * 0.8 : getScreenWidth() * 0.4, height: getScreenHeight() * 0.065, 
+                ValueListenableBuilder(
+                  valueListenable: appStateClass.usersSocialsNotifiers.value[userID]!.notifier,
+                  builder: ((context, userSocials, child) {
+                    return CustomButton(
+                      width: getScreenWidth() * 0.55, height: getScreenHeight() * 0.065, 
                       buttonColor: userData.blockedByCurrentID ? Colors.red : const Color.fromARGB(255, 70, 125, 170), onTapped: (){
                         if(userData.suspended && userData.deleted){
                           null;
-                        }else if(userData.userID == fetchReduxDatabase().currentID){
+                        }else if(userData.userID == appStateClass.currentID){
                           runDelay(() => Navigator.push(
                             context,
                             SliderRightToLeftRoute(
@@ -282,27 +165,12 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
                         }
                       },
                       buttonText: userData.blockedByCurrentID ? 'Unblock' :
-                      userData.userID == fetchReduxDatabase().currentID ? 'Edit Profile'
+                      userData.userID == appStateClass.currentID ? 'Edit Profile'
                       : userData.requestedByCurrentID ? 'Cancel Request' :
                       userSocials.followedByCurrentID ? 'Unfollow' : 'Follow',
                       setBorderRadius: true,
-                    ),
-                    userID != fetchReduxDatabase().currentID ?
-                      CustomButton(
-                        width: getScreenWidth() * 0.4, height: getScreenHeight() * 0.065, 
-                        buttonColor: Colors.blue, onTapped: userData.blockedByCurrentID || userData.blocksCurrentID || userData.suspended && userData.deleted ? null : (){
-                          runDelay(() => Navigator.push(
-                            context,
-                            SliderRightToLeftRoute(
-                              page: PrivateChatRoomWidget(chatID: null, recipient: userData.userID)
-                            )
-                          ), navigatorDelayTime);
-                        },
-                        buttonText: 'Message',
-                        setBorderRadius: true,
-                      )
-                    : Container()
-                  ],
+                    );
+                  })
                 )
               ]
             ) 
@@ -349,22 +217,161 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
               ),
             )
           : Container(),
-          userData.private && !userSocials.followedByCurrentID && userData.userID != currentID && !userData.suspended && !userData.deleted ?
-            Container(
-              margin: EdgeInsets.only(top: getScreenHeight() * 0.025),
-              padding: EdgeInsets.symmetric(horizontal: getScreenWidth() * 0.025, vertical: getScreenHeight() * 0.025),
-              decoration: BoxDecoration(border: Border.all(width: 2, color: Colors.white), borderRadius: const BorderRadius.all(Radius.circular(10))),
-              child: Column(
-                children: [
-                  const Icon(FontAwesomeIcons.userLock, size: 35),
-                  SizedBox(height: getScreenHeight() * 0.0225),
-                  Text("You have been restricted from accessing ${userData.name}'s private account", style: TextStyle(fontSize: defaultTextFontSize, fontWeight: FontWeight.w600))
-                ],
-              ),
+          ValueListenableBuilder(
+            valueListenable: appStateClass.usersSocialsNotifiers.value[userID]!.notifier,
+            builder: ((context, userSocials, child) {
+              return userData.private && !userSocials.followedByCurrentID && userData.userID != currentID && !userData.suspended && !userData.deleted ?
+                Container(
+                  margin: EdgeInsets.only(top: getScreenHeight() * 0.025),
+                  padding: EdgeInsets.symmetric(horizontal: getScreenWidth() * 0.025, vertical: getScreenHeight() * 0.025),
+                  decoration: BoxDecoration(border: Border.all(width: 2, color: Colors.white), borderRadius: const BorderRadius.all(Radius.circular(10))),
+                  child: Column(
+                    children: [
+                      const Icon(FontAwesomeIcons.userLock, size: 35),
+                      SizedBox(height: getScreenHeight() * 0.0225),
+                      Text("You have been restricted from accessing ${userData.name}'s private account", style: TextStyle(fontSize: defaultTextFontSize, fontWeight: FontWeight.w600))
+                    ],
+                  ),
+                )
+              : Container();
+            })
+          ),
+          !userData.blocksCurrentID && !userData.deleted && !userData.suspended ?
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: getScreenHeight() * 0.0225
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ValueListenableBuilder(
+                      valueListenable: appStateClass.usersSocialsNotifiers.value[userData.userID]!.notifier,
+                      builder: ((context, userSocials, child) {
+                        return GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: (){
+                            runDelay(() => Navigator.push(
+                              context,
+                              SliderRightToLeftRoute(
+                                page: ProfilePageFollowersWidget(userID: userID)
+                              )
+                            ), navigatorDelayTime);
+                          },
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(displayShortenedCount(userSocials.followersCount), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                              SizedBox(height: getScreenHeight() * 0.0025),
+                              Text('Followers', style: TextStyle(fontSize: defaultTextFontSize * 0.7),)
+                            ],
+                          ),
+                        );
+                      })
+                    ),
+                    SizedBox(
+                      width: getScreenWidth() * 0.075,
+                    ),
+                    Container(
+                      height: getScreenHeight() * 0.075 ,
+                      color: Colors.grey,
+                      width: 0.5,
+                    ),
+                    SizedBox(
+                      width: getScreenWidth() * 0.075,
+                    ),
+                    ValueListenableBuilder(
+                      valueListenable: appStateClass.usersSocialsNotifiers.value[userData.userID]!.notifier,
+                      builder: ((context, userSocials, child) {
+                        return GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: (){
+                            runDelay(() => Navigator.push(
+                              context,
+                              SliderRightToLeftRoute(
+                                page: ProfilePageFollowingWidget(userID: userID)
+                              )
+                            ), navigatorDelayTime);
+                          },
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(displayShortenedCount(userSocials.followingCount), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                              SizedBox(height: getScreenHeight() * 0.0025),
+                              Text('Following', style: TextStyle(fontSize: defaultTextFontSize * 0.7),)
+                            ],
+                          ),
+                        );
+                      })
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: getScreenHeight() * 0.02
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end, 
+                      children: [
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.end, 
+                          children: [
+                            Icon(Icons.person, size: 15, color: Colors.blueGrey)
+                          ]
+                        ),
+                        SizedBox(
+                          width: getScreenWidth() * 0.0075,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.end, 
+                          children: [
+                            Text(convertDateTimeDisplay(userData.dateJoined), style: TextStyle(fontSize: defaultTextFontSize * 0.75, color: Colors.blueGrey))      
+                          ]
+                        )
+                      ]
+                    ),
+                    SizedBox(
+                      width: getScreenWidth() * 0.06,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end, 
+                      children: [
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.end, 
+                          children: [
+                            Icon(Icons.cake, size: 15, color: Colors.blueGrey)
+                          ]
+                        ),
+                        SizedBox(
+                          width: getScreenWidth() * 0.0075,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.end, 
+                          children: [
+                            Text(convertDateTimeDisplay(userData.birthDate), style: TextStyle(fontSize: defaultTextFontSize * 0.75, color: Colors.blueGrey))      
+                          ]
+                        )
+                      ]
+                    ),
+                  ],
+                ),
+              ],
             )
-          : Container()
+          : Container(),
         ],
-      )
+      ),
     );
   }
 

@@ -94,7 +94,7 @@ class _CustomFollowRequestWidgetState extends State<CustomFollowRequestWidget>{
                               ), 0);
                             },
                             child: Container(
-                              width: getScreenWidth() * 0.125, height: getScreenWidth() * 0.125,
+                              width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
                               decoration: BoxDecoration(
                                 border: Border.all(width: 2, color: Colors.white),
                                 borderRadius: BorderRadius.circular(100),
@@ -107,19 +107,25 @@ class _CustomFollowRequestWidgetState extends State<CustomFollowRequestWidget>{
                             ),
                           ),
                           SizedBox(
-                            width: getScreenWidth() * 0.03
+                            width: getScreenWidth() * 0.02
                           ),
                           Flexible(
                             child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Flexible(
                                       child: Row(
                                         children: [
-                                          Flexible(child: Text(StringEllipsis.convertToEllipsis(userData.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize, fontWeight: FontWeight.bold))),
+                                          Flexible(
+                                            child: Text(
+                                              StringEllipsis.convertToEllipsis(userData.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize * 0.9, fontWeight: FontWeight.bold)
+                                            )
+                                          ),
                                           userData.verified && !userData.suspended && !userData.deleted ?
                                             Row(
                                               children: [
@@ -140,31 +146,27 @@ class _CustomFollowRequestWidgetState extends State<CustomFollowRequestWidget>{
                                               ],
                                             )
                                           : Container(),
-                                          userData.mutedByCurrentID && !userData.suspended && !userData.deleted ?
-                                            Row(
-                                              children: [
-                                                SizedBox(
-                                                  width: iconsBesideNameProfileMargin
-                                                ),
-                                                Icon(FontAwesomeIcons.volumeXmark, size: muteIconProfileWidgetSize),
-                                              ],
-                                            )
-                                          : Container(),
                                         ],
                                       ),
                                     ),
                                   ],
                                 ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text('@${userData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.lightBlue)),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
-                          
                         ],
                       ),
                     ),
                   ]
                 ),
-                SizedBox(height: getScreenHeight() * 0.02),
+                SizedBox(height: getScreenHeight() * 0.015),
                 Container(
                   child: widget.followRequestType == FollowRequestType.From ?
                     CustomButton(

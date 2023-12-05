@@ -8,6 +8,7 @@ import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
 import 'package:social_media_app/socket/main.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:uuid/uuid.dart';
 import 'class/GroupProfileClass.dart';
 import 'styles/AppStyles.dart';
@@ -152,7 +153,7 @@ class _EditGroupProfileStatefulState extends State<EditGroupProfileStateful> wit
   void editGroupProfile() async{
     try {
       String messageID = const Uuid().v4();
-      String senderName = fetchReduxDatabase().usersDatasNotifiers.value[fetchReduxDatabase().currentID]!.notifier.value.name;
+      String senderName = appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.name;
       String content = '$senderName has edited the group profile';
       
       socket.emit("edit-group-profile-to-server", {
@@ -160,7 +161,7 @@ class _EditGroupProfileStatefulState extends State<EditGroupProfileStateful> wit
         'messageID': messageID,
         'content': content,
         'type': 'edit_group_profile',
-        'sender': fetchReduxDatabase().currentID,
+        'sender': appStateClass.currentID,
         'recipients': groupProfile.value.recipients,
         'mediasDatas': [],
         'newData': {
@@ -173,7 +174,7 @@ class _EditGroupProfileStatefulState extends State<EditGroupProfileStateful> wit
       String stringified = jsonEncode({
         'chatID': chatID,
         'messageID': messageID,
-        'sender': fetchReduxDatabase().currentID,
+        'sender': appStateClass.currentID,
         'recipients': groupProfile.value.recipients,
         'newData': {
           'name': nameController.text.trim(),
@@ -193,6 +194,7 @@ class _EditGroupProfileStatefulState extends State<EditGroupProfileStateful> wit
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('Edit Group Profile'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(
@@ -304,7 +306,7 @@ class _EditGroupProfileStatefulState extends State<EditGroupProfileStateful> wit
                     textFieldWithDescription(
                       TextField(
                         controller: nameController,
-                        decoration: generateProfileTextFieldDecoration('your name'),
+                        decoration: generateProfileTextFieldDecoration('group name', Icons.person),
                         maxLength: nameCharacterMaxLimit,
                       ),
                       'Name',
@@ -315,7 +317,7 @@ class _EditGroupProfileStatefulState extends State<EditGroupProfileStateful> wit
                     textFieldWithDescription(
                       TextField(
                         controller: descriptionController,
-                        decoration: generateProfileTextFieldDecoration('your description'),
+                        decoration: generateProfileTextFieldDecoration('group description', Icons.description),
                         maxLength: descriptionCharacterMaxLimit,
                       ),
                       'Description',

@@ -8,11 +8,9 @@ import 'package:appwrite/appwrite.dart';
 import 'package:custom_image_editor/EditImage.dart' as ImageEditor;
 import 'package:custom_video_editor/VideoEditor.dart' as VideoEditor;
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:social_media_app/SearchTagUsers.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/class/MediaDataClass.dart';
@@ -20,6 +18,7 @@ import 'package:social_media_app/class/CommentClass.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
 import 'package:social_media_app/custom/CustomTextEditingController.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
@@ -27,7 +26,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'class/WebsiteCardClass.dart';
 import 'custom/CustomWebsiteCardWidget.dart';
 import 'styles/AppStyles.dart';
-import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart' as ph;
 import 'package:device_info_plus/device_info_plus.dart';
 
@@ -92,7 +90,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
       for(int i = 0; i < commentData.mediasDatas.length; i++){
         MediaDatasClass e = commentData.mediasDatas[i];
         if(e.mediaType == MediaType.image){
-          String filePath = await downloadAndSaveImage(e.url, '$i');
+          String filePath = await downloadAndSaveImage(e.url, const Uuid().v4());
           MediaDatasClass updatedMediaData = MediaDatasClass(
             e.mediaType, filePath, e.playerController, e.storagePath, MediaSourceType.file, e.websiteCardData, e.mediaSize
           );
@@ -100,28 +98,19 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
             mediasDatas.value = [...mediasDatas.value, updatedMediaData];
             mediasComponents.value = [
               ...mediasComponents.value,
-              Container(
-                decoration: BoxDecoration(border: Border.all(width: 2, color: Colors.grey)),
-                child: Image.file(
-                  File(filePath), fit: BoxFit.contain, width: updatedMediaData.mediaSize!.width, 
-                  height: updatedMediaData.mediaSize!.height
-                )
-              )
+              mediaDataDraftPostComponentWidget(updatedMediaData, e.mediaSize)
             ];
           }
         }else if(e.mediaType == MediaType.video){
+          String filePath = await downloadAndSaveVideo(e.url, const Uuid().v4());
           MediaDatasClass updatedMediaData = MediaDatasClass(
-            e.mediaType, e.url, e.playerController, e.storagePath, MediaSourceType.file, e.websiteCardData, e.mediaSize
+            e.mediaType, filePath, e.playerController, e.storagePath, MediaSourceType.file, e.websiteCardData, e.mediaSize
           );
           if(mounted){
             mediasDatas.value = [...mediasDatas.value, updatedMediaData];
             mediasComponents.value = [
               ...mediasComponents.value,
-              SizedBox(
-                width: updatedMediaData.mediaSize!.width,
-                height: updatedMediaData.mediaSize!.height,
-                child: VideoPlayer(updatedMediaData.playerController!)
-              )
+              mediaDataDraftPostComponentWidget(updatedMediaData, e.mediaSize)
             ];
           }
         }else if(e.mediaType == MediaType.websiteCard){
@@ -138,20 +127,6 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
       }
     }
   }
-
-  Future<String> downloadAndSaveImage(String imageUrl, String fileName) async{
-    http.Response response = await http.get(Uri.parse(imageUrl));
-    http.get(Uri.parse(imageUrl));
-    Uint8List imageData = response.bodyBytes;
-
-    Directory directory = await getTemporaryDirectory();
-    String path = directory.path;
-
-    File file = File('$path/$fileName');
-    await file.writeAsBytes(imageData);
-    return file.path;
-  }
-
 
   Future<void> pickImage(ImageSource source, {BuildContext? context}) async {
     bool permissionIsGranted = false;
@@ -189,7 +164,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
                 MediaDatasClass(MediaType.image, imageUrl, null, '', MediaSourceType.file, null, scaledDimension)
               ];
               mediasComponents.value = [
-                ...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last)
+                ...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last, scaledDimension)
               ];
             }
           }
@@ -228,7 +203,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
             if(mounted){
               mediasDatas.value = [...mediasDatas.value, MediaDatasClass(MediaType.video, file.path, playerController, '', MediaSourceType.file, null, scaledDimension)];
               mediasComponents.value = [
-                ...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last)
+                ...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last, scaledDimension)
               ];
             }
           }
@@ -257,7 +232,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
             mediasDatasList[index] = MediaDatasClass(MediaType.image, imageUrl, null, '', MediaSourceType.file, null, scaledDimension);
             mediasDatas.value = [...mediasDatasList];
             List<Widget> mediasComponentsList = [...mediasComponents.value];
-            mediasComponentsList[index] = mediaDataDraftPostComponentWidget(mediasDatas.value[index]);
+            mediasComponentsList[index] = mediaDataDraftPostComponentWidget(mediasDatas.value[index], scaledDimension);
             mediasComponents.value = [...mediasComponentsList];
           }
         }
@@ -285,7 +260,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
             mediasDatasList[index] = MediaDatasClass(MediaType.video, updatedRes.url, playerController, '', MediaSourceType.file, null, scaledDimension);
             mediasDatas.value = [...mediasDatasList];
             List<Widget> mediasComponentsList = [...mediasComponents.value];
-            mediasComponentsList[index] = mediaDataDraftPostComponentWidget(mediasDatas.value[index]);
+            mediasComponentsList[index] = mediaDataDraftPostComponentWidget(mediasDatas.value[index], scaledDimension);
             mediasComponents.value = [...mediasComponentsList];
           }
         }
@@ -318,7 +293,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
     try {
       File mediaFilePath = File(mediasDatas.value[index].url);
       FirebaseStorage storage = FirebaseStorage.instance;
-      String childDirectory = '/${fetchReduxDatabase().currentID}/${const Uuid().v4()}';
+      String childDirectory = '/${appStateClass.currentID}/${const Uuid().v4()}';
       mediasDatas.value[index].storagePath = childDirectory;
       Reference ref = storage.ref('/videos').child(childDirectory);
       UploadTask uploadTask = ref.putFile(mediaFilePath, SettableMetadata(contentType: 'video/mp4'));
@@ -336,7 +311,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
         if(!isLoading.value && (commentController.text.isNotEmpty || mediasDatas.value.isNotEmpty)){
           isLoading.value = true;
           String commentID = widget.commentData.commentID;
-          CommentClass previousCommentData = fetchReduxDatabase().commentsNotifiers.value[widget.commentData.sender]![commentID]!.notifier.value;
+          CommentClass previousCommentData = appStateClass.commentsNotifiers.value[widget.commentData.sender]![commentID]!.notifier.value;
           List<MediaDatasClass> updatedMediasDatas = [];
           for(int i = 0; i < mediasDatas.value.length; i++){
             MediaDatasClass mediaData = mediasDatas.value[i];
@@ -344,6 +319,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
             if(mediasDatas.value[i].mediaType == MediaType.image){
               storageUrl = await uploadImageToAppWrite(storageBucketIDs['image'], i);
             }else if(mediasDatas.value[i].mediaType == MediaType.video){
+              mediaData.playerController!.pause();
               storageUrl = await uploadVideoToFirebase(context, i);
             }else if(mediasDatas.value[i].mediaType == MediaType.websiteCard){
               storageUrl = mediaData.url;
@@ -364,7 +340,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
           String stringified = jsonEncode({
             'commentID': commentID,
             'content': commentController.text,
-            'sender': fetchReduxDatabase().currentID,
+            'sender': appStateClass.currentID,
             'mediasDatas': serverMediasDatas,
             'parentPostID': previousCommentData.parentPostID,
             'parentPostSender': previousCommentData.parentPostSender,
@@ -376,7 +352,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
           if(res.data.isNotEmpty){
             if(res.data['message'] == 'Successfully edited the comment'){
               CommentClass commentDataClass = CommentClass(
-                commentID, 'comment', commentController.text, fetchReduxDatabase().currentID, previousCommentData.uploadTime,
+                commentID, 'comment', commentController.text, appStateClass.currentID, previousCommentData.uploadTime,
                 updatedMediasDatas, previousCommentData.likesCount, previousCommentData.likedByCurrentID, previousCommentData.bookmarksCount,
                 previousCommentData.bookmarkedByCurrentID, previousCommentData.commentsCount, previousCommentData.parentPostType, 
                 previousCommentData.parentPostID, previousCommentData.parentPostSender, previousCommentData.deleted
@@ -399,15 +375,14 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
 
   Widget mediaComponentIndex(mediaComponent, index){
     return Container(
-      margin: EdgeInsets.symmetric(vertical: mediaComponentMargin),
+      margin: EdgeInsets.only(top: mediaComponentMargin),
       child: Stack(
         children: [
           SizedBox(
-            width: double.infinity,
             child: mediaComponent
           ),
           Positioned(
-            top: 0, right: getScreenWidth() * 0.02,
+            top: 0, right: 0,
             child: Container(
               width: getScreenWidth() * 0.1,
               height: getScreenWidth() * 0.1,
@@ -422,7 +397,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
                     mediasComponents2.removeAt(index);
                     mediasComponents.value = mediasComponents2;
                     List<MediaDatasClass> mediasDatas2 = [...mediasDatas.value];
-                    if(mediasDatas2[index].mediaType == MediaType.video){
+                    if(mediasDatas2[index].mediaType == MediaType.video && mediasDatas2[index].mediaSourceType == MediaSourceType.file){
                       mediasDatas2[index].playerController!.dispose();
                     }
                     mediasDatas2.removeAt(index);
@@ -434,7 +409,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
             )
           ),
           Positioned(
-            top: 0, right: getScreenWidth() * 0.145,
+            top: 0, right: getScreenWidth() * 0.125,
             child: Container(
               width: getScreenWidth() * 0.1,
               height: getScreenWidth() * 0.1,
@@ -481,7 +456,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
                     mediasDatas.value = [...mediasDatas.value, MediaDatasClass(
                       MediaType.websiteCard, lines[j], null, '', MediaSourceType.network, linkPreview, null
                     )];
-                    mediasComponents.value = [...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last)];
+                    mediasComponents.value = [...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last, null)];
                     textList = text.split(' ');
                     textList[i] = textList[i].replaceFirst(lines[j], '');
                     commentController.value = TextEditingValue(
@@ -538,6 +513,7 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('Edit Comment'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(
@@ -553,11 +529,14 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
                   return ValueListenableBuilder<List<MediaDatasClass>>(
                     valueListenable: mediasDatas,
                     builder: (context, List<MediaDatasClass> mediasDatasValue, child){
-                      return CustomButton(
-                        width: getScreenWidth() * 0.25, height: kToolbarHeight, 
-                        buttonColor: Colors.red, buttonText: 'Upload',
-                        onTapped: !isLoadingValue && (mediasDatasValue.isNotEmpty || commentVerified) ? () => editComment() : null,
-                        setBorderRadius: false
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: kToolbarHeight * 0.15, horizontal: getScreenWidth() * 0.025),
+                        child: CustomButton(
+                          width: getScreenWidth() * 0.25, height: kToolbarHeight, 
+                          buttonColor: Colors.red, buttonText: 'Edit',
+                          onTapped: !isLoadingValue && (mediasDatasValue.isNotEmpty || commentVerified) ? () => editComment() : null,
+                          setBorderRadius: true
+                        ),
                       );
                     }
                   );
@@ -573,38 +552,35 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Flexible(
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding, vertical: defaultVerticalPadding),
-                  child: ListView(
-                    children: [
-                      TextField(
-                        controller: commentController,
-                        decoration: generatePostTextFieldDecoration('your comment'),
-                        minLines: postDraftTextFieldMinLines,
-                        maxLines: postDraftTextFieldMaxLines,
-                        maxLength: maxPostWordLimit,
-                        onChanged: (value){
-                          listenTextField(value);
-                          listenTextController(value);
-                        },
-                        onEditingComplete: (){
-                          listenTextController(commentController.text);
-                        },
-                      ),
-                      ValueListenableBuilder<List>(
-                        valueListenable: mediasComponents,
-                        builder: ((context, mediasComponentsList, child) {
-                          return Column(
-                            children: [
-                              for(int i = 0; i < mediasComponentsList.length; i++)
-                              mediaComponentIndex(mediasComponentsList[i], i)
-                            ],
-                          );
-                        }),
-                      ),
-                      
-                    ],
-                  ),
+                child: ListView(
+                  children: [
+                    TextField(
+                      controller: commentController,
+                      decoration: generatePostTextFieldDecoration('your comment', FontAwesomeIcons.pencil),
+                      minLines: postDraftTextFieldMinLines,
+                      maxLines: postDraftTextFieldMaxLines,
+                      maxLength: maxPostWordLimit,
+                      onChanged: (value){
+                        listenTextField(value);
+                        listenTextController(value);
+                      },
+                      onEditingComplete: (){
+                        listenTextController(commentController.text);
+                      },
+                    ),
+                    ValueListenableBuilder<List>(
+                      valueListenable: mediasComponents,
+                      builder: ((context, mediasComponentsList, child) {
+                        return Column(
+                          children: [
+                            for(int i = 0; i < mediasComponentsList.length; i++)
+                            mediaComponentIndex(mediasComponentsList[i], i)
+                          ],
+                        );
+                      }),
+                    ),
+                    
+                  ],
                 ),
               ),
               Container(

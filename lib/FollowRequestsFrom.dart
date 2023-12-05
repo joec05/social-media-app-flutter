@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomFollowRequestWidget.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/streams/RequestsFromDataStreamClass.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
@@ -49,7 +50,7 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
     runDelay(() async => fetchFollowRequestsFrom(users.value.length, false, false), actionDelayTime);
     requestsFromDataStreamClassSubscription = RequestsFromDataStreamClass().requestsFromDataStream.listen((RequestsFromDataStreamControllerClass data) {
       if(mounted){
-        if(data.uniqueID == 'send_follow_request_${fetchReduxDatabase().currentID}'){
+        if(data.uniqueID == 'send_follow_request_${appStateClass.currentID}'){
           if(!users.value.contains(data.userID)){
             users.value = [data.userID, ...users.value];
           }
@@ -88,7 +89,7 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
       if(mounted){
         isLoading.value = true;
         String stringified = jsonEncode({
-          'currentID': fetchReduxDatabase().currentID,
+          'currentID': appStateClass.currentID,
           'currentLength': currentPostsLength,
           'paginationLimit': postsPaginationLimit,
           'maxFetchLimit': usersServerFetchLimit
@@ -180,12 +181,12 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
                             SliverList(delegate: SliverChildBuilderDelegate(
                               childCount: users.length, 
                               (context, index) {
-                                if(fetchReduxDatabase().usersDatasNotifiers.value[users[index]] != null){
+                                if(appStateClass.usersDataNotifiers.value[users[index]] != null){
                                   return ValueListenableBuilder(
-                                    valueListenable: fetchReduxDatabase().usersDatasNotifiers.value[users[index]]!.notifier, 
+                                    valueListenable: appStateClass.usersDataNotifiers.value[users[index]]!.notifier, 
                                     builder: ((context, userData, child) {
                                       return ValueListenableBuilder(
-                                        valueListenable: fetchReduxDatabase().usersSocialsNotifiers.value[users[index]]!.notifier, 
+                                        valueListenable: appStateClass.usersSocialsNotifiers.value[users[index]]!.notifier, 
                                         builder: ((context, userSocial, child) {
                                           return CustomFollowRequestWidget(
                                             userData: userData, userSocials: userSocial,

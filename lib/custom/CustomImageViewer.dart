@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
+import 'package:social_media_app/styles/AppStyles.dart';
 
 class CustomImageViewer extends StatelessWidget {
   final MediaSourceType mediaSource;
@@ -10,10 +11,7 @@ class CustomImageViewer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context){
-    return Scaffold(
-      appBar: AppBar(title: const Text('')),
-      body: CustomImageViewerState(mediaSource: mediaSource, imageUrl: imageUrl)
-    );
+    return CustomImageViewerState(mediaSource: mediaSource, imageUrl: imageUrl);
   }
 }
 
@@ -40,25 +38,35 @@ class CustomImageViewerSection extends State<CustomImageViewerState>{
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: getScreenHeight(),
-      child: InteractiveViewer(
-        child: Center(
-          child: mediaSource == MediaSourceType.file ?
-            Image.file(
-              File(imageUrl),
-              width: getScreenWidth(),
-              fit: BoxFit.cover,
-            )
-          : mediaSource == MediaSourceType.network ?
-            Image.network(
-              imageUrl,
-              width: getScreenWidth(),
-              fit: BoxFit.cover,
-            )
-          : Container()
+    return Scaffold(
+      appBar: AppBar(
+        leading: defaultLeadingWidget(context),
+        title: const Text('View Image'), 
+        titleSpacing: defaultAppBarTitleSpacing,
+        flexibleSpace: Container(
+          decoration: defaultAppBarDecoration
+        ),
+      ),
+      body: SizedBox(
+        height: getScreenHeight(),
+        child: InteractiveViewer(
+          child: Center(
+            child: mediaSource == MediaSourceType.file ?
+              Image.file(
+                File(imageUrl),
+                width: getScreenWidth(),
+                fit: BoxFit.cover,
+              )
+            : mediaSource == MediaSourceType.network ?
+              Image.network(
+                imageUrl,
+                width: getScreenWidth(),
+                fit: BoxFit.cover,
+              )
+            : Container()
+          )
         )
-      )
+      ),
     );
   }
 }

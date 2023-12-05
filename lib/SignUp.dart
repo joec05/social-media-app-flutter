@@ -11,8 +11,8 @@ import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
 import 'package:social_media_app/firebase/firebase_constants.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
-import '../redux/reduxLibrary.dart';
 import 'caching/sqfliteConfiguration.dart';
 import 'styles/AppStyles.dart';
 
@@ -182,9 +182,6 @@ class _SignUpStatefulState extends State<SignUpStateful> {
                 await auth.createUserWithEmailAndPassword(
                   email: emailController.text, password: passwordController.text
                 ).then((value) async{
-                  for(int i = 0; i < 50; i++){
-                    print('BENCONG ANJING');
-                  }
                   var verified = await Navigator.push(
                     context,
                     SliderRightToLeftRoute(
@@ -206,7 +203,7 @@ class _SignUpStatefulState extends State<SignUpStateful> {
                     var res = await dio.post('$serverDomainAddress/users/signUp', data: stringified);
                     if(res.data.isNotEmpty){
                       if(res.data['message'] == 'Successfully signed up'){
-                        StoreProvider.of<AppState>(context).dispatch(CurrentID(res.data['userID']));
+                        appStateClass.currentID = res.data['userID'];
                         UserDataClass userDataClass = UserDataClass(
                           res.data['userID'], nameController.text.trim(), usernameController.text.trim(), defaultUserProfilePicLink,
                           DateTime.now().toString(), selectedBirthDate.toString(), '',  false, false, false, false,
@@ -261,6 +258,7 @@ class _SignUpStatefulState extends State<SignUpStateful> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('Sign Up'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(
@@ -268,138 +266,167 @@ class _SignUpStatefulState extends State<SignUpStateful> {
         )
       ),
       body: Center(
-        child: Stack(
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding),
-              child: ListView(
-                children: <Widget>[
-                  SizedBox(
-                    height: titleToContentMargin,
-                  ),
-                  containerMargin(
-                    textFieldWithDescription(
-                      TextField(
-                        controller: emailController,
-                        decoration: generateProfileTextFieldDecoration('your email'),
-                      ),
-                      'Email',
-                      ''
-                    ),
-                    EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
-                  ),
-                  containerMargin(
-                    textFieldWithDescription(
-                      TextField(
-                        controller: passwordController,
-                        decoration: generateProfileTextFieldDecoration('password'),
-                        keyboardType: TextInputType.visiblePassword,
-                        maxLength: passwordCharacterMaxLimit
-                      ),
-                      'Password',
-                      "Your password should be between $passwordCharacterMinLimit and $passwordCharacterMaxLimit characters",
-                    ),
-                    EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
-                  ),
-                  containerMargin(
-                    textFieldWithDescription(
-                      TextField(
-                        controller: nameController,
-                        decoration: generateProfileTextFieldDecoration('your name'),
-                        maxLength: nameCharacterMaxLimit,
-                      ),
-                      'Name',
-                      "Your name should be between 1 and $nameCharacterMaxLimit characters",
-                    ), EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)),
-                  containerMargin(
-                    textFieldWithDescription(
-                        TextField(
-                        controller: usernameController,
-                        decoration: generateProfileTextFieldDecoration('username'),
-                        maxLength: usernameCharacterMaxLimit
-                      ),
-                      'Username',
-                      "Your username should be between $usernameCharacterMinLimit and $usernameCharacterMaxLimit characters",
-                    ),
-                    EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
-                  ),
-                  containerMargin(
-                    textFieldWithDescription(
-                      GestureDetector(
-                        onTap: () => _selectBirthDate(context),
-                        child: TextField(
-                          controller: birthDateController,
-                          decoration: generateProfileTextFieldDecoration('birth date'),
-                          enabled: false,
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: defaultFrontPageDecoration,
+          child: Stack(
+            children: [
+              Positioned(
+                      left: -getScreenWidth() * 0.45,
+                      top: -getScreenWidth() * 0.25,
+                      child: Container(
+                        width: getScreenWidth(),
+                        height: getScreenWidth(),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(200),
+                          color: Colors.amber.withOpacity(0.65)
                         ),
                       ),
-                      'Birth Date',
-                      ''
                     ),
-                    EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
+              Positioned(
+                right: -getScreenWidth() * 0.55,
+                top: getScreenWidth() * 0.85,
+                child: Container(
+                  width: getScreenWidth(),
+                  height: getScreenWidth(),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(200),
+                    color: Colors.blue.withOpacity(0.8)
                   ),
-                  SizedBox(
-                    height: textFieldToButtonMargin
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      ValueListenableBuilder(
-                        valueListenable: verifyNameFormat,
-                        builder: (context, nameVerified, child) {
-                          return ValueListenableBuilder(
-                            valueListenable: verifyUsernameFormat,
-                            builder: (context, usernameVerified, child) {
-                              return ValueListenableBuilder(
-                                valueListenable: verifyEmailFormat,
-                                builder: (context, emailVerified, child) {
-                                  return ValueListenableBuilder(
-                                    valueListenable: verifyPasswordFormat,
-                                    builder: (context, passwordVerified, child) {
-                                      return ValueListenableBuilder(
-                                        valueListenable: verifyBirthDateFormat,
-                                        builder: (context, birthDateVerified, child) {
-                                          return ValueListenableBuilder(
-                                            valueListenable: isLoading,
-                                            builder: (context, isLoadingValue, child) {
-                                              return CustomButton(
-                                                width: defaultTextFieldButtonSize.width, height: defaultTextFieldButtonSize.height,
-                                                buttonColor: nameVerified && usernameVerified && emailVerified 
-                                                && passwordVerified && birthDateVerified && !isLoadingValue ? Colors.red : Colors.grey, 
-                                                buttonText: 'Sign Up', 
-                                                onTapped: nameVerified && usernameVerified && emailVerified 
-                                                && passwordVerified && birthDateVerified && !isLoadingValue ? signUp : () {},
-                                                setBorderRadius: true,
-                                              );
-                                            }
-                                          );
-                                        }
-                                      );
-                                    }
-                                  );
-                                }
-                              );
-                            }
-                          );
-                        }
-                      )
-                    ]
-                  ),
-                  SizedBox(
-                    height: defaultVerticalPadding
-                  )
-                ],
+                ),
               ),
-            ),
-            ValueListenableBuilder(
-              valueListenable: isLoading,
-              builder: (context, isLoadingValue, child) {
-                return isLoadingValue ?
-                  loadingSignWidget()
-                : Container();
-              } 
-            ),
-          ]
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding),
+                child: ListView(
+                  children: <Widget>[
+                    SizedBox(
+                      height: titleToContentMargin,
+                    ),
+                    containerMargin(
+                      textFieldWithDescription(
+                        TextField(
+                          controller: emailController,
+                          decoration: generateProfileTextFieldDecoration('your email', Icons.mail),
+                        ),
+                        'Email',
+                        ''
+                      ),
+                      EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
+                    ),
+                    containerMargin(
+                      textFieldWithDescription(
+                        TextField(
+                          controller: passwordController,
+                          decoration: generateProfileTextFieldDecoration('password', Icons.lock),
+                          keyboardType: TextInputType.visiblePassword,
+                          maxLength: passwordCharacterMaxLimit
+                        ),
+                        'Password',
+                        "Your password should be between $passwordCharacterMinLimit and $passwordCharacterMaxLimit characters",
+                      ),
+                      EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
+                    ),
+                    containerMargin(
+                      textFieldWithDescription(
+                        TextField(
+                          controller: nameController,
+                          decoration: generateProfileTextFieldDecoration('your name', Icons.person),
+                          maxLength: nameCharacterMaxLimit,
+                        ),
+                        'Name',
+                        "Your name should be between 1 and $nameCharacterMaxLimit characters",
+                      ), EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)),
+                    containerMargin(
+                      textFieldWithDescription(
+                          TextField(
+                          controller: usernameController,
+                          decoration: generateProfileTextFieldDecoration('username', Icons.person),
+                          maxLength: usernameCharacterMaxLimit
+                        ),
+                        'Username',
+                        "Your username should be between $usernameCharacterMinLimit and $usernameCharacterMaxLimit characters",
+                      ),
+                      EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
+                    ),
+                    containerMargin(
+                      textFieldWithDescription(
+                        GestureDetector(
+                          onTap: () => _selectBirthDate(context),
+                          child: TextField(
+                            controller: birthDateController,
+                            decoration: generateProfileTextFieldDecoration('birth date', Icons.cake),
+                            enabled: false,
+                          ),
+                        ),
+                        'Birth Date',
+                        ''
+                      ),
+                      EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
+                    ),
+                    SizedBox(
+                      height: textFieldToButtonMargin
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        ValueListenableBuilder(
+                          valueListenable: verifyNameFormat,
+                          builder: (context, nameVerified, child) {
+                            return ValueListenableBuilder(
+                              valueListenable: verifyUsernameFormat,
+                              builder: (context, usernameVerified, child) {
+                                return ValueListenableBuilder(
+                                  valueListenable: verifyEmailFormat,
+                                  builder: (context, emailVerified, child) {
+                                    return ValueListenableBuilder(
+                                      valueListenable: verifyPasswordFormat,
+                                      builder: (context, passwordVerified, child) {
+                                        return ValueListenableBuilder(
+                                          valueListenable: verifyBirthDateFormat,
+                                          builder: (context, birthDateVerified, child) {
+                                            return ValueListenableBuilder(
+                                              valueListenable: isLoading,
+                                              builder: (context, isLoadingValue, child) {
+                                                return CustomButton(
+                                                  width: defaultTextFieldButtonSize.width, height: defaultTextFieldButtonSize.height,
+                                                  buttonColor: nameVerified && usernameVerified && emailVerified 
+                                                  && passwordVerified && birthDateVerified && !isLoadingValue ? Colors.red : Colors.grey, 
+                                                  buttonText: 'Sign Up', 
+                                                  onTapped: nameVerified && usernameVerified && emailVerified 
+                                                  && passwordVerified && birthDateVerified && !isLoadingValue ? signUp : () {},
+                                                  setBorderRadius: true,
+                                                );
+                                              }
+                                            );
+                                          }
+                                        );
+                                      }
+                                    );
+                                  }
+                                );
+                              }
+                            );
+                          }
+                        )
+                      ]
+                    ),
+                    SizedBox(
+                      height: defaultVerticalPadding
+                    )
+                  ],
+                ),
+              ),
+              ValueListenableBuilder(
+                valueListenable: isLoading,
+                builder: (context, isLoadingValue, child) {
+                  return isLoadingValue ?
+                    loadingPageWidget()
+                  : Container();
+                } 
+              ),
+            ]
+          ),
         )
       ),
     );

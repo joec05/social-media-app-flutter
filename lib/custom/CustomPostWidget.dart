@@ -9,6 +9,7 @@ import 'package:social_media_app/WriteComment.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/class/MediaDataClass.dart';
 import 'package:social_media_app/class/PostClass.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import '../EditPost.dart';
@@ -60,112 +61,101 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
 
   void displayPostBottomSheet(){
     showModalBottomSheet(
+      backgroundColor: Colors.transparent,
       context: context,
       builder: (BuildContext bottomSheetContext) {
         return SingleChildScrollView(
           child: Container(
-            padding: EdgeInsets.zero,
+            decoration: const BoxDecoration(
+              color: Color.fromARGB(255, 56, 54, 54),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10.0),
+                topRight: Radius.circular(10.0)
+              )
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: [   
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: (){},
-                    splashFactory: InkRipple.splashFactory,
-                    child: CustomButton(
-                      onTapped: (){
-                        Navigator.pop(bottomSheetContext);
-                        runDelay(() => Navigator.push(
-                          context,
-                          SliderRightToLeftRoute(
-                            page: PostLikesListWidget(
-                              postID: postData.postID, postSender: postData.sender
-                            )
-                          )
-                        ), navigatorDelayTime);
-                      },
-                      buttonText: 'View likes',
-                      width: double.infinity,
-                      height: getScreenHeight() * 0.075,
-                      buttonColor: Colors.transparent,
-                      setBorderRadius: false,
-                    )
-                  )
-                ),
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: (){},
-                    splashFactory: InkRipple.splashFactory,
-                    child: CustomButton(
-                      onTapped: (){
-                        Navigator.pop(bottomSheetContext);
-                        runDelay(() => Navigator.push(
-                          context,
-                          SliderRightToLeftRoute(
-                            page: PostBookmarksListWidget(
-                              postID: postData.postID, postSender: postData.sender
-                            )
-                          )
-                        ), navigatorDelayTime);
-                      },
-                      buttonText: 'View bookmarks',
-                      width: double.infinity,
-                      height: getScreenHeight() * 0.075,
-                      buttonColor: Colors.transparent,
-                      setBorderRadius: false,
-                    )
-                  )
-                ),
+              children: [
+                SizedBox(height: getScreenHeight() * 0.015),
                 Container(
-                  child: postData.sender == fetchReduxDatabase().currentID ? 
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: (){},
-                        splashFactory: InkRipple.splashFactory,
-                        child: CustomButton(
-                          onTapped: (){
-                            Navigator.pop(bottomSheetContext);
-                            runDelay(() => Navigator.push(
-                              context,
-                              SliderRightToLeftRoute(
-                                page: EditPostWidget(
-                                  postData: postData
-                                )
-                              )
-                            ), navigatorDelayTime);
-                          },
-                          buttonText: 'Edit post',
-                          width: double.infinity,
-                          height: getScreenHeight() * 0.075,
-                          buttonColor: Colors.transparent,
-                          setBorderRadius: false,
+                  height: getScreenHeight() * 0.01,
+                  width: getScreenWidth() * 0.15,
+                  decoration: const BoxDecoration(
+                    color: Colors.grey,
+                    borderRadius: BorderRadius.all(Radius.circular(10))
+                  )
+                ),
+                SizedBox(height: getScreenHeight() * 0.015),
+                CustomButton(
+                  onTapped: (){
+                    Navigator.pop(bottomSheetContext);
+                    runDelay(() => Navigator.push(
+                      context,
+                      SliderRightToLeftRoute(
+                        page: PostLikesListWidget(
+                          postID: postData.postID, postSender: postData.sender
                         )
                       )
+                    ), navigatorDelayTime);
+                  },
+                  buttonText: 'View likes',
+                  width: double.infinity,
+                  height: getScreenHeight() * 0.08,
+                  buttonColor: Colors.transparent,
+                  setBorderRadius: false,
+                ),
+                CustomButton(
+                  onTapped: (){
+                    Navigator.pop(bottomSheetContext);
+                    runDelay(() => Navigator.push(
+                      context,
+                      SliderRightToLeftRoute(
+                        page: PostBookmarksListWidget(
+                          postID: postData.postID, postSender: postData.sender
+                        )
+                      )
+                    ), navigatorDelayTime);
+                  },
+                  buttonText: 'View bookmarks',
+                  width: double.infinity,
+                  height: getScreenHeight() * 0.08,
+                  buttonColor: Colors.transparent,
+                  setBorderRadius: false,
+                ),
+                Container(
+                  child: postData.sender == appStateClass.currentID ? 
+                    CustomButton(
+                      onTapped: (){
+                        Navigator.pop(bottomSheetContext);
+                        runDelay(() => Navigator.push(
+                          context,
+                          SliderRightToLeftRoute(
+                            page: EditPostWidget(
+                              postData: postData
+                            )
+                          )
+                        ), navigatorDelayTime);
+                      },
+                      buttonText: 'Edit post',
+                      width: double.infinity,
+                      height: getScreenHeight() * 0.08,
+                      buttonColor: Colors.transparent,
+                      setBorderRadius: false,
                     )
                   : null
                 ), 
                 Container(
-                  child: postData.sender == fetchReduxDatabase().currentID ? 
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: (){},
-                        splashFactory: InkRipple.splashFactory,
-                        child: CustomButton(
-                          onTapped: (){
-                            Navigator.pop(bottomSheetContext);
-                            runDelay(() => deletePost(postData), actionDelayTime);
-                          },
-                          buttonText: 'Delete post',
-                          width: double.infinity,
-                          height: getScreenHeight() * 0.075,
-                          buttonColor: Colors.transparent,
-                          setBorderRadius: false,
-                        )
-                      )
+                  child: postData.sender == appStateClass.currentID ? 
+                    CustomButton(
+                      onTapped: (){
+                        Navigator.pop(bottomSheetContext);
+                        runDelay(() => deletePost(postData), actionDelayTime);
+                      },
+                      buttonText: 'Delete post',
+                      width: double.infinity,
+                      height: getScreenHeight() * 0.08,
+                      buttonColor: Colors.transparent,
+                      setBorderRadius: false,
                     )
                     
                   : null
@@ -188,7 +178,7 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
     else if(senderData.mutedByCurrentID || senderData.blockedByCurrentID || senderData.blocksCurrentID){
       return Container();
     }
-    if(senderData.private && !senderSocials.followedByCurrentID && senderData.userID != fetchReduxDatabase().currentID){
+    if(senderData.private && !senderSocials.followedByCurrentID && senderData.userID != appStateClass.currentID){
       return Container();
     }
     if(widget.pageDisplayType == PostDisplayType.bookmark && !postData.bookmarkedByCurrentID){
@@ -234,7 +224,7 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
                               ), 0);
                             },
                             child: Container(
-                              width: getScreenWidth() * 0.125, height: getScreenWidth() * 0.125,
+                              width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
                               decoration: BoxDecoration(
                                 border: Border.all(width: 2, color: Colors.white),
                                 borderRadius: BorderRadius.circular(100),
@@ -247,7 +237,7 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
                             ),
                           ),
                           SizedBox(
-                            width: getScreenWidth() * 0.03
+                            width: getScreenWidth() * 0.02
                           ),
                           Flexible(
                             child: Column(
@@ -263,7 +253,7 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
                                         children: [
                                           Flexible(
                                             child: Text(
-                                              StringEllipsis.convertToEllipsis(senderData.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize, fontWeight: FontWeight.bold)
+                                              StringEllipsis.convertToEllipsis(senderData.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize * 0.9, fontWeight: FontWeight.bold)
                                             )
                                           ),
                                           senderData.verified && !senderData.suspended && !senderData.deleted ?
@@ -295,7 +285,14 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
                                     )
                                   ],
                                 ),
-                                Text('@${senderData.username}', style: TextStyle(fontSize: defaultTextFontSize, color: Colors.lightBlue))
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text('@${senderData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.lightBlue)),
+                                    Text(getTimeDifference(postData.uploadTime), style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey))
+                                  ],
+                                ),
                               ],
                             ),
                           ),
@@ -311,7 +308,7 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
                 SizedBox(height: getScreenHeight() * 0.01),
                 DisplayTextComponent(
                   text: postData.content, tagsPressable: true, overflow: TextOverflow.ellipsis, 
-                  maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize), alignment: TextAlign.left, 
+                  maxLines: 100, style: TextStyle(fontSize: defaultTextFontSize * 0.95), alignment: TextAlign.left, 
                   context: context
                 ),
                 SizedBox(height: postData.content.isNotEmpty ? getScreenHeight() * 0.01 : 0),
@@ -395,9 +392,7 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
                       ),
                     )
                   ],
-                ),
-                SizedBox(height: getScreenHeight() * 0.005),
-                Text(getTimeDifference(postData.uploadTime), style: const TextStyle(fontSize: 13, color: Colors.grey))
+                )
               ],
             ),
           )

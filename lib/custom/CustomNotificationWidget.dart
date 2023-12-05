@@ -7,6 +7,7 @@ import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/class/CommentClass.dart';
 import 'package:social_media_app/class/NotificationClass.dart';
 import 'package:social_media_app/class/PostClass.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import '../extenstions/StringEllipsis.dart';
@@ -108,7 +109,7 @@ class _CustomNotificationWidgetState extends State<CustomNotificationWidget>{
           SliderRightToLeftRoute(
             page: ViewPostCommentsWidget(
               selectedPostData: PostClass(
-                notificationClass.referencedPostID, 'post', '', fetchReduxDatabase().currentID, '', 
+                notificationClass.referencedPostID, 'post', '', appStateClass.currentID, '', 
                 [], 0, false, 0, false, 0, false
               )
             )
@@ -120,7 +121,7 @@ class _CustomNotificationWidgetState extends State<CustomNotificationWidget>{
           SliderRightToLeftRoute(
             page: ViewCommentCommentsWidget(
               selectedCommentData: CommentClass(
-                notificationClass.referencedPostID, 'comment', '', fetchReduxDatabase().currentID, '', 
+                notificationClass.referencedPostID, 'comment', '', appStateClass.currentID, '', 
                 [], 0, false, 0, false, 0, '', '', '', false
               )
             )
@@ -179,11 +180,14 @@ class _CustomNotificationWidgetState extends State<CustomNotificationWidget>{
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(generateNotificationText(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: defaultTextFontSize), softWrap: true),
-                      SizedBox(height: notificationDescription.isNotEmpty ? getScreenHeight() * 0.003 : 0),
-                      notificationDescription.isNotEmpty ? Text(StringEllipsis.convertToEllipsis(notificationDescription), maxLines: 3, overflow: TextOverflow.ellipsis) : Container(),
-                      SizedBox(height: getScreenHeight() * 0.003),
-                      Text(getTimeDifference(notificationClass.time), style: const TextStyle(fontSize: 13))
+                      Text(generateNotificationText(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: defaultTextFontSize * 0.9), softWrap: true),
+                      SizedBox(height: notificationDescription.isNotEmpty ? getScreenHeight() * 0.005 : 0),
+                      notificationDescription.isNotEmpty ? Text(
+                        StringEllipsis.convertToEllipsis(notificationDescription), maxLines: 3, 
+                        overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.blueGrey)
+                      ) : Container(),
+                      SizedBox(height: getScreenHeight() * 0.005),
+                      Text(getTimeDifference(notificationClass.time), style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey))
                     ],
                   ),
                 )

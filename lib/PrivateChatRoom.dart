@@ -1,4 +1,4 @@
-// ignore_for_file: library_prefixes, use_build_context_synchronously
+// ignore_for_file: library_prefixes, use_build_context_synchronously, unnecessary_null_comparison
 
 import 'dart:async';
 import 'dart:convert';
@@ -15,8 +15,8 @@ import 'package:social_media_app/class/MediaDataClass.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
-import 'package:social_media_app/redux/reduxLibrary.dart';
 import 'package:social_media_app/socket/main.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import 'package:uuid/uuid.dart';
@@ -25,8 +25,6 @@ import 'ProfilePage.dart';
 import 'SearchTagUsers.dart';
 import 'class/PrivateMessageClass.dart';
 import 'class/PrivateMessageNotifier.dart';
-import 'class/UserDataNotifier.dart';
-import 'class/UserSocialNotifier.dart';
 import 'class/WebsiteCardClass.dart';
 import 'custom/CustomPagination.dart';
 import 'custom/CustomPrivateMessageWidget.dart';
@@ -90,7 +88,7 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
         verifyMessageFormat.value = messageText.isNotEmpty && messageText.length <= messageCharacterMaxLimit;
       }
     });
-    socket.on("send-private-message-${fetchReduxDatabase().currentID}-${widget.recipient}", ( data ) async{
+    socket.on("send-private-message-${appStateClass.currentID}-${widget.recipient}", ( data ) async{
       if(mounted && data != null){
         messages.value = [PrivateMessageNotifier(data['messageID'], ValueNotifier(
           PrivateMessageClass(
@@ -100,7 +98,7 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
         )), ...messages.value];
       }
     });
-    socket.on("send-private-message-${widget.recipient}-${fetchReduxDatabase().currentID}", ( data ) async{
+    socket.on("send-private-message-${widget.recipient}-${appStateClass.currentID}", ( data ) async{
       if(mounted && data != null){
         messages.value = [PrivateMessageNotifier(data['messageID'], ValueNotifier(
           PrivateMessageClass(
@@ -110,44 +108,41 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
         )), ...messages.value];
       }
     });
-    socket.on("delete-private-message-${fetchReduxDatabase().currentID}-${recipient.value}", ( data ) async{
+    socket.on("delete-private-message-${appStateClass.currentID}-${recipient.value}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < messages.value.length; i++){
           PrivateMessageClass privateMessageData = messages.value[i].notifier.value;
           if(privateMessageData.messageID == data['messageID']){
-            messages.value[i].notifier.value = PrivateMessageClass(
-              privateMessageData.messageID, privateMessageData.type, privateMessageData.content, 
-              privateMessageData.sender, privateMessageData.uploadTime, privateMessageData.mediasDatas, 
-              [...privateMessageData.deletedList, fetchReduxDatabase().currentID]
-            );
+            var messagesList = [...messages.value];
+            messagesList.removeAt(i);
+            messages.value = [...messagesList];
+            break;
           }
         }
       }
     });
-    socket.on("delete-private-message-for-all-${fetchReduxDatabase().currentID}-${recipient.value}", ( data ) async{
+    socket.on("delete-private-message-for-all-${appStateClass.currentID}-${recipient.value}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < messages.value.length; i++){
           PrivateMessageClass privateMessageData = messages.value[i].notifier.value;
           if(privateMessageData.messageID == data['messageID']){
-            messages.value[i].notifier.value = PrivateMessageClass(
-              privateMessageData.messageID, privateMessageData.type, privateMessageData.content, 
-              privateMessageData.sender, privateMessageData.uploadTime, privateMessageData.mediasDatas, 
-              [...privateMessageData.deletedList, fetchReduxDatabase().currentID, data['recipient']]
-            );
+            var messagesList = [...messages.value];
+            messagesList.removeAt(i);
+            messages.value = [...messagesList];
+            break;
           }
         }
       }
     });
-    socket.on("delete-private-message-for-all-${recipient.value}-${fetchReduxDatabase().currentID}", ( data ) async{
+    socket.on("delete-private-message-for-all-${recipient.value}-${appStateClass.currentID}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < messages.value.length; i++){
           PrivateMessageClass privateMessageData = messages.value[i].notifier.value;
           if(privateMessageData.messageID == data['messageID']){
-            messages.value[i].notifier.value = PrivateMessageClass(
-              privateMessageData.messageID, privateMessageData.type, privateMessageData.content, 
-              privateMessageData.sender, privateMessageData.uploadTime, privateMessageData.mediasDatas, 
-              [...privateMessageData.deletedList, fetchReduxDatabase().currentID, data['recipient']]
-            );
+            var messagesList = [...messages.value];
+            messagesList.removeAt(i);
+            messages.value = [...messagesList];
+            break;
           }
         }
       }
@@ -190,10 +185,10 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
         isLoading.value = true;
         String stringified = jsonEncode({
           'chatID': chatID.value,
-          'currentID': fetchReduxDatabase().currentID,
+          'currentID': appStateClass.currentID,
           'recipient': recipient.value,
           'currentLength': currentPostsLength,
-          'paginationLimit': postsPaginationLimit,
+          'paginationLimit': messagesPaginationLimit,
           'maxFetchLimit': messagesServerFetchLimit
         }); 
         d.Response res;
@@ -300,7 +295,7 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
                 MediaDatasClass(MediaType.image, imageUrl, null, '', MediaSourceType.file, null, scaledDimension)
               ];
               mediasComponents.value = [
-                ...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last)
+                ...mediasComponents.value, mediaDataDraftMessageComponentWidget(mediasDatas.value.last, scaledDimension)
               ];
             }
           }
@@ -339,7 +334,7 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
             if(mounted){
               mediasDatas.value = [...mediasDatas.value, MediaDatasClass(MediaType.video, file.path, playerController, '', MediaSourceType.file, null, scaledDimension)];
               mediasComponents.value = [
-                ...mediasComponents.value, mediaDataDraftPostComponentWidget(mediasDatas.value.last)
+                ...mediasComponents.value, mediaDataDraftMessageComponentWidget(mediasDatas.value.last, scaledDimension)
               ];
             }
           }else{
@@ -369,7 +364,8 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
             mediasDatasList[index] = MediaDatasClass(MediaType.image, imageUrl, null, '', MediaSourceType.file, null, scaledDimension);
             mediasDatas.value = [...mediasDatasList];
             List<Widget> mediasComponentsList = [...mediasComponents.value];
-            mediasComponentsList[index] = mediaDataDraftPostComponentWidget(mediasDatas.value[index]);
+            mediasComponentsList[index] = mediaDataDraftMessageComponentWidget(mediasDatas.value[index], scaledDimension
+            );
             mediasComponents.value = [...mediasComponentsList];
           }
         }
@@ -397,7 +393,7 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
             mediasDatasList[index] = MediaDatasClass(MediaType.video, updatedRes.url, playerController, '', MediaSourceType.file, null, scaledDimension);
             mediasDatas.value = [...mediasDatasList];
             List<Widget> mediasComponentsList = [...mediasComponents.value];
-            mediasComponentsList[index] = mediaDataDraftPostComponentWidget(mediasDatas.value[index]);
+            mediasComponentsList[index] = mediaDataDraftMessageComponentWidget(mediasDatas.value[index], scaledDimension);
             mediasComponents.value = [...mediasComponentsList];
           }
         }
@@ -430,7 +426,7 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
     try {
       File mediaFilePath = File(mediasDatas.value[index].url);
       FirebaseStorage storage = FirebaseStorage.instance;
-      String childDirectory = '/${fetchReduxDatabase().currentID}/${const Uuid().v4()}';
+      String childDirectory = '/${appStateClass.currentID}/${const Uuid().v4()}';
       mediasDatas.value[index].storagePath = childDirectory;
       Reference ref = storage.ref('/videos').child(childDirectory);
       UploadTask uploadTask = ref.putFile(mediaFilePath, SettableMetadata(contentType: 'video/mp4'));
@@ -444,15 +440,14 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
 
   Widget mediaComponentIndex(mediaComponent, index){
     return Container(
-      margin: EdgeInsets.symmetric(vertical: mediaComponentMargin),
+      margin: EdgeInsets.only(top: mediaComponentMargin),
       child: Stack(
         children: [
           SizedBox(
-            width: double.infinity,
             child: mediaComponent
           ),
           Positioned(
-            top: 0, right: getScreenWidth() * 0.02,
+            top: 0, right: 0,
             child: Container(
               width: getScreenWidth() * 0.1,
               height: getScreenWidth() * 0.1,
@@ -479,7 +474,7 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
             )
           ),
           Positioned(
-            top: 0, right: getScreenWidth() * 0.145,
+            top: 0, right: getScreenWidth() * 0.125,
             child: Container(
               width: getScreenWidth() * 0.1,
               height: getScreenWidth() * 0.1,
@@ -526,7 +521,7 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
                     mediasDatas.value = [...mediasDatas.value, MediaDatasClass(
                       MediaType.websiteCard, lines[j], null, '', MediaSourceType.network, linkPreview, null
                     )];
-                    mediasComponents.value = [...mediasComponents.value, mediaDataDraftMessageComponentWidget(mediasDatas.value.last)];
+                    mediasComponents.value = [...mediasComponents.value, mediaDataDraftMessageComponentWidget(mediasDatas.value.last, null)];
                     textList = text.split(' ');
                     textList[i] = textList[i].replaceFirst(lines[j], '');
                     messageController.value = TextEditingValue(
@@ -578,73 +573,77 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
 
 
   void sendPrivateMessage() async{
-    try {
-      String messageID = const Uuid().v4();
-      String? newChatID;
-      if(mounted){
-        if(chatID.value == null){
-          newChatID = const Uuid().v4();
-        }
-      }
-      List<MediaDatasClass> updatedMediasDatas = [];
-      for(int i = 0; i < mediasDatas.value.length; i++){
-        MediaDatasClass mediaData = mediasDatas.value[i];
-        String storageUrl = '';
-        if(mediasDatas.value[i].mediaType == MediaType.image){
-          storageUrl = await uploadImageToAppWrite(storageBucketIDs['image'], i);
-        }else if(mediasDatas.value[i].mediaType == MediaType.video){
-          storageUrl = await uploadVideoToFirebase(context, i);
-        }else if(mediasDatas.value[i].mediaType == MediaType.websiteCard){
-          storageUrl = mediaData.url;
-        }
-        if(storageUrl.isNotEmpty){
-          updatedMediasDatas.add(MediaDatasClass(
-            mediaData.mediaType, storageUrl, mediaData.playerController, mediaData.storagePath, 
-            MediaSourceType.network, mediaData.websiteCardData, mediaData.mediaSize
-          ));
-        }
-      }
-      
-      List<Map<String, dynamic>> serverMediasDatas = [];
-      for(int i = 0; i < updatedMediasDatas.length; i++){
-        serverMediasDatas.add(updatedMediasDatas[i].toMap());
-      }
-      
-      socket.emit("send-private-message-to-server", {
-        'chatID': chatID.value ?? newChatID,
-        'messageID': messageID,
-        'type': 'message',
-        'content': messageController.text,
-        'sender': fetchReduxDatabase().currentID,
-        'recipient': recipient.value,
-        'mediasDatas': serverMediasDatas,
-      });
-      
-      String stringified = jsonEncode({
-        'chatID': chatID.value,
-        'newChatID': newChatID,
-        'messageID': messageID,
-        'content': messageController.text,
-        'sender': fetchReduxDatabase().currentID,
-        'recipient': recipient.value,
-        'mediasDatas': serverMediasDatas,
-      });
-      if(mounted){
-        messageController.text = '';
-        mediasDatas.value = [];
-        mediasComponents.value = [];
-      }
-      var res = await dio.post('$serverDomainAddress/users/sendPrivateMessage', data: stringified);
-      if(res.data.isNotEmpty){
-        if(res.data['message'] == 'Successfully sent message' && mounted){
-          chatID.value ??= newChatID;
-        }
+    if(!isLoading.value){
+      isLoading.value = true;
+      try {
+        String messageID = const Uuid().v4();
+        String? newChatID;
         if(mounted){
-          isLoading.value = false;
+          if(chatID.value == null){
+            newChatID = const Uuid().v4();
+          }
         }
+        List<MediaDatasClass> updatedMediasDatas = [];
+        for(int i = 0; i < mediasDatas.value.length; i++){
+          MediaDatasClass mediaData = mediasDatas.value[i];
+          String storageUrl = '';
+          if(mediasDatas.value[i].mediaType == MediaType.image){
+            storageUrl = await uploadImageToAppWrite(storageBucketIDs['image'], i);
+          }else if(mediasDatas.value[i].mediaType == MediaType.video){
+            mediaData.playerController!.pause();
+            storageUrl = await uploadVideoToFirebase(context, i);
+          }else if(mediasDatas.value[i].mediaType == MediaType.websiteCard){
+            storageUrl = mediaData.url;
+          }
+          if(storageUrl.isNotEmpty){
+            updatedMediasDatas.add(MediaDatasClass(
+              mediaData.mediaType, storageUrl, mediaData.playerController, mediaData.storagePath, 
+              MediaSourceType.network, mediaData.websiteCardData, mediaData.mediaSize
+            ));
+          }
+        }
+        
+        List<Map<String, dynamic>> serverMediasDatas = [];
+        for(int i = 0; i < updatedMediasDatas.length; i++){
+          serverMediasDatas.add(updatedMediasDatas[i].toMap());
+        }
+        
+        socket.emit("send-private-message-to-server", {
+          'chatID': chatID.value ?? newChatID,
+          'messageID': messageID,
+          'type': 'message',
+          'content': messageController.text,
+          'sender': appStateClass.currentID,
+          'recipient': recipient.value,
+          'mediasDatas': serverMediasDatas,
+        });
+        
+        String stringified = jsonEncode({
+          'chatID': chatID.value,
+          'newChatID': newChatID,
+          'messageID': messageID,
+          'content': messageController.text,
+          'sender': appStateClass.currentID,
+          'recipient': recipient.value,
+          'mediasDatas': serverMediasDatas,
+        });
+        if(mounted){
+          messageController.text = '';
+          mediasDatas.value = [];
+          mediasComponents.value = [];
+        }
+        var res = await dio.post('$serverDomainAddress/users/sendPrivateMessage', data: stringified);
+        if(res.data.isNotEmpty){
+          if(res.data['message'] == 'Successfully sent message' && mounted){
+            chatID.value ??= newChatID;
+          }
+          if(mounted){
+            isLoading.value = false;
+          }
+        }
+      } on Exception catch (e) {
+        doSomethingWithException(e);
       }
-    } on Exception catch (e) {
-      doSomethingWithException(e);
     }
   }
 
@@ -653,135 +652,120 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
     super.build(context);
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         flexibleSpace: Container(
           decoration: defaultAppBarDecoration
         ),
         titleSpacing: defaultAppBarTitleSpacing,
-        title: StoreConnector<AppState, ValueNotifier<Map<String, UserDataNotifier>>>(
-          converter: (store) => store.state.usersDatasNotifiers,
-          builder: (context, ValueNotifier<Map<String, UserDataNotifier>> usersDatasNotifiers){
-            return ValueListenableBuilder(
-              valueListenable: recipient, 
-              builder: ((context, recipientValue, child) {
-                if(recipientValue.isNotEmpty){
-                  return ValueListenableBuilder(
-                    valueListenable: usersDatasNotifiers.value[recipientValue]!.notifier, 
-                    builder: ((context, userData, child) {
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          InkWell(
-                            onTap: (){
-                              runDelay(() => Navigator.push(
-                                context,
-                                SliderRightToLeftRoute(
-                                  page: ProfilePageWidget(userID: userData.userID)
-                                )
-                              ), navigatorDelayTime);
-                            },
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.start, 
+        title: ValueListenableBuilder(
+          valueListenable: recipient, 
+          builder: ((context, recipientValue, child) {
+            if(recipientValue.isNotEmpty){
+              return ValueListenableBuilder(
+                valueListenable: appStateClass.usersDataNotifiers.value[recipientValue]!.notifier, 
+                builder: ((context, userData, child) {
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      InkWell(
+                        onTap: (){
+                          runDelay(() => Navigator.push(
+                            context,
+                            SliderRightToLeftRoute(
+                              page: ProfilePageWidget(userID: userData.userID)
+                            )
+                          ), navigatorDelayTime);
+                        },
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.start, 
+                                children: [
+                                  Column(
                                     children: [
-                                      Column(
-                                        children: [
-                                          GestureDetector(
-                                            behavior: HitTestBehavior.opaque,
-                                            onTap: (){
-                                              runDelay(() => Navigator.push(
-                                                context,
-                                                SliderRightToLeftRoute(
-                                                  page: ProfilePageWidget(userID: recipient.value)
-                                                )
-                                              ), navigatorDelayTime);
-                                            },
-                                            child: Container(
-                                              width: getScreenWidth() * 0.075,
-                                              height: getScreenWidth() * 0.075,
-                                              decoration: BoxDecoration(
-                                                border: Border.all(width: 2, color: Colors.white),
-                                                borderRadius: BorderRadius.circular(100),
-                                                image: DecorationImage(
-                                                  image: NetworkImage(
-                                                    userData.profilePicLink
-                                                  ), fit: BoxFit.fill
+                                      Container(
+                                        width: getScreenWidth() * 0.075,
+                                        height: getScreenWidth() * 0.075,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(width: 2, color: Colors.white),
+                                          borderRadius: BorderRadius.circular(100),
+                                          image: DecorationImage(
+                                            image: NetworkImage(
+                                              userData.profilePicLink
+                                            ), fit: BoxFit.fill
+                                          )
+                                        ),
+                                      )
+                                    ]
+                                  ),
+                                  SizedBox(width: getScreenWidth() * 0.02),
+                                  Expanded( 
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                          Row(
+                                            children: [
+                                              Flexible(
+                                              child: Text(
+                                                  StringEllipsis.convertToEllipsis(userData.name),
+                                                  maxLines: 1, overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(fontSize: defaultTextFontSize, fontWeight: FontWeight.bold)
                                                 )
                                               ),
-                                            ),
-                                          )
-                                        ]
-                                      ),
-                                      SizedBox(width: getScreenWidth() * 0.03),
-                                      Expanded( 
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          children: [
-                                             Row(
-                                               children: [
-                                                 Flexible(
-                                                  child: Text(
-                                                      StringEllipsis.convertToEllipsis(userData.name),
-                                                      maxLines: 1, overflow: TextOverflow.ellipsis,
-                                                      style: TextStyle(fontSize: defaultTextFontSize, fontWeight: FontWeight.bold)
-                                                    )
+                                              userData.verified && !userData.suspended && !userData.deleted ?
+                                                Row(
+                                                  children: [
+                                                    SizedBox(
+                                                      width: iconsBesideNameProfileMargin
+                                                    ),
+                                                    Icon(Icons.verified_rounded, size: verifiedIconProfileWidgetSize, color: Colors.black),
+                                                  ]
+                                                )
+                                              : Container(),
+                                              userData.private && !userData.suspended && !userData.deleted ?
+                                                Row(
+                                                  children: [
+                                                    SizedBox(
+                                                      width: iconsBesideNameProfileMargin
+                                                    ),
+                                                    Icon(FontAwesomeIcons.lock, size: lockIconProfileWidgetSize, color: Colors.black),
+                                                  ],
+                                                )
+                                              : Container(),
+                                              userData.mutedByCurrentID && !userData.suspended && !userData.deleted ?
+                                              Row(
+                                                children: [
+                                                  SizedBox(
+                                                    width: iconsBesideNameProfileMargin
                                                   ),
-                                                 userData.verified && !userData.suspended && !userData.deleted ?
-                                                   Row(
-                                                     children: [
-                                                       SizedBox(
-                                                         width: iconsBesideNameProfileMargin
-                                                       ),
-                                                       Icon(Icons.verified_rounded, size: verifiedIconProfileWidgetSize, color: Colors.black),
-                                                     ]
-                                                   )
-                                                 : Container(),
-                                                 userData.private && !userData.suspended && !userData.deleted ?
-                                                   Row(
-                                                     children: [
-                                                       SizedBox(
-                                                         width: iconsBesideNameProfileMargin
-                                                       ),
-                                                       Icon(FontAwesomeIcons.lock, size: lockIconProfileWidgetSize, color: Colors.black),
-                                                     ],
-                                                   )
-                                                 : Container(),
-                                                 userData.mutedByCurrentID && !userData.suspended && !userData.deleted ?
-                                                  Row(
-                                                    children: [
-                                                      SizedBox(
-                                                        width: iconsBesideNameProfileMargin
-                                                      ),
-                                                      Icon(FontAwesomeIcons.volumeXmark, size: muteIconProfileWidgetSize, color: Colors.black), 
-                                                    ],
-                                                  )
-                                                : Container(),
-                                               ],
-                                             ),
-                                          ],
-                                        )
-                                      )
-                                    ],
+                                                  Icon(FontAwesomeIcons.volumeXmark, size: muteIconProfileWidgetSize, color: Colors.black), 
+                                                ],
+                                              )
+                                            : Container(),
+                                            ],
+                                          ),
+                                      ],
+                                    )
                                   )
-                                ),
-                              ],
-                            )
-                          ),
-                        ],
-                      );
-                    })
+                                ],
+                              )
+                            ),
+                          ],
+                        )
+                      ),
+                    ],
                   );
-                }
-                return Container();
-              })
-            );
-          }
+                })
+              );
+            }
+            return Container();
+          })
         ),
         actions: [
           ValueListenableBuilder(
@@ -809,198 +793,188 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
       ),
       body: Stack(
         children: [
-          StoreConnector<AppState, ValueNotifier<Map<String, UserDataNotifier>>>(
-            converter: (store) => store.state.usersDatasNotifiers,
-            builder: (context, ValueNotifier<Map<String, UserDataNotifier>> usersDatasNotifiers){
-              return StoreConnector<AppState, ValueNotifier<Map<String, UserSocialNotifier>>>(
-                converter: (store) => store.state.usersSocialsNotifiers,
-                builder: (context, ValueNotifier<Map<String, UserSocialNotifier>> usersSocialsNotifiers){
+          ValueListenableBuilder(
+            valueListenable: loadingMessagesStatus,
+            builder: (context, loadingStatusValue, child){
+              return ValueListenableBuilder(
+                valueListenable: canPaginate,
+                builder: (context, canPaginateValue, child){
                   return ValueListenableBuilder(
-                    valueListenable: loadingMessagesStatus,
-                    builder: (context, loadingStatusValue, child){
-                      return ValueListenableBuilder(
-                        valueListenable: canPaginate,
-                        builder: (context, canPaginateValue, child){
-                          return ValueListenableBuilder(
-                            valueListenable: messages, 
-                            builder: ((context, messages, child) {
-                              return Column(
-                                children: [
-                                  Expanded(
-                                    child: Stack(
+                    valueListenable: messages, 
+                    builder: ((context, messages, child) {
+                      return Column(
+                        children: [
+                          Expanded(
+                            child: Stack(
+                              children: [
+                                LoadMoreBottom(
+                                  addBottomSpace: canPaginateValue,
+                                  loadMore: () async{
+                                    if(canPaginateValue){
+                                      await loadMoreChats();
+                                    }
+                                  },
+                                  status: loadingStatusValue,
+                                  refresh: null,
+                                  child: CustomScrollView(
+                                    controller: _scrollController,
+                                    shrinkWrap: true,
+                                    reverse: true,
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    slivers: <Widget>[
+                                      SliverList(delegate: SliverChildBuilderDelegate(
+                                        childCount: messages.length,
+                                        (context, index) {
+                                          return ValueListenableBuilder(
+                                            valueListenable: messages[index].notifier, 
+                                            builder: ((context, messageData, child) {
+                                              return CustomPrivateMessage(
+                                                key: UniqueKey(),
+                                                chatID: chatID.value,
+                                                privateMessageData: messageData,
+                                                chatRecipient: recipient.value,
+                                                previousMessageUploadTime: index + 1 == messages.length ? '' : messages[index + 1].notifier.value.uploadTime,
+                                              );
+                                            })
+                                          );
+                                        }
+                                      )),
+                                    ]
+                                  )
+                                )
+                              ]
+                            )
+                          ),
+                          ValueListenableBuilder(
+                            valueListenable: recipient, 
+                            builder: ((context, recipientValue, child) {
+                              if(recipientValue.isNotEmpty){
+                                return ValueListenableBuilder(
+                                  valueListenable: appStateClass.usersDataNotifiers.value[recipientValue]!.notifier, 
+                                  builder: ((context, userData, child) {
+                                    if(userData.blockedByCurrentID || userData.blocksCurrentID || userData.suspended || userData.deleted){
+                                      return Container();
+                                    }
+                                    return Column(
                                       children: [
                                         Container(
-                                          alignment: Alignment.topCenter,
-                                          padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding, vertical: defaultVerticalPadding),
-                                          child: LoadMoreBottom(
-                                            addBottomSpace: canPaginateValue,
-                                            loadMore: () async{
-                                              if(canPaginateValue){
-                                                await loadMoreChats();
+                                          width: getScreenWidth(),
+                                          decoration: const BoxDecoration(
+                                            border: Border(top: BorderSide(color: Colors.white, width: 1)),
+                                          ),
+                                          child: ValueListenableBuilder<List>(
+                                            valueListenable: mediasComponents,
+                                            builder: (context, mediasComponentsList, child) {
+                                              if(mediasComponentsList.isEmpty){
+                                                return Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Row(
+                                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                                      children: [
+                                                        GestureDetector(
+                                                          onTap: (){pickImage(ImageSource.gallery, context: context);},
+                                                          behavior: HitTestBehavior.opaque,
+                                                          child: Container(
+                                                            padding: EdgeInsets.symmetric(horizontal: getScreenWidth() * 0.015, vertical: getScreenHeight() * 0.01),
+                                                            alignment: Alignment.centerLeft,
+                                                            child: Icon(Icons.photo, size: writePostIconSize,
+                                                              color: mediasComponents.value.length == maxMessageMediaCount ? Colors.grey : Colors.white
+                                                            ),
+                                                          )
+                                                        ),
+                                                        GestureDetector(
+                                                          onTap: (){pickImage(ImageSource.camera, context: context);},
+                                                          behavior: HitTestBehavior.opaque,
+                                                          child: Container(
+                                                            padding: EdgeInsets.symmetric(horizontal: getScreenWidth() * 0.015, vertical: getScreenHeight() * 0.01),
+                                                            alignment: Alignment.centerLeft,
+                                                            child: Icon(Icons.camera_alt_sharp, size: writePostIconSize,
+                                                              color: mediasComponents.value.length == maxMessageMediaCount ? Colors.grey : Colors.white
+                                                            ),
+                                                          )
+                                                        ),
+                                                        GestureDetector(
+                                                          onTap: () => _pickVideo(),
+                                                          behavior: HitTestBehavior.opaque,
+                                                          child: Container(
+                                                            padding: EdgeInsets.symmetric(horizontal: getScreenWidth() * 0.015, vertical: getScreenHeight() * 0.01),
+                                                            alignment: Alignment.centerLeft,
+                                                            child: Icon(Icons.video_file_sharp, size: writePostIconSize,
+                                                              color: mediasComponents.value.length == maxMessageMediaCount ? Colors.grey : Colors.white
+                                                            ),
+                                                          )
+                                                        ),
+                                                      ],
+                                                    )
+                                                  ]
+                                                );
+                                              }else{
+                                                return Column(
+                                                  children: [
+                                                    for(int i = 0; i < mediasComponentsList.length; i++)
+                                                    mediaComponentIndex(mediasComponentsList[i], i)
+                                                  ],
+                                                );
                                               }
-                                            },
-                                            status: loadingStatusValue,
-                                            refresh: null,
-                                            child: CustomScrollView(
-                                              controller: _scrollController,
-                                              shrinkWrap: true,
-                                              reverse: true,
-                                              physics: const AlwaysScrollableScrollPhysics(),
-                                              slivers: <Widget>[
-                                                SliverList(delegate: SliverChildBuilderDelegate(
-                                                  childCount: messages.length,
-                                                  
-                                                  (context, index) {
-                                                    return ValueListenableBuilder(
-                                                      valueListenable: messages[index].notifier, 
-                                                      builder: ((context, messageData, child) {
-                                                        return CustomPrivateMessage(
-                                                          key: UniqueKey(),
-                                                          chatID: chatID.value,
-                                                          privateMessageData: messageData,
-                                                          chatRecipient: recipient.value
-                                                        );
-                                                      })
-                                                    );
-                                                    
-                                                  }
-                                                )),
-                                                
-                                              ]
-                                            )
-                                          )
-                                        )
-                                      ]
-                                    )
-                                  ),
-                                  ValueListenableBuilder(
-                                    valueListenable: recipient, 
-                                    builder: ((context, recipientValue, child) {
-                                      if(recipientValue.isNotEmpty){
-                                        return ValueListenableBuilder(
-                                          valueListenable: usersDatasNotifiers.value[recipientValue]!.notifier, 
-                                          builder: ((context, userData, child) {
-                                            if(userData.blockedByCurrentID || userData.blocksCurrentID || userData.suspended || userData.deleted){
-                                              return Container();
                                             }
-                                            return Column(
+                                          ) 
+                                        ),
+                                        ValueListenableBuilder<bool>(
+                                          valueListenable: verifyMessageFormat,
+                                          builder: (context, bool messageVerified, child){
+                                            return Stack(
                                               children: [
-                                                Container(
-                                                  decoration: const BoxDecoration(
-                                                    border: Border(top: BorderSide(color: Colors.white, width: 1)),
-                                                  ),
+                                                TextField(
+                                                  controller: messageController,
+                                                  decoration: generateMessageTextFieldDecoration('message'),
+                                                  minLines: messageDraftTextFieldMinLines,
+                                                  maxLines: messageDraftTextFieldMaxLines,
+                                                  maxLength: maxPostWordLimit,
+                                                  onChanged: (value){
+                                                    listenTextField(value);
+                                                    listenTextController(value);
+                                                  },
+                                                  onEditingComplete: (){
+                                                  listenTextController(messageController.text);
+                                                  },
+                                                ),
+                                                Positioned(
+                                                  bottom: 0, right: 0,
                                                   child: ValueListenableBuilder<List>(
                                                     valueListenable: mediasComponents,
                                                     builder: (context, mediasComponentsList, child) {
-                                                      if(mediasComponentsList.isEmpty){
-                                                        return Column(
-                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                          children: [
-                                                            Row(
-                                                              crossAxisAlignment: CrossAxisAlignment.center,
-                                                              children: [
-                                                                GestureDetector(
-                                                                  onTap: (){pickImage(ImageSource.gallery, context: context);},
-                                                                  behavior: HitTestBehavior.opaque,
-                                                                  child: Container(
-                                                                    padding: EdgeInsets.symmetric(horizontal: getScreenWidth() * 0.015, vertical: getScreenHeight() * 0.01),
-                                                                    alignment: Alignment.centerLeft,
-                                                                    child: Icon(Icons.photo, size: writePostIconSize,
-                                                                      color: mediasComponents.value.length == maxMessageMediaCount ? Colors.grey : Colors.white
-                                                                    ),
-                                                                  )
-                                                                ),
-                                                                GestureDetector(
-                                                                  onTap: (){pickImage(ImageSource.camera, context: context);},
-                                                                  behavior: HitTestBehavior.opaque,
-                                                                  child: Container(
-                                                                    padding: EdgeInsets.symmetric(horizontal: getScreenWidth() * 0.015, vertical: getScreenHeight() * 0.01),
-                                                                    alignment: Alignment.centerLeft,
-                                                                    child: Icon(Icons.camera_alt_sharp, size: writePostIconSize,
-                                                                      color: mediasComponents.value.length == maxMessageMediaCount ? Colors.grey : Colors.white
-                                                                    ),
-                                                                  )
-                                                                ),
-                                                                GestureDetector(
-                                                                  onTap: () => _pickVideo(),
-                                                                  behavior: HitTestBehavior.opaque,
-                                                                  child: Container(
-                                                                    padding: EdgeInsets.symmetric(horizontal: getScreenWidth() * 0.015, vertical: getScreenHeight() * 0.01),
-                                                                    alignment: Alignment.centerLeft,
-                                                                    child: Icon(Icons.video_file_sharp, size: writePostIconSize,
-                                                                      color: mediasComponents.value.length == maxMessageMediaCount ? Colors.grey : Colors.white
-                                                                    ),
-                                                                  )
-                                                                ),
-                                                              ],
-                                                            )
-                                                          ]
-                                                        );
-                                                      }else{
-                                                        return Column(
-                                                          children: [
-                                                            for(int i = 0; i < mediasComponentsList.length; i++)
-                                                            mediaComponentIndex(mediasComponentsList[i], i)
-                                                          ],
-                                                        );
-                                                      }
+                                                      return ValueListenableBuilder(
+                                                        valueListenable: isLoading,
+                                                        builder: ((context, isLoadingValue, child) {
+                                                          return Container(
+                                                            width: getScreenWidth() * 0.125,
+                                                            color: Colors.transparent, 
+                                                            child: TextButton(
+                                                              onPressed: (messageVerified || mediasComponentsList.isNotEmpty) && !isLoadingValue ? () => sendPrivateMessage() : null,
+                                                              child: const Icon(Icons.send, size: 25)
+                                                            ),
+                                                          );
+                                                        })
+                                                      );
                                                     }
-                                                  ) 
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    SizedBox(
-                                                      width: getScreenWidth() * 0.8,
-                                                      height: getScreenHeight() * 0.075,
-                                                      child: TextField(
-                                                        controller: messageController,
-                                                        decoration: generateSearchTextFieldDecoration('user'),
-                                                        minLines: messageDraftTextFieldMinLines,
-                                                        maxLines: messageDraftTextFieldMaxLines,
-                                                        maxLength: maxPostWordLimit,
-                                                        onChanged: (value){
-                                                          listenTextField(value);
-                                                          listenTextController(value);
-                                                        },
-                                                        onEditingComplete: (){
-                                                          listenTextController(messageController.text);
-                                                        },
-                                                      )
-                                                    ),
-                                                    ValueListenableBuilder<bool>(
-                                                      valueListenable: verifyMessageFormat,
-                                                      builder: (context, bool messageVerified, child){
-                                                        return Container(
-                                                          width: getScreenWidth() * 0.2, height: getScreenHeight() * 0.075, 
-                                                          color: Colors.grey.withOpacity(0.5),
-                                                          child: GestureDetector(
-                                                            onTap: (){
-                                                              if(messageVerified){
-                                                                sendPrivateMessage();
-                                                              }
-                                                            },
-                                                            child: Icon(Icons.send, color: messageVerified ? Colors.white : Colors.grey)
-                                                          )
-                                                        );
-                                                      }
-                                                    )
-                                                  ],
-                                                ),
+                                                  )
+                                                )
                                               ],
                                             );
-                                          })
-                                        );
-                                      }
-                                      return Container();
-                                    })
-                                  )
-                                ]
-                              );
+                                          }
+                                        ),
+                                      ],
+                                    );
+                                  })
+                                );
+                              }
+                              return Container();
                             })
-                          );
-                        }
+                          )
+                        ]
                       );
-                    }
+                    })
                   );
                 }
               );

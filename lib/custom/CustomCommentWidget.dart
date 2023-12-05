@@ -7,6 +7,7 @@ import 'package:social_media_app/ProfilePage.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/class/MediaDataClass.dart';
 import 'package:social_media_app/class/CommentClass.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import '../EditComment.dart';
@@ -59,115 +60,102 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
   void displayCommentBottomSheet(){
     CommentClass commentDataClass = widget.commentData;
     showModalBottomSheet(
+      backgroundColor: Colors.transparent,
       context: context,
       builder: (BuildContext bottomSheetContext) {
         return SingleChildScrollView(
           child: Container(
-            padding: EdgeInsets.zero,
+            decoration: const BoxDecoration(
+              color: Color.fromARGB(255, 56, 54, 54),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10.0),
+                topRight: Radius.circular(10.0)
+              )
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: [ 
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: (){},
-                    splashFactory: InkRipple.splashFactory,
-                    child: CustomButton(
-                      onTapped: (){
-                        Navigator.pop(bottomSheetContext);
-                        runDelay(() => Navigator.push(
-                          context,
-                          SliderRightToLeftRoute(
-                            page: CommentLikesListWidget(
-                              commentID: commentData.commentID, 
-                              commentSender: commentData.sender
-                            )
-                          )
-                        ), navigatorDelayTime);
-                      },
-                      buttonText: 'View likes',
-                      width: double.infinity,
-                      height: getScreenHeight() * 0.075,
-                      buttonColor: Colors.transparent,
-                      setBorderRadius: false,
-                    )
-                  )
-                ),
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: (){},
-                    splashFactory: InkRipple.splashFactory,
-                    child: CustomButton(
-                      onTapped: (){
-                        Navigator.pop(bottomSheetContext);
-                        runDelay(() => Navigator.push(
-                          context,
-                          SliderRightToLeftRoute(
-                            page: CommentBookmarksListWidget(
-                              commentID: commentData.commentID, 
-                              commentSender: commentData.sender
-                            )
-                          )
-                        ), navigatorDelayTime);
-                      },
-                      buttonText: 'View bookmarks',
-                      width: double.infinity,
-                      height: getScreenHeight() * 0.075,
-                      buttonColor: Colors.transparent,
-                      setBorderRadius: false,
-                    )
-                  )
-                ),
+              children: [
+                SizedBox(height: getScreenHeight() * 0.015),
                 Container(
-                  child: commentDataClass.sender == fetchReduxDatabase().currentID ? 
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: (){},
-                        splashFactory: InkRipple.splashFactory,
-                        child: CustomButton(
-                          onTapped: (){
-                            Navigator.pop(bottomSheetContext);
-                            runDelay(() => Navigator.push(
-                              context,
-                              SliderRightToLeftRoute(
-                                page: EditCommentWidget(commentData: commentData)
-                              )
-                            ), navigatorDelayTime);
-                          },
-                          buttonText: 'Edit comment',
-                          width: double.infinity,
-                          height: getScreenHeight() * 0.075,
-                          buttonColor: Colors.transparent,
-                          setBorderRadius: false,
+                  height: getScreenHeight() * 0.01,
+                  width: getScreenWidth() * 0.15,
+                  decoration: const BoxDecoration(
+                    color: Colors.grey,
+                    borderRadius: BorderRadius.all(Radius.circular(10))
+                  )
+                ),
+                SizedBox(height: getScreenHeight() * 0.015), 
+                CustomButton(
+                  onTapped: (){
+                    Navigator.pop(bottomSheetContext);
+                    runDelay(() => Navigator.push(
+                      context,
+                      SliderRightToLeftRoute(
+                        page: CommentLikesListWidget(
+                          commentID: commentData.commentID, 
+                          commentSender: commentData.sender
                         )
                       )
+                    ), navigatorDelayTime);
+                  },
+                  buttonText: 'View likes',
+                  width: double.infinity,
+                  height: getScreenHeight() * 0.08,
+                  buttonColor: Colors.transparent,
+                  setBorderRadius: false,
+                ),
+                CustomButton(
+                  onTapped: (){
+                    Navigator.pop(bottomSheetContext);
+                    runDelay(() => Navigator.push(
+                      context,
+                      SliderRightToLeftRoute(
+                        page: CommentBookmarksListWidget(
+                          commentID: commentData.commentID, 
+                          commentSender: commentData.sender
+                        )
+                      )
+                    ), navigatorDelayTime);
+                  },
+                  buttonText: 'View bookmarks',
+                  width: double.infinity,
+                  height: getScreenHeight() * 0.08,
+                  buttonColor: Colors.transparent,
+                  setBorderRadius: false,
+                ),
+                Container(
+                  child: commentDataClass.sender == appStateClass.currentID ? 
+                    CustomButton(
+                      onTapped: (){
+                        Navigator.pop(bottomSheetContext);
+                        runDelay(() => Navigator.push(
+                          context,
+                          SliderRightToLeftRoute(
+                            page: EditCommentWidget(commentData: commentData)
+                          )
+                        ), navigatorDelayTime);
+                      },
+                      buttonText: 'Edit comment',
+                      width: double.infinity,
+                      height: getScreenHeight() * 0.08,
+                      buttonColor: Colors.transparent,
+                      setBorderRadius: false,
                     )
-                    
                   : null
                 ),     
                 Container(
-                  child: commentDataClass.sender == fetchReduxDatabase().currentID ? 
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: (){},
-                        splashFactory: InkRipple.splashFactory,
-                        child: CustomButton(
-                          onTapped: (){
-                            Navigator.pop(bottomSheetContext);
-                            runDelay(() => deleteComment(commentData, context), actionDelayTime) ;
-                          },
-                          buttonText: 'Delete comment',
-                          width: double.infinity,
-                          height: getScreenHeight() * 0.075,
-                          buttonColor: Colors.transparent,
-                          setBorderRadius: false,
-                        )
-                      )
+                  child: commentDataClass.sender == appStateClass.currentID ? 
+                    CustomButton(
+                      onTapped: (){
+                        Navigator.pop(bottomSheetContext);
+                        runDelay(() => deleteComment(commentData, context), actionDelayTime) ;
+                      },
+                      buttonText: 'Delete comment',
+                      width: double.infinity,
+                      height: getScreenHeight() * 0.08,
+                      buttonColor: Colors.transparent,
+                      setBorderRadius: false,
                     )
-                    
                   : null
                 ),  
               ]
@@ -187,14 +175,14 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
     else if(senderData.mutedByCurrentID || senderData.blockedByCurrentID || senderData.blocksCurrentID){
       return Container();
     }
-    if(senderData.private && !senderSocials.followedByCurrentID && senderData.userID != fetchReduxDatabase().currentID){
+    if(senderData.private && !senderSocials.followedByCurrentID && senderData.userID != appStateClass.currentID){
       return Container();
     }
     if(widget.pageDisplayType == CommentDisplayType.bookmark && !commentData.bookmarkedByCurrentID){
       return Container();
     }
     List<MediaDatasClass> mediasDatas = (commentData.mediasDatas);
-    UserDataClass parentPostSender = fetchReduxDatabase().usersDatasNotifiers.value[commentData.parentPostSender]!.notifier.value;
+    UserDataClass parentPostSender = appStateClass.usersDataNotifiers.value[commentData.parentPostSender]!.notifier.value;
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
@@ -233,7 +221,7 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                               ), 0);
                             },
                             child: Container(
-                              width: getScreenWidth() * 0.125, height: getScreenWidth() * 0.125,
+                              width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
                               decoration: BoxDecoration(
                                 border: Border.all(width: 2, color: Colors.white),
                                 borderRadius: BorderRadius.circular(100),
@@ -246,19 +234,25 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                             ),
                           ),
                           SizedBox(
-                            width: getScreenWidth() * 0.03
+                            width: getScreenWidth() * 0.02
                           ),
                           Flexible(
                             child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Flexible(
                                       child: Row(
                                         children: [
-                                          Flexible(child: Text(StringEllipsis.convertToEllipsis(senderData.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize, fontWeight: FontWeight.bold))),
+                                          Flexible(
+                                            child: Text(
+                                              StringEllipsis.convertToEllipsis(senderData.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize * 0.9, fontWeight: FontWeight.bold)
+                                            )
+                                          ),
                                           senderData.verified && !senderData.suspended && !senderData.deleted ?
                                             Row(
                                               children: [
@@ -288,17 +282,24 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                                     )
                                   ],
                                 ),
-                                Text('@${senderData.username}', style: TextStyle(fontSize: defaultTextFontSize, color: Colors.lightBlue))
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text('@${senderData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.lightBlue)),
+                                    Text(getTimeDifference(commentData.uploadTime), style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey))
+                                  ],
+                                ),
                               ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ],
+                  ]
                 ),
                 SizedBox(height: getScreenHeight() * 0.01),
-                Text("Replying to @${parentPostSender.username}'s ${commentData.parentPostType}", style: TextStyle(fontSize: defaultTextFontSize, color: Colors.blueGrey)),
+                Text("Replying to @${parentPostSender.username}'s ${commentData.parentPostType}", style: TextStyle(fontSize: defaultTextFontSize * 0.875, color: Colors.blueGrey)),
                 SizedBox(height: getScreenHeight() * 0.01),
                 const Divider(
                   color: Colors.white, height: 2.5, thickness: 1
@@ -306,7 +307,7 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                 SizedBox(height: getScreenHeight() * 0.01),
                 DisplayTextComponent(
                   text: commentData.content, tagsPressable: true, overflow: TextOverflow.ellipsis, 
-                  maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize), alignment: TextAlign.left, 
+                  maxLines: 100, style: TextStyle(fontSize: defaultTextFontSize * 0.95), alignment: TextAlign.left, 
                   context: context
                 ),
                 SizedBox(height: commentData.content.isNotEmpty ? getScreenHeight() * 0.01 : 0),
@@ -391,8 +392,6 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                     )
                   ],
                 ),
-                SizedBox(height: getScreenHeight() * 0.005),
-                Text(getTimeDifference(commentData.uploadTime), style: const TextStyle(fontSize: 13, color: Colors.grey))
               ],
             )
           )

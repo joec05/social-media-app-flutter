@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import '../EditUserProfile.dart';
@@ -51,7 +52,7 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
       if(userData.blockedByCurrentID || userData.blocksCurrentID){
         return Container();
       }
-      if(widget.profilePageUserID == fetchReduxDatabase().currentID){
+      if(widget.profilePageUserID == appStateClass.currentID){
         if(widget.userDisplayType == UserDisplayType.followers){
           if(!userSocials.followsCurrentID){
             return Container();
@@ -63,7 +64,7 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
         }
       }
     }
-    if(userData.userID == fetchReduxDatabase().currentID){
+    if(userData.userID == appStateClass.currentID){
       if(widget.userDisplayType == UserDisplayType.likes){
         if(!widget.isLiked!){
           return Container();
@@ -103,7 +104,7 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Flexible(
                       child: Row(
@@ -116,10 +117,10 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
                                 SliderRightToLeftRoute(
                                   page: ProfilePageWidget(userID: userData.userID)
                                 )
-                              ), navigatorDelayTime);
+                              ), 0);
                             },
                             child: Container(
-                              width: getScreenWidth() * 0.125, height: getScreenWidth() * 0.125,
+                              width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
                               decoration: BoxDecoration(
                                 border: Border.all(width: 2, color: Colors.white),
                                 borderRadius: BorderRadius.circular(100),
@@ -132,19 +133,25 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
                             ),
                           ),
                           SizedBox(
-                            width: getScreenWidth() * 0.03
+                            width: getScreenWidth() * 0.02
                           ),
                           Flexible(
                             child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Flexible(
                                       child: Row(
                                         children: [
-                                          Flexible(child: Text(StringEllipsis.convertToEllipsis(userData.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize, fontWeight: FontWeight.bold))),
+                                          Flexible(
+                                            child: Text(
+                                              StringEllipsis.convertToEllipsis(userData.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize * 0.9, fontWeight: FontWeight.bold)
+                                            )
+                                          ),
                                           userData.verified && !userData.suspended && !userData.deleted ?
                                             Row(
                                               children: [
@@ -165,7 +172,7 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
                                               ],
                                             )
                                           : Container(),
-                                          userData.mutedByCurrentID && !userData.suspended && !userData.deleted ?
+                                          userData.mutedByCurrentID ?
                                             Row(
                                               children: [
                                                 SizedBox(
@@ -180,10 +187,13 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
                                     ),
                                   ],
                                 ),
-                                SizedBox(
-                                  height: getScreenHeight() * 0.0015
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text('@${userData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.lightBlue)),
+                                  ],
                                 ),
-                                Text(userData.suspended || userData.deleted ? '@' : '@${userData.username}', style: TextStyle(fontSize: defaultTextFontSize, color: Colors.lightBlue))
                               ],
                             ),
                           ),
@@ -195,20 +205,20 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
                 userData.bio.isNotEmpty && !userData.blocksCurrentID && !userData.suspended && !userData.deleted ?
                   Column(
                     children: [
-                      SizedBox(height: getScreenHeight() * 0.02),
-                      Text(userData.bio, maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize)),
+                      SizedBox(height: getScreenHeight() * 0.015),
+                      Text(userData.bio, maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize * 0.85)),
                     ],
                   )
                 : Container(),
                 !userData.blocksCurrentID && !userData.suspended && !userData.deleted ?
                   Column(
                     children: [
-                      SizedBox(height: getScreenHeight() * 0.02),
+                      SizedBox(height: getScreenHeight() * 0.015),
                       CustomButton(
                         width: double.infinity, height: getScreenHeight() * 0.055, 
                         buttonColor: userData.blockedByCurrentID ? Colors.red : const Color.fromARGB(255, 70, 125, 170), 
                         onTapped: (){
-                          if(userData.userID == fetchReduxDatabase().currentID){
+                          if(userData.userID == appStateClass.currentID){
                             runDelay(() => Navigator.push(
                               context,
                               SliderRightToLeftRoute(
@@ -228,7 +238,7 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
                           }
                         },
                         buttonText: userData.blockedByCurrentID ? 'Unblock' :
-                        userData.userID == fetchReduxDatabase().currentID ? 'Edit Profile'
+                        userData.userID == appStateClass.currentID ? 'Edit Profile'
                         : userData.requestedByCurrentID ? 'Cancel Request' :
                         userSocials.followedByCurrentID ? 'Unfollow' : 'Follow',
                         setBorderRadius: true,

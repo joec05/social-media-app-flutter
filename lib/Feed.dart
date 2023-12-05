@@ -4,14 +4,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart' as d;
 import 'package:flutter/material.dart';
-import 'package:social_media_app/class/CommentNotifier.dart';
 import 'package:social_media_app/class/DisplayCommentDataClass.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
-import 'package:social_media_app/class/UserDataNotifier.dart';
-import 'package:social_media_app/class/UserSocialNotifier.dart';
 import 'package:social_media_app/custom/CustomPostWidget.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
-import 'package:social_media_app/redux/reduxLibrary.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/streams/CommentDataStreamClass.dart';
 import 'package:social_media_app/streams/PostDataStreamClass.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
@@ -21,7 +18,6 @@ import 'class/CommentClass.dart';
 import 'class/DisplayPostDataClass.dart';
 import 'class/MediaDataClass.dart';
 import 'class/PostClass.dart';
-import 'class/PostNotifier.dart';
 import 'class/UserSocialClass.dart';
 import 'custom/CustomCommentWidget.dart';
 import 'custom/CustomPagination.dart';
@@ -59,12 +55,12 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
     super.initState();
     runDelay(() async => fetchFeedPosts(posts.value.length, false, false), actionDelayTime);
     postDataStreamClassSubscription = PostDataStreamClass().postDataStream.listen((PostDataStreamControllerClass data) {
-      if(data.uniqueID == fetchReduxDatabase().currentID && mounted){
+      if(data.uniqueID == appStateClass.currentID && mounted){
         posts.value = [data.postClass, ...posts.value];
       }
     });
     commentDataStreamClassSubscription = CommentDataStreamClass().commentDataStream.listen((CommentDataStreamControllerClass data) {
-      if(data.uniqueID == fetchReduxDatabase().currentID && mounted){
+      if(data.uniqueID == appStateClass.currentID && mounted){
         posts.value = [data.commentClass, ...posts.value]; 
       }
     });
@@ -103,7 +99,7 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
         d.Response res;
         if(!isPaginating){
           stringified = jsonEncode({
-            'userID': fetchReduxDatabase().currentID,
+            'userID': appStateClass.currentID,
             'currentLength': currentPostsLength,
             'paginationLimit': postsPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
@@ -112,7 +108,7 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
         }else{
           List paginatedFeed = await DatabaseHelper().fetchPaginatedFeedPosts(currentPostsLength, postsPaginationLimit);
           stringified = jsonEncode({
-            'userID': fetchReduxDatabase().currentID,
+            'userID': appStateClass.currentID,
             'feedPostsEncoded': jsonEncode(paginatedFeed),
             'currentLength': currentPostsLength,
             'paginationLimit': postsPaginationLimit,
@@ -206,124 +202,104 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
     return Scaffold(
       body: Stack(
         children: [
-          StoreConnector<AppState, ValueNotifier<Map<String, Map<String, PostNotifier>>>>(
-            converter: (store) => store.state.postsNotifiers,
-            builder: (context, ValueNotifier<Map<String, Map<String, PostNotifier>>> postsNotifiers){
-              return StoreConnector<AppState, ValueNotifier<Map<String, Map<String, CommentNotifier>>>>(
-                converter: (store) => store.state.commentsNotifiers,
-                builder: (context, ValueNotifier<Map<String, Map<String, CommentNotifier>>> commentsNotifiers){
-                  return StoreConnector<AppState, ValueNotifier<Map<String, UserDataNotifier>>>(
-                    converter: (store) => store.state.usersDatasNotifiers,
-                    builder: (context, ValueNotifier<Map<String, UserDataNotifier>> usersDatasNotifiers){
-                      return StoreConnector<AppState, ValueNotifier<Map<String, UserSocialNotifier>>>(
-                        converter: (store) => store.state.usersSocialsNotifiers,
-                        builder: (context, ValueNotifier<Map<String, UserSocialNotifier>> usersSocialsNotifiers){
-                          return ValueListenableBuilder(
-                            valueListenable: loadingPostsStatus,
-                            builder: (context, loadingStatusValue, child){
-                              return ValueListenableBuilder(
-                                valueListenable: totalPostsLength,
-                                builder: (context, totalPostsLengthValue, child){
-                                  return ValueListenableBuilder(
-                                    valueListenable: posts,
-                                    builder: ((context, posts, child) {
-                                      return LoadMoreBottom(
-                                        addBottomSpace: true,
-                                        loadMore: () async{
-                                          if(totalPostsLengthValue > posts.length){
-                                            await loadMorePosts();
+          ValueListenableBuilder(
+            valueListenable: loadingPostsStatus,
+            builder: (context, loadingStatusValue, child){
+              return ValueListenableBuilder(
+                valueListenable: totalPostsLength,
+                builder: (context, totalPostsLengthValue, child){
+                  return ValueListenableBuilder(
+                    valueListenable: posts,
+                    builder: ((context, posts, child) {
+                      return LoadMoreBottom(
+                        addBottomSpace: true,
+                        loadMore: () async{
+                          if(totalPostsLengthValue > posts.length){
+                            await loadMorePosts();
+                          }
+                        },
+                        status: loadingStatusValue,
+                        refresh: refresh,
+                        child: CustomScrollView(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          slivers: <Widget>[
+                            SliverList(delegate: SliverChildBuilderDelegate(
+                              childCount: posts.length, 
+                              (context, index) {
+                                if(posts[index] is DisplayPostDataClass){
+                                  if(appStateClass.postsNotifiers.value[posts[index].sender] == null){
+                                    return Container();
+                                  }
+                                  if(appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID] == null){
+                                    return Container();
+                                  }
+                                  return ValueListenableBuilder<PostClass>(
+                                    valueListenable: appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID]!.notifier,
+                                    builder: ((context, postData, child) {
+                                      return ValueListenableBuilder(
+                                        valueListenable: appStateClass.usersDataNotifiers.value[posts[index].sender]!.notifier, 
+                                        builder: ((context, userData, child) {
+                                          if(!postData.deleted){
+                                            return ValueListenableBuilder(
+                                              valueListenable: appStateClass.usersSocialsNotifiers.value[posts[index].sender]!.notifier, 
+                                              builder: ((context, userSocials, child) {
+                                                return CustomPostWidget(
+                                                  postData: postData, 
+                                                  senderData: userData,
+                                                  senderSocials: userSocials,
+                                                  pageDisplayType: PostDisplayType.feed,
+                                                  key: UniqueKey()
+                                                );
+                                              })
+                                            );
                                           }
-                                        },
-                                        status: loadingStatusValue,
-                                        refresh: refresh,
-                                        child: CustomScrollView(
-                                          controller: _scrollController,
-                                          physics: const AlwaysScrollableScrollPhysics(),
-                                          slivers: <Widget>[
-                                            SliverList(delegate: SliverChildBuilderDelegate(
-                                              childCount: posts.length, 
-                                              (context, index) {
-                                                if(posts[index] is DisplayPostDataClass){
-                                                  if(postsNotifiers.value[posts[index].sender] == null){
-                                                    return Container();
-                                                  }
-                                                  if(postsNotifiers.value[posts[index].sender]![posts[index].postID] == null){
-                                                    return Container();
-                                                  }
-                                                  return ValueListenableBuilder<PostClass>(
-                                                    valueListenable: postsNotifiers.value[posts[index].sender]![posts[index].postID]!.notifier,
-                                                    builder: ((context, postData, child) {
-                                                      return ValueListenableBuilder(
-                                                        valueListenable: usersDatasNotifiers.value[posts[index].sender]!.notifier, 
-                                                        builder: ((context, userData, child) {
-                                                          if(!postData.deleted){
-                                                            return ValueListenableBuilder(
-                                                              valueListenable: usersSocialsNotifiers.value[posts[index].sender]!.notifier, 
-                                                              builder: ((context, userSocials, child) {
-                                                                return CustomPostWidget(
-                                                                  postData: postData, 
-                                                                  senderData: userData,
-                                                                  senderSocials: userSocials,
-                                                                  pageDisplayType: PostDisplayType.feed,
-                                                                  key: UniqueKey()
-                                                                );
-                                                              })
-                                                            );
-                                                          }
-                                                          return Container();
-                                                        })
-                                                      );
-                                                    }),
-                                                  );
-                                                }else{
-                                                  if(commentsNotifiers.value[posts[index].sender] == null){
-                                                    return Container();
-                                                  }
-                                                  if(commentsNotifiers.value[posts[index].sender]![posts[index].commentID] == null){
-                                                    return Container();
-                                                  }
-                                                  return ValueListenableBuilder<CommentClass>(
-                                                    valueListenable: commentsNotifiers.value[posts[index].sender]![posts[index].commentID]!.notifier,
-                                                    builder: ((context, commentData, child) {
-                                                      return ValueListenableBuilder(
-                                                        valueListenable: usersDatasNotifiers.value[posts[index].sender]!.notifier, 
-                                                        builder: ((context, userData, child) {
-                                                          if(!commentData.deleted){
-                                                             return ValueListenableBuilder(
-                                                              valueListenable: usersSocialsNotifiers.value[posts[index].sender]!.notifier, 
-                                                              builder: ((context, userSocials, child) {
-                                                                return CustomCommentWidget(
-                                                                  commentData: commentData, 
-                                                                  senderData: userData,
-                                                                  senderSocials: userSocials,
-                                                                  pageDisplayType: CommentDisplayType.feed,
-                                                                  key: UniqueKey()
-                                                                );
-                                                              })
-                                                            );
-                                                          }
-                                                          return Container();
-                                                        })
-                                                      );
-                                                    }),
-                                                  );
-                                                }
-                                              }
-                                            ))                                    
-                                          ]
-                                        )
+                                          return Container();
+                                        })
                                       );
-                                    })
+                                    }),
+                                  );
+                                }else{
+                                  if(appStateClass.commentsNotifiers.value[posts[index].sender] == null){
+                                    return Container();
+                                  }
+                                  if(appStateClass.commentsNotifiers.value[posts[index].sender]![posts[index].commentID] == null){
+                                    return Container();
+                                  }
+                                  return ValueListenableBuilder<CommentClass>(
+                                    valueListenable: appStateClass.commentsNotifiers.value[posts[index].sender]![posts[index].commentID]!.notifier,
+                                    builder: ((context, commentData, child) {
+                                      return ValueListenableBuilder(
+                                        valueListenable: appStateClass.usersDataNotifiers.value[posts[index].sender]!.notifier, 
+                                        builder: ((context, userData, child) {
+                                          if(!commentData.deleted){
+                                              return ValueListenableBuilder(
+                                              valueListenable: appStateClass.usersSocialsNotifiers.value[posts[index].sender]!.notifier, 
+                                              builder: ((context, userSocials, child) {
+                                                return CustomCommentWidget(
+                                                  commentData: commentData, 
+                                                  senderData: userData,
+                                                  senderSocials: userSocials,
+                                                  pageDisplayType: CommentDisplayType.feed,
+                                                  key: UniqueKey()
+                                                );
+                                              })
+                                            );
+                                          }
+                                          return Container();
+                                        })
+                                      );
+                                    }),
                                   );
                                 }
-                              );
-                            }
-                          );
-                        }
+                              }
+                            ))                                    
+                          ]
+                        )
                       );
-                    }
+                    })
                   );
-                },
+                }
               );
             }
           ),

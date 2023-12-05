@@ -43,6 +43,7 @@ class _FollowRequestsWidgetStatefulState extends State<_FollowRequestsWidgetStat
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('Follow Requests'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(

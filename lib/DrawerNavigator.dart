@@ -4,6 +4,7 @@ import 'package:social_media_app/FollowRequests.dart';
 import 'package:social_media_app/ProfileBookmarksPage.dart';
 import 'package:social_media_app/ProfilePage.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import 'WritePost.dart';
@@ -53,9 +54,9 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
               margin: EdgeInsets.only(top: getScreenHeight() * 0.05),
               width:  0.85 * getScreenWidth(),
               height: getScreenHeight() * 0.2,
-              child: fetchReduxDatabase().usersDatasNotifiers.value[fetchReduxDatabase().currentID] != null ?
+              child: appStateClass.usersDataNotifiers.value[appStateClass.currentID] != null ?
                 ValueListenableBuilder(
-                  valueListenable: fetchReduxDatabase().usersDatasNotifiers.value[fetchReduxDatabase().currentID]!.notifier,
+                  valueListenable: appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier,
                   builder: (context, userData, child){
                     return Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -234,7 +235,7 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
                 runDelay(() => Navigator.push(
                   parentContext,
                   SliderRightToLeftRoute(
-                    page: ProfilePageBookmarksWidget(userID: fetchReduxDatabase().currentID)
+                    page: ProfilePageBookmarksWidget(userID: appStateClass.currentID)
                   )
                 ), navigatorDelayTime);
               }, navigatorDelayTime);

@@ -6,5 +6,5 @@ export 'GlobalEnums.dart';
 export 'GlobalVariables.dart';
 export 'GlobalFunctions.dart';
 export 'NavigationActions.dart';
-export 'ReduxActions.dart';
+export 'AppStateActions.dart';
 export 'ServerActions.dart';

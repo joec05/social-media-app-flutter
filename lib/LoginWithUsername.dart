@@ -8,8 +8,8 @@ import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/caching/sqfliteConfiguration.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
-import '../redux/reduxLibrary.dart';
 import 'class/UserDataClass.dart';
 import 'MainPage.dart';
 import 'styles/AppStyles.dart';
@@ -109,7 +109,7 @@ class _LoginWithUsernameStatefulState extends State<LoginWithUsernameStateful> {
             var res = await dio.post('$serverDomainAddress/users/loginWithUsername', data: stringified);
             if(res.data.isNotEmpty){
               if(res.data['message'] == 'Login successful'){
-                StoreProvider.of<AppState>(context).dispatch(CurrentID(res.data['userID']));
+                appStateClass.currentID = res.data['userID'];
                 Map userProfileData = (res.data['userProfileData']);
                 UserDataClass userProfileDataClass = UserDataClass(
                   userProfileData['user_id'], userProfileData['name'], userProfileData['username'], userProfileData['profile_picture_link'], 
@@ -174,6 +174,7 @@ class _LoginWithUsernameStatefulState extends State<LoginWithUsernameStateful> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('Login With Username'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(
@@ -181,11 +182,39 @@ class _LoginWithUsernameStatefulState extends State<LoginWithUsernameStateful> {
         )
       ),
       body: Center(
-        child: Stack(
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding),
-              child: ListView(
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: defaultFrontPageDecoration,
+          child: Stack(
+            children: [
+              Positioned(
+                      left: -getScreenWidth() * 0.45,
+                      top: -getScreenWidth() * 0.25,
+                      child: Container(
+                        width: getScreenWidth(),
+                        height: getScreenWidth(),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(200),
+                          color: Colors.amber.withOpacity(0.65)
+                        ),
+                      ),
+                    ),
+              Positioned(
+                right: -getScreenWidth() * 0.55,
+                top: getScreenWidth() * 0.85,
+                child: Container(
+                  width: getScreenWidth(),
+                  height: getScreenWidth(),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(200),
+                    color: Colors.blue.withOpacity(0.8)
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding),
+                child: ListView(
                 children: <Widget>[
                   SizedBox(
                     height: titleToContentMargin,
@@ -194,7 +223,7 @@ class _LoginWithUsernameStatefulState extends State<LoginWithUsernameStateful> {
                     textFieldWithDescription(
                         TextField(
                         controller: usernameController,
-                        decoration: generateProfileTextFieldDecoration('your username'),
+                        decoration: generateProfileTextFieldDecoration('your username', Icons.person),
                         maxLength: usernameCharacterMaxLimit
                       ),
                       'Username',
@@ -208,7 +237,7 @@ class _LoginWithUsernameStatefulState extends State<LoginWithUsernameStateful> {
                         textFieldWithDescription(
                           TextField(
                             controller: passwordController,
-                            decoration: generateProfileTextFieldDecoration('your password'),
+                            decoration: generateProfileTextFieldDecoration('your password', Icons.lock),
                             keyboardType: TextInputType.visiblePassword,
                             maxLength: passwordCharacterMaxLimit
                           ),
@@ -217,22 +246,6 @@ class _LoginWithUsernameStatefulState extends State<LoginWithUsernameStateful> {
                         ),
                         SizedBox(
                           height: getScreenHeight() * 0.001,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            GestureDetector(
-                              onTap: (){
-                                runDelay(() => Navigator.push(
-                                  context,
-                                  SliderRightToLeftRoute(
-                                    page: const LoginWithEmailStateless()
-                                  )
-                                ), navigatorDelayTime);
-                              },
-                              child: Text('Login with email instead', style: TextStyle(fontSize: defaultLoginAlternativeTextFontSize, color: Colors.lightBlue,))
-                            )
-                          ]
                         ),
                       ]
                     ),
@@ -255,8 +268,9 @@ class _LoginWithUsernameStatefulState extends State<LoginWithUsernameStateful> {
                                 builder: (context, isLoadingValue, child) {
                                   return CustomButton(
                                     width: defaultTextFieldButtonSize.width, height: defaultTextFieldButtonSize.height,
-                                    buttonColor: Colors.red, buttonText: 'Login', 
-                                    onTapped: usernameVerified && passwordVerified && !isLoadingValue ? loginWithUsername : null,
+                                    buttonColor: usernameVerified && passwordVerified && !isLoadingValue ? Colors.red : Colors.grey, 
+                                    buttonText: 'Login', 
+                                    onTapped: usernameVerified && passwordVerified && !isLoadingValue ? loginWithUsername : (){},
                                     setBorderRadius: true,
                                   );
                                 }
@@ -269,19 +283,36 @@ class _LoginWithUsernameStatefulState extends State<LoginWithUsernameStateful> {
                   ),
                   SizedBox(
                     height: defaultVerticalPadding
-                  )
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: (){
+                          runDelay(() => Navigator.pushReplacement(
+                            context,
+                            SliderRightToLeftRoute(
+                              page: const LoginWithEmailStateless()
+                            )
+                          ), navigatorDelayTime);
+                        },
+                        child: Text('Login with email instead', style: TextStyle(fontSize: defaultLoginAlternativeTextFontSize, color: Colors.amberAccent,))
+                      )
+                    ]
+                  ),
                 ],
               ),
-            ),
-            ValueListenableBuilder(
-              valueListenable: isLoading,
-              builder: (context, isLoadingValue, child) {
-                return isLoadingValue ?
-                  loadingSignWidget()
-                : Container();
-              } 
-            )
-          ]
+              ),
+              ValueListenableBuilder(
+                valueListenable: isLoading,
+                builder: (context, isLoadingValue, child) {
+                  return isLoadingValue ?
+                    loadingPageWidget()
+                  : Container();
+                } 
+              )
+            ]
+          )
         )
       ),
     );

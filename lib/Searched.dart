@@ -48,6 +48,7 @@ class _SearchedWidgetStatefulState extends State<_SearchedWidgetStateful> with S
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: defaultLeadingWidget(context),
         title: const Text('Search Results'), 
         titleSpacing: defaultAppBarTitleSpacing,
         flexibleSpace: Container(

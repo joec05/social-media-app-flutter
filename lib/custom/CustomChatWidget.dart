@@ -6,6 +6,7 @@ import 'package:social_media_app/GroupChatRoom.dart';
 import 'package:social_media_app/PrivateChatRoom.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/class/ChatDataClass.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import '../GroupProfilePage.dart';
@@ -87,8 +88,8 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
     bool senderIsCurrentID = false;
     String subject = '';
     if(chatData.latestMessageData.type == 'message'){
-      senderIsCurrentID = latestMessageSender == fetchReduxDatabase().currentID;
-      subject = senderIsCurrentID ? 'You' : fetchReduxDatabase().usersDatasNotifiers.value[latestMessageSender]!.notifier.value.name;
+      senderIsCurrentID = latestMessageSender == appStateClass.currentID;
+      subject = senderIsCurrentID ? 'You' : appStateClass.usersDataNotifiers.value[latestMessageSender]!.notifier.value.name;
     }
     if(chatData.deleted){
       return Container();
@@ -125,7 +126,7 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
                                 navigateToProfilePage(context, recipientData!.userID);
                               },
                               child: Container(
-                                width: getScreenWidth() * 0.125, height: getScreenWidth() * 0.125,
+                                width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
                                 decoration: BoxDecoration(
                                   border: Border.all(width: 2, color: Colors.white),
                                   borderRadius: BorderRadius.circular(100),
@@ -138,7 +139,7 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
                               ),
                             ),
                             SizedBox(
-                              width: getScreenWidth() * 0.03
+                              width: getScreenWidth() * 0.02
                             ),
                             Flexible(
                               child: Column(
@@ -148,7 +149,7 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
                                   Row(
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
-                                      Flexible(child: Text(StringEllipsis.convertToEllipsis(recipientData!.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize, fontWeight: FontWeight.bold))),
+                                      Flexible(child: Text(StringEllipsis.convertToEllipsis(recipientData!.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize * 0.9, fontWeight: FontWeight.bold))),
                                       recipientData!.verified && !recipientData!.suspended && !recipientData!.deleted ?
                                         Row(
                                           children: [
@@ -181,14 +182,10 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
                                       : Container()
                                     ],
                                   ),
-                                  SizedBox(
-                                    height: getScreenHeight() * 0.003
-                                  ),
-                                  Text(chatData.latestMessageData.content.isEmpty ? '' : '$subject: ${chatData.latestMessageData.content}', maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize)),
-                                  SizedBox(
-                                    height: getScreenHeight() * 0.003
-                                  ),
-                                  Text(chatData.latestMessageData.uploadTime.isNotEmpty ? getTimeDifference(chatData.latestMessageData.uploadTime) : '', style: const TextStyle(fontSize: 12)),
+                                  SizedBox(height: getScreenHeight() * 0.005),
+                                  Text(chatData.latestMessageData.content.isEmpty ? '' : '$subject: ${chatData.latestMessageData.content}', maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.blueGrey)),
+                                  SizedBox(height: getScreenHeight() * 0.005),
+                                  Text(chatData.latestMessageData.uploadTime.isNotEmpty ? getTimeDifference(chatData.latestMessageData.uploadTime) : '', style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey)),
                                 ],
                               ),
                             ),
@@ -204,7 +201,7 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
         )
       );
     }else{
-      UserDataClass? senderProfileData = chatData.latestMessageData.messageID.isNotEmpty ? fetchReduxDatabase().usersDatasNotifiers.value[chatData.latestMessageData.sender]!.notifier.value : null;
+      UserDataClass? senderProfileData = chatData.latestMessageData.messageID.isNotEmpty ? appStateClass.usersDataNotifiers.value[chatData.latestMessageData.sender]!.notifier.value : null;
       return Card(
         clipBehavior: Clip.antiAlias,
         margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
@@ -238,7 +235,7 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
                                 ), navigatorDelayTime);
                               },
                               child: Container(
-                                width: getScreenWidth() * 0.125, height: getScreenWidth() * 0.125,
+                                width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
                                 decoration: BoxDecoration(
                                   border: Border.all(width: 2, color: Colors.white),
                                   borderRadius: BorderRadius.circular(100),
@@ -251,7 +248,7 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
                               ),
                             ),
                             SizedBox(
-                              width: getScreenWidth() * 0.03
+                              width: getScreenWidth() * 0.02
                             ),
                             Flexible(
                               child: Column(
@@ -266,27 +263,23 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
                                           StringEllipsis.convertToEllipsis(chatData.groupProfileData!.name),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(fontSize: defaultTextFontSize, fontWeight: FontWeight.bold),
+                                          style: TextStyle(fontSize: defaultTextFontSize * 0.9, fontWeight: FontWeight.bold),
                                           softWrap: true,
                                         )
                                       )
                                     ],
                                   ),
-                                  SizedBox(
-                                    height: getScreenHeight() * 0.003
-                                  ),
+                                  SizedBox(height: getScreenHeight() * 0.005),
                                   Text(
                                     senderProfileData == null ? '' : 
                                     senderProfileData.blockedByCurrentID || senderProfileData.blocksCurrentID ?
                                       'This message is unavailable'
                                     :
                                       chatData.latestMessageData.type == 'message' ? '$subject: ${chatData.latestMessageData.content}' : chatData.latestMessageData.content,
-                                    maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize)
+                                    maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.blueGrey)
                                   ),
-                                  SizedBox(
-                                    height: getScreenHeight() * 0.003
-                                  ),
-                                  Text(chatData.latestMessageData.uploadTime.isNotEmpty ? getTimeDifference(chatData.latestMessageData.uploadTime) : '', style: const TextStyle(fontSize: 12)),
+                                  SizedBox(height: getScreenHeight() * 0.005),
+                                  Text(chatData.latestMessageData.uploadTime.isNotEmpty ? getTimeDifference(chatData.latestMessageData.uploadTime) : '', style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey)),
                                 ],
                               
                               ),

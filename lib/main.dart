@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:social_media_app/Chats.dart';
@@ -14,10 +13,9 @@ import 'package:social_media_app/SignUp.dart';
 import 'package:social_media_app/caching/sqfliteConfiguration.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
 import 'package:social_media_app/firebase/firebase_constants.dart';
-import 'package:social_media_app/firebase/firebase_options.dart';
 import 'package:social_media_app/observer/GlobalObserver.dart';
-import 'package:social_media_app/redux/reduxLibrary.dart';
 import 'package:social_media_app/socket/main.dart';
+import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import 'MainPage.dart';
@@ -40,7 +38,8 @@ void main() async{
     GlobalObserver globalObserver = GlobalObserver();
     WidgetsBinding.instance.addObserver(globalObserver);
     await firebaseInitialization;
-    runApp(StoreProvider(store: store, child: const MyApp()));
+    await firebaseAppCheckInitialization;
+    runApp(const MyApp());
   } on Exception catch (e) {
     doSomethingWithException(e);
   }
@@ -99,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
     socket.on('connect', (_){
       String ? id = socket.id!;
       if(mounted){
-        StoreProvider.of<AppState>(context).dispatch(SocketID(id));
+        appStateClass.socketID = id;
       }
       debugPrint('$id is socket id');
     });
@@ -114,7 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
         var verifyAccountExistence = await checkAccountExists(getCurrentUserIDList[0]);
         if(verifyAccountExistence['message'] == 'Successfully checked account existence'){
           if(verifyAccountExistence['exists'] == true){
-            StoreProvider.of<AppState>(context).dispatch(CurrentID(getCurrentUserIDList[0]));
+            appStateClass.currentID = getCurrentUserIDList[0];
             runDelay(() => Navigator.push(
               context,
               SliderRightToLeftRoute(
@@ -175,60 +174,105 @@ class _MyHomePageState extends State<MyHomePage> {
                 width: double.infinity,
                 height: double.infinity,
                 decoration: defaultFrontPageDecoration,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    const Text('Welcome To App', style: TextStyle(fontSize: 22.5, fontWeight: FontWeight.w600)),
-                    SizedBox(height: getScreenHeight() * 0.1),
-                    CustomButton(
-                      width: getScreenWidth() * 0.6, height: getScreenHeight() * 0.075, 
-                      buttonColor: const Color.fromARGB(255, 151, 145, 87), buttonText: 'Sign Up', 
-                      onTapped: (){
-                        runDelay((){
-                          resetReduxData(context);
-                          runDelay(() => Navigator.push(
-                            context,
-                            SliderRightToLeftRoute(
-                              page: const SignUpStateless()
-                            )
-                          ), navigatorDelayTime);
-                        }, actionDelayTime);
-                      }, 
-                      setBorderRadius: true
+                child: Stack(
+                  children: [
+                    Positioned(
+                      left: -getScreenWidth() * 0.45,
+                      top: -getScreenWidth() * 0.25,
+                      child: Container(
+                        width: getScreenWidth(),
+                        height: getScreenWidth(),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(200),
+                          color: Colors.amber.withOpacity(0.65)
+                        ),
+                      ),
                     ),
-                    SizedBox(height: getScreenHeight() * 0.02),
-                    CustomButton(
-                      width: getScreenWidth() * 0.6, height: getScreenHeight() * 0.075, 
-                      buttonColor: const Color.fromARGB(255, 151, 145, 87), buttonText: 'Login With Email', 
-                      onTapped: (){
-                        runDelay((){
-                          resetReduxData(context);
-                          runDelay(() => Navigator.push(
-                            context,
-                            SliderRightToLeftRoute(
-                              page: const LoginWithEmailStateless()
-                            )
-                          ), navigatorDelayTime);
-                        }, actionDelayTime);
-                      },
-                      setBorderRadius: true
+                    Positioned(
+                      right: -getScreenWidth() * 0.55,
+                      top: getScreenWidth() * 0.85,
+                      child: Container(
+                        width: getScreenWidth(),
+                        height: getScreenWidth(),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(200),
+                          color: Colors.blue.withOpacity(0.8)
+                        ),
+                      ),
                     ),
-                    SizedBox(height: getScreenHeight() * 0.02),
-                    CustomButton(
-                      width: getScreenWidth() * 0.6, height: getScreenHeight() * 0.075, 
-                      buttonColor: const Color.fromARGB(255, 151, 145, 87), buttonText: 'Login With Username', 
-                      onTapped: (){
-                        runDelay((){
-                          resetReduxData(context);
-                          runDelay(() => Navigator.push(
-                            context,
-                            SliderRightToLeftRoute(
-                              page: const LoginWithUsernameStateless()
-                            )
-                          ), navigatorDelayTime);
-                        }, actionDelayTime);
-                      },
-                      setBorderRadius: true
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                const Text('Social Media App', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: Colors.black)),
+                                SizedBox(height: getScreenHeight() * 0.085),
+                              ],
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[                        
+                                CustomButton(
+                                  width: getScreenWidth() * 0.6, height: getScreenHeight() * 0.075, 
+                                  buttonColor: const Color.fromARGB(255, 151, 145, 87), buttonText: 'Sign Up', 
+                                  onTapped: (){
+                                    runDelay((){
+                                      resetReduxData(context);
+                                      runDelay(() => Navigator.push(
+                                        context,
+                                        SliderRightToLeftRoute(
+                                          page: const SignUpStateless()
+                                        )
+                                      ), navigatorDelayTime);
+                                    }, actionDelayTime);
+                                  }, 
+                                  setBorderRadius: true
+                                ),
+                                SizedBox(height: getScreenHeight() * 0.02),
+                                CustomButton(
+                                  width: getScreenWidth() * 0.6, height: getScreenHeight() * 0.075, 
+                                  buttonColor: const Color.fromARGB(255, 151, 145, 87), buttonText: 'Login With Email', 
+                                  onTapped: (){
+                                    runDelay((){
+                                      resetReduxData(context);
+                                      runDelay(() => Navigator.push(
+                                        context,
+                                        SliderRightToLeftRoute(
+                                          page: const LoginWithEmailStateless()
+                                        )
+                                      ), navigatorDelayTime);
+                                    }, actionDelayTime);
+                                  },
+                                  setBorderRadius: true
+                                ),
+                                SizedBox(height: getScreenHeight() * 0.02),
+                                CustomButton(
+                                  width: getScreenWidth() * 0.6, height: getScreenHeight() * 0.075, 
+                                  buttonColor: const Color.fromARGB(255, 151, 145, 87), buttonText: 'Login With Username', 
+                                  onTapped: (){
+                                    runDelay((){
+                                      resetReduxData(context);
+                                      runDelay(() => Navigator.push(
+                                        context,
+                                        SliderRightToLeftRoute(
+                                          page: const LoginWithUsernameStateless()
+                                        )
+                                      ), navigatorDelayTime);
+                                    }, actionDelayTime);
+                                  },
+                                  setBorderRadius: true
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 )
@@ -250,6 +294,7 @@ class _MyHomePageState extends State<MyHomePage> {
           }
           return Scaffold(
             appBar: AppBar(
+              leading: defaultLeadingWidget(context),
               title: const Text('Feed'), 
               titleSpacing: defaultAppBarTitleSpacing,
               flexibleSpace: Container(
