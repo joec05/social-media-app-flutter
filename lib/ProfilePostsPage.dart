@@ -4,11 +4,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/MediaDataClass.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'class/DisplayPostDataClass.dart';
 import 'class/PostClass.dart';
@@ -40,7 +40,7 @@ class _ProfilePagePostsWidgetStateful extends StatefulWidget {
 
 class _ProfilePagePostsWidgetStatefulState extends State<_ProfilePagePostsWidgetStateful> with AutomaticKeepAliveClientMixin{
   late String userID;
-  ValueNotifier<bool> isLoading = ValueNotifier(false);
+  ValueNotifier<bool> isLoading = ValueNotifier(true);
   ValueNotifier<List<DisplayPostDataClass>> posts = ValueNotifier([]);
   ValueNotifier<LoadingStatus> loadingPostsStatus = ValueNotifier(LoadingStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
@@ -159,123 +159,134 @@ class _ProfilePagePostsWidgetStatefulState extends State<_ProfilePagePostsWidget
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      body: Stack(
-        children: [
-          SafeArea(
-            top: false,
-            bottom: false,
-            child: Builder(
-              builder: (BuildContext context) {
-                return ValueListenableBuilder(
-                  valueListenable: loadingPostsStatus,
-                  builder: (context, loadingStatusValue, child){
-                    if(appStateClass.usersDataNotifiers.value[userID] != null){
-                      return ValueListenableBuilder(
-                        valueListenable: appStateClass.usersDataNotifiers.value[userID]!.notifier, 
-                        builder: ((context, profilePageUserData, child) {
-                          if(profilePageUserData.blocksCurrentID){
-                            return Container();
-                          }
-                          return ValueListenableBuilder(
-                            valueListenable: appStateClass.usersSocialsNotifiers.value[userID]!.notifier, 
-                            builder: ((context, profilePageUserSocials, child) {
-                              if(profilePageUserData.private && !profilePageUserSocials.followedByCurrentID && userID != appStateClass.currentID){
-                                return Container();
-                              }
-                              return ValueListenableBuilder(
-                                valueListenable: canPaginate,
-                                builder: (context, canPaginateValue, child){
-                                  return ValueListenableBuilder(
-                                    valueListenable: posts,
-                                    builder: ((context, posts, child) {
-                                      return LoadMoreBottom(
-                                        addBottomSpace: canPaginateValue,
-                                        loadMore: () async{
-                                          if(canPaginateValue){
-                                            await loadMorePosts();
-                                          }
-                                        },
-                                        status: loadingStatusValue,
-                                        refresh: null,
-                                        child: CustomScrollView(
-                                          controller: _scrollController,
-                                          primary: false,
-                                          physics: const AlwaysScrollableScrollPhysics(),
-                                          slivers: <Widget>[
-                                            SliverOverlapInjector(
-                                              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
-                                            ),
-                                            SliverList(delegate: SliverChildBuilderDelegate(
-                                              addAutomaticKeepAlives: true,
-                                              childCount: posts.length, 
-                                              (context, index) {
-                                                if(appStateClass.postsNotifiers.value[posts[index].sender] == null){
-                                                  return Container();
-                                                }
-                                                if(appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID] == null){
-                                                  return Container();
-                                                }
-                                                return ValueListenableBuilder<PostClass>(
-                                                  valueListenable: appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID]!.notifier,
-                                                  builder: ((context, postData, child) {
-                                                    return ValueListenableBuilder(
-                                                      valueListenable: appStateClass.usersDataNotifiers.value[posts[index].sender]!.notifier, 
-                                                      builder: ((context, userData, child) {
-                                                        if(!postData.deleted){
-                                                          if(userData.blocksCurrentID){
-                                                            return Container();
-                                                          }
-                                                          return ValueListenableBuilder(
-                                                            valueListenable: appStateClass.usersSocialsNotifiers.value[posts[index].sender]!.notifier, 
-                                                            builder: ((context, userSocials, child) { 
-                                                              if(userData.private && !userSocials.followedByCurrentID && userData.userID != appStateClass.currentID){
-                                                                return Container();
-                                                              }
-                                                              return CustomPostWidget(
-                                                                postData: postData, 
-                                                                senderData: userData,
-                                                                senderSocials: userSocials,
-                                                                pageDisplayType: PostDisplayType.profilePost,
-                                                                key: UniqueKey()
-                                                              );
-                                                            })
-                                                          );
-                                                        }
-                                                        return Container();
-                                                      })
-                                                    );
-                                                  }),
-                                                );
-                                              }
-                                            ))                                    
-                                          ]
-                                        )
-                                      );
-                                    })
-                                  );
-                                }
-                              );
-                            })
-                          );
-                        })
+      body: ValueListenableBuilder(
+        valueListenable: isLoading,
+        builder: ((context, isLoadingValue, child) {
+          if(isLoadingValue){
+            return Skeletonizer(
+              enabled: true,
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: <Widget>[
+                  SliverOverlapInjector(
+                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
+                  ),
+                  SliverList(delegate: SliverChildBuilderDelegate(
+                    childCount: postsPaginationLimit, 
+                    (context, index) {
+                      return CustomPostWidget(
+                        postData: PostClass.getFakeData(),
+                        senderData: UserDataClass.getFakeData(), 
+                        senderSocials: UserSocialClass.getFakeData(), 
+                        pageDisplayType: PostDisplayType.profilePost,
+                        skeletonMode: true,
                       );
                     }
-                    return Container();
-                  }
+                  ))
+                ]
+              )
+            ); 
+          }
+          return ValueListenableBuilder(
+            valueListenable: loadingPostsStatus,
+            builder: (context, loadingStatusValue, child){
+              if(appStateClass.usersDataNotifiers.value[userID] != null){
+                return ValueListenableBuilder(
+                  valueListenable: appStateClass.usersDataNotifiers.value[userID]!.notifier, 
+                  builder: ((context, profilePageUserData, child) {
+                    if(profilePageUserData.blocksCurrentID){
+                      return Container();
+                    }
+                    return ValueListenableBuilder(
+                      valueListenable: appStateClass.usersSocialsNotifiers.value[userID]!.notifier, 
+                      builder: ((context, profilePageUserSocials, child) {
+                        if(profilePageUserData.private && !profilePageUserSocials.followedByCurrentID && userID != appStateClass.currentID){
+                          return Container();
+                        }
+                        return ValueListenableBuilder(
+                          valueListenable: canPaginate,
+                          builder: (context, canPaginateValue, child){
+                            return ValueListenableBuilder(
+                              valueListenable: posts,
+                              builder: ((context, posts, child) {
+                                return LoadMoreBottom(
+                                  addBottomSpace: canPaginateValue,
+                                  loadMore: () async{
+                                    if(canPaginateValue){
+                                      await loadMorePosts();
+                                    }
+                                  },
+                                  status: loadingStatusValue,
+                                  refresh: null,
+                                  child: CustomScrollView(
+                                    controller: _scrollController,
+                                    primary: false,
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    slivers: <Widget>[
+                                      SliverOverlapInjector(
+                                        handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
+                                      ),
+                                      SliverList(delegate: SliverChildBuilderDelegate(
+                                        addAutomaticKeepAlives: true,
+                                        childCount: posts.length, 
+                                        (context, index) {
+                                          if(appStateClass.postsNotifiers.value[posts[index].sender] == null){
+                                            return Container();
+                                          }
+                                          if(appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID] == null){
+                                            return Container();
+                                          }
+                                          return ValueListenableBuilder<PostClass>(
+                                            valueListenable: appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID]!.notifier,
+                                            builder: ((context, postData, child) {
+                                              return ValueListenableBuilder(
+                                                valueListenable: appStateClass.usersDataNotifiers.value[posts[index].sender]!.notifier, 
+                                                builder: ((context, userData, child) {
+                                                  if(!postData.deleted){
+                                                    if(userData.blocksCurrentID){
+                                                      return Container();
+                                                    }
+                                                    return ValueListenableBuilder(
+                                                      valueListenable: appStateClass.usersSocialsNotifiers.value[posts[index].sender]!.notifier, 
+                                                      builder: ((context, userSocials, child) { 
+                                                        if(userData.private && !userSocials.followedByCurrentID && userData.userID != appStateClass.currentID){
+                                                          return Container();
+                                                        }
+                                                        return CustomPostWidget(
+                                                          postData: postData, 
+                                                          senderData: userData,
+                                                          senderSocials: userSocials,
+                                                          pageDisplayType: PostDisplayType.profilePost,
+                                                          key: UniqueKey(),
+                                                          skeletonMode: false,
+                                                        );
+                                                      })
+                                                    );
+                                                  }
+                                                  return Container();
+                                                })
+                                              );
+                                            }),
+                                          );
+                                        }
+                                      ))                                    
+                                    ]
+                                  )
+                                );
+                              })
+                            );
+                          }
+                        );
+                      })
+                    );
+                  })
                 );
               }
-            )
-          ),
-          ValueListenableBuilder(
-            valueListenable: isLoading,
-            builder: ((context, isLoadingValue, child) {
-              if(isLoadingValue){
-                return loadingPageWidget();
-              }
               return Container();
-            })
-          )
-        ]
+            }
+          );
+        })
       ),
       floatingActionButton: ValueListenableBuilder<bool>(
         valueListenable: displayFloatingBtn,

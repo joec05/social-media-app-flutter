@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/Searched.dart';
 import 'package:social_media_app/class/DisplayPostDataClass.dart';
 import 'package:social_media_app/class/HashtagClass.dart';
@@ -43,12 +44,14 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
   ValueNotifier<List<DisplayPostDataClass>> posts = ValueNotifier([]);
   ValueNotifier<bool> verifySearchedFormat = ValueNotifier(false);
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
+  ValueNotifier<bool> isLoading = ValueNotifier(true);
   final ScrollController _scrollController = ScrollController();
+  final exploreDataLimit = 10;
 
   @override
   void initState(){
     super.initState();
-    runDelay(() async => fetchHashtagsData(), actionDelayTime);
+    runDelay(() async => fetchExploreData(), actionDelayTime);
     searchedController.addListener(() {
       if(mounted){
         verifySearchedFormat.value = searchedController.text.isNotEmpty;
@@ -77,11 +80,12 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
     _scrollController.dispose();
   }
 
-  Future<void> fetchHashtagsData() async{
+  Future<void> fetchExploreData() async{
+    isLoading.value = true;
     try {
       String stringified = jsonEncode({
         'currentID': appStateClass.currentID,
-        'paginationLimit': 10,
+        'paginationLimit': exploreDataLimit,
       });
       if(mounted){
         users.value = [];
@@ -121,6 +125,7 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
             hashtags.value = [...hashtags.value, HashtagClass(hashtagData['hashtag'], hashtagData['hashtag_count'])];
           }
         }
+        isLoading.value = false;
       }
     } on Exception catch (e) {
       doSomethingWithException(e);
@@ -132,7 +137,7 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
     super.build(context);
     return Scaffold(
       body: RefreshIndicator(
-        onRefresh: () => fetchHashtagsData(),
+        onRefresh: () => fetchExploreData(),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           controller: _scrollController,
@@ -160,115 +165,222 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
                 );
               }
             ),
-            ValueListenableBuilder(
-              valueListenable: hashtags, 
-              builder: (context, hashtagsValue, child){
-                return Column(
+            Column(
+              children: [
+                SizedBox(height: defaultVerticalPadding * 1.5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(height: defaultVerticalPadding * 1.5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(width: defaultHorizontalPadding / 2),
-                        Text('Popular tags', style: TextStyle(fontSize: defaultTextFontSize * 1.1, fontWeight: FontWeight.bold))
-                      ]
-                    ),
-                    SizedBox(height: defaultVerticalPadding * 0.25),
-                    for(int i = 0; i < hashtagsValue.length; i++)
-                    CustomHashtagDataWidget(hashtagData: hashtagsValue[i], key: UniqueKey()),
-                  ],
-                );
-              }
+                    SizedBox(width: defaultHorizontalPadding / 2),
+                    Text('Popular tags', style: TextStyle(fontSize: defaultTextFontSize * 1.1, fontWeight: FontWeight.bold))
+                  ]
+                ),
+                SizedBox(height: defaultVerticalPadding * 0.25),
+              ]
             ),
             ValueListenableBuilder(
-              valueListenable: posts,
-              builder: ((context, posts, child) {
-                return Column(
-                  children: [
-                    SizedBox(height: defaultVerticalPadding * 1.5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(width: defaultHorizontalPadding / 2),
-                        Text('Popular posts', style: TextStyle(fontSize: defaultTextFontSize * 1.1, fontWeight: FontWeight.bold))
-                      ]
-                    ),
-                    SizedBox(height: defaultVerticalPadding * 0.25),
-                    for(int i = 0; i < posts.length; i++)
-                    appStateClass.postsNotifiers.value[posts[i].sender] == null ? Container() :
-                    appStateClass.postsNotifiers.value[posts[i].sender]![posts[i].postID] == null ? Container() :
-                    ValueListenableBuilder<PostClass>(
-                      valueListenable: appStateClass.postsNotifiers.value[posts[i].sender]![posts[i].postID]!.notifier,
-                      builder: ((context, postData, child) {
-                        return ValueListenableBuilder(
-                          valueListenable: appStateClass.usersDataNotifiers.value[posts[i].sender]!.notifier, 
-                          builder: ((context, userData, child) {
-                            if(!postData.deleted){
-                              if(userData.blocksCurrentID){
-                                return Container();
-                              }
-                              return ValueListenableBuilder(
-                                valueListenable: appStateClass.usersSocialsNotifiers.value[posts[i].sender]!.notifier, 
-                                builder: ((context, userSocials, child) { 
-                                  if(userData.private && !userSocials.followedByCurrentID && userData.userID != appStateClass.currentID){
-                                    return Container();
-                                  }
-                                  return CustomPostWidget(
-                                    postData: postData, 
-                                    senderData: userData,
-                                    senderSocials: userSocials,
-                                    pageDisplayType: PostDisplayType.profilePost,
-                                    key: UniqueKey()
-                                  );
-                                })
-                              );
-                            }
-                            return Container();
-                          })
-                        );
-                      }),
-                    )
-                  ]
+              valueListenable: isLoading,
+              builder: ((context, isLoadingValue, child) {
+                return ValueListenableBuilder(
+                  valueListenable: hashtags, 
+                  builder: (context, hashtagsValue, child){
+                    if(!isLoadingValue){
+                      return ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: hashtagsValue.length,
+                        itemBuilder: (context, index) {
+                          return CustomHashtagDataWidget(
+                            hashtagData: hashtagsValue[index],
+                            key: UniqueKey(), 
+                            skeletonMode: false
+                          );
+                        }
+                      );
+                    }else{
+                      return Skeletonizer(
+                        enabled: true,
+                        child: ListView.builder(
+                          itemCount: exploreDataLimit,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return CustomHashtagDataWidget(
+                              hashtagData: HashtagClass.getFakeData(), 
+                              key: UniqueKey(), 
+                              skeletonMode: true
+                            );
+                          }
+                        )
+                      );
+                    }
+                  }
                 );
               })
             ),
-            ValueListenableBuilder(
-              valueListenable: users,
-              builder: ((context, users, child) {
-                return  Column(
+            Column(
+              children: [
+                SizedBox(height: defaultVerticalPadding * 1.5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(height: defaultVerticalPadding * 1.5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(width: defaultHorizontalPadding / 2),
-                        Text('Popular users', style: TextStyle(fontSize: defaultTextFontSize * 1.1, fontWeight: FontWeight.bold))
-                      ]
-                    ),
-                    SizedBox(height: defaultVerticalPadding * 0.25),
-                    for(int i = 0; i < users.length; i++)
-                    appStateClass.usersDataNotifiers.value[users[i]] != null ?
-                      ValueListenableBuilder(
-                        valueListenable: appStateClass.usersDataNotifiers.value[users[i]]!.notifier, 
-                        builder: ((context, userData, child) {
-                          return ValueListenableBuilder(
-                            valueListenable: appStateClass.usersSocialsNotifiers.value[users[i]]!.notifier, 
-                            builder: ((context, userSocial, child) {
-                              return CustomUserDataWidget(
-                                userData: userData,
-                                userSocials: userSocial,
-                                userDisplayType: UserDisplayType.groupMembers,
-                                isLiked: null,
-                                isBookmarked: null,
-                                profilePageUserID: null,
-                                key: UniqueKey()
-                              );
-                            })
-                          );
-                        })
-                      )
-                    : Container()     
+                    SizedBox(width: defaultHorizontalPadding / 2),
+                    Text('Popular posts', style: TextStyle(fontSize: defaultTextFontSize * 1.1, fontWeight: FontWeight.bold))
                   ]
+                ),
+                SizedBox(height: defaultVerticalPadding * 0.25),
+              ]
+            ),
+            ValueListenableBuilder(
+              valueListenable: isLoading,
+              builder: ((context, isLoadingValue, child) {
+                return ValueListenableBuilder(
+                  valueListenable: posts,
+                  builder: ((context, posts, child) {
+                    if(!isLoadingValue){
+                      return ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: posts.length,
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) {
+                          if(appStateClass.postsNotifiers.value[posts[index].sender] == null){
+                            return Container();
+                          }
+                          if(appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID] == null){
+                            return Container();
+                          }
+                          return ValueListenableBuilder<PostClass>(
+                            valueListenable: appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID]!.notifier,
+                            builder: ((context, postData, child) {
+                              if(appStateClass.usersDataNotifiers.value[posts[index].sender] != null){
+                                return ValueListenableBuilder(
+                                  valueListenable: appStateClass.usersDataNotifiers.value[posts[index].sender]!.notifier, 
+                                  builder: ((context, userData, child) {
+                                    if(!postData.deleted){
+                                      if(userData.blocksCurrentID){
+                                        return Container();
+                                      }
+                                      return ValueListenableBuilder(
+                                        valueListenable: appStateClass.usersSocialsNotifiers.value[posts[index].sender]!.notifier, 
+                                        builder: ((context, userSocials, child) { 
+                                          if(userData.private && !userSocials.followedByCurrentID && userData.userID != appStateClass.currentID){
+                                            return Container();
+                                          }
+                                          return CustomPostWidget(
+                                            postData: postData, 
+                                            senderData: userData,
+                                            senderSocials: userSocials,
+                                            pageDisplayType: PostDisplayType.explore,
+                                            skeletonMode: false,
+                                            key: UniqueKey()
+                                          );
+                                        })
+                                      );
+                                    }
+                                    return Container();
+                                  })
+                                );
+                              }
+                              return Container();
+                            }),
+                          );
+                        }
+                      );
+                    }else{
+                      return Skeletonizer(
+                        enabled: true,
+                        child: ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: exploreDataLimit,
+                          shrinkWrap: true,
+                          itemBuilder: (context, index) {
+                            return CustomPostWidget(
+                              postData: PostClass.getFakeData(), 
+                              senderData: UserDataClass.getFakeData(), 
+                              senderSocials: UserSocialClass.getFakeData(), 
+                              pageDisplayType: PostDisplayType.explore, 
+                              skeletonMode: true
+                            );
+                          }
+                        )
+                      );
+                    }
+                  })
+                );
+              })
+            ),
+            Column(
+              children: [
+                SizedBox(height: defaultVerticalPadding * 1.5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(width: defaultHorizontalPadding / 2),
+                    Text('Popular users', style: TextStyle(fontSize: defaultTextFontSize * 1.1, fontWeight: FontWeight.bold))
+                  ]
+                ),
+                SizedBox(height: defaultVerticalPadding * 0.25),
+              ]
+            ),
+            ValueListenableBuilder(
+              valueListenable: isLoading,
+              builder: ((context, isLoadingValue, child) {
+                return ValueListenableBuilder(
+                  valueListenable: users,
+                  builder: ((context, users, child) {
+                    if(!isLoadingValue){
+                      return ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: users.length,
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) {
+                          if(appStateClass.usersDataNotifiers.value[users[index]] != null){
+                            return ValueListenableBuilder(
+                              valueListenable: appStateClass.usersDataNotifiers.value[users[index]]!.notifier, 
+                              builder: ((context, userData, child) {
+                                return ValueListenableBuilder(
+                                  valueListenable: appStateClass.usersSocialsNotifiers.value[users[index]]!.notifier, 
+                                  builder: ((context, userSocial, child) {
+                                    return CustomUserDataWidget(
+                                      userData: userData,
+                                      userSocials: userSocial,
+                                      userDisplayType: UserDisplayType.explore,
+                                      isLiked: null,
+                                      isBookmarked: null,
+                                      profilePageUserID: null,
+                                      skeletonMode: false,
+                                      key: UniqueKey()
+                                    );
+                                  })
+                                );
+                              })
+                            );
+                          }
+                          return Container();
+                        }
+                      );
+                    }else{
+                      return Skeletonizer(
+                        enabled: true,
+                        child: ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: exploreDataLimit,
+                          itemBuilder: (context, index) {
+                            return CustomUserDataWidget(
+                              userData: UserDataClass.getFakeData(), 
+                              userSocials: UserSocialClass.getFakeData(), 
+                              userDisplayType: UserDisplayType.explore, 
+                              profilePageUserID: null, 
+                              isLiked: false, 
+                              isBookmarked: false, 
+                              skeletonMode: true
+                            );
+                          }
+                        )
+                      );
+                    }
+                  })
                 );
               })
             )

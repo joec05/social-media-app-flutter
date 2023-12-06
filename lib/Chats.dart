@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/SearchChatUsers.dart';
 import 'package:social_media_app/class/ChatDataClass.dart';
 import 'package:social_media_app/class/ChatDataLatestMessageClass.dart';
@@ -37,7 +38,7 @@ class _ChatsWidgetStateful extends StatefulWidget {
 }
 
 class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with AutomaticKeepAliveClientMixin, LifecycleListenerMixin{
-  ValueNotifier<bool> isLoading = ValueNotifier(false);
+  ValueNotifier<bool> isLoading = ValueNotifier(true);
   ValueNotifier<List<ChatDataNotifier>> chats = ValueNotifier([]);
   ValueNotifier<LoadingStatus> loadingChatsStatus = ValueNotifier(LoadingStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
@@ -516,9 +517,27 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          ValueListenableBuilder(
+      body: ValueListenableBuilder(
+        valueListenable: isLoading,
+        builder: ((context, isLoadingValue, child) {
+          if(isLoadingValue){
+            return Skeletonizer(
+              enabled: true,
+              child: ListView.builder(
+                itemCount: postsPaginationLimit,
+                itemBuilder: (builder, context){
+                  return CustomChatWidget(
+                    chatData: ChatDataClass.getFakeData(),
+                    recipientData: UserDataClass.getFakeData(), 
+                    recipientSocials: UserSocialClass.getFakeData(), 
+                    skeletonMode: true,
+                    deleteChat: (){}
+                  );
+                },
+              )
+            );
+          }
+          return ValueListenableBuilder(
             valueListenable: loadingChatsStatus,
             builder: (context, loadingStatusValue, child){
               return ValueListenableBuilder(
@@ -556,7 +575,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
                                               return CustomChatWidget(
                                                 chatData: chatData, recipientData: userData, 
                                                 recipientSocials: userSocials, key: UniqueKey(),
-                                                deleteChat: deletePrivateChat
+                                                deleteChat: deletePrivateChat, skeletonMode: false,
                                               );
                                             })
                                           );
@@ -568,7 +587,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
                                           return CustomChatWidget(
                                             chatData: chatData, recipientData: null, 
                                             recipientSocials: null, key: UniqueKey(),
-                                            deleteChat: deleteGroupChat
+                                            deleteChat: deleteGroupChat, skeletonMode: false
                                           );
                                         }
                                         return ValueListenableBuilder(
@@ -580,7 +599,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
                                                 return CustomChatWidget(
                                                   chatData: chatData, recipientData: null, 
                                                   recipientSocials: null, key: UniqueKey(),
-                                                  deleteChat: deleteGroupChat
+                                                  deleteChat: deleteGroupChat, skeletonMode: false
                                                 );
                                               })
                                             );
@@ -602,17 +621,8 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
                 }
               );
             }
-          ),
-          ValueListenableBuilder(
-            valueListenable: isLoading,
-            builder: ((context, isLoadingValue, child) {
-              if(isLoadingValue){
-                return loadingPageWidget();
-              }
-              return Container();
-            })
-          )
-        ],
+          );
+        })
       ),
     );
   }

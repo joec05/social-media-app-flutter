@@ -4,12 +4,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomFollowRequestWidget.dart';
 import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/streams/RequestsFromDataStreamClass.dart';
-import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'custom/CustomPagination.dart';
 
@@ -36,7 +36,7 @@ class _FollowRequestsFromWidgetStateful extends StatefulWidget {
 
 
 class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWidgetStateful> with AutomaticKeepAliveClientMixin{
-  ValueNotifier<bool> isLoading = ValueNotifier(false);
+  ValueNotifier<bool> isLoading = ValueNotifier(true);
   ValueNotifier<List<String>> users = ValueNotifier([]);
   ValueNotifier<LoadingStatus> loadingUsersStatus = ValueNotifier(LoadingStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
@@ -91,7 +91,7 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
         String stringified = jsonEncode({
           'currentID': appStateClass.currentID,
           'currentLength': currentPostsLength,
-          'paginationLimit': postsPaginationLimit,
+          'paginationLimit': followRequestsPaginationLimit,
           'maxFetchLimit': usersServerFetchLimit
         }); 
         var res = await dio.get('$serverDomainAddress/users/fetchFollowRequestsFromUser', data: stringified);
@@ -151,9 +151,36 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      body: Stack(
-        children: [
-          ValueListenableBuilder(
+      body: ValueListenableBuilder(
+        valueListenable: isLoading,
+        builder: ((context, isLoadingValue, child) {
+          if(isLoadingValue){
+            return Skeletonizer(
+              enabled: true,
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: <Widget>[
+                  SliverOverlapInjector(
+                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
+                  ),
+                  SliverList(delegate: SliverChildBuilderDelegate(
+                    childCount: followRequestsPaginationLimit, 
+                    (context, index) {
+                      return CustomFollowRequestWidget(
+                        userData: UserDataClass.getFakeData(), 
+                        userSocials: UserSocialClass.getFakeData(), 
+                        followRequestType: FollowRequestType.From,
+                        skeletonMode: true,
+                        key: UniqueKey()
+                      );
+                    }
+                  ))
+                ]
+              )
+            ); 
+          }
+          return ValueListenableBuilder(
             valueListenable: loadingUsersStatus,
             builder: (context, loadingStatusValue, child){
               return ValueListenableBuilder(
@@ -191,6 +218,7 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
                                           return CustomFollowRequestWidget(
                                             userData: userData, userSocials: userSocial,
                                             key: UniqueKey(), followRequestType: FollowRequestType.From,
+                                            skeletonMode: false,
                                           );
                                         })
                                       );
@@ -208,17 +236,8 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
                 }
               );
             }
-          ),
-          ValueListenableBuilder(
-            valueListenable: isLoading,
-            builder: ((context, isLoadingValue, child) {
-              if(isLoadingValue){
-                return loadingPageWidget();
-              }
-              return Container();
-            })
-          )
-        ],
+          );
+        })
       ),
       floatingActionButton: ValueListenableBuilder<bool>(
         valueListenable: displayFloatingBtn,

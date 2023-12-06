@@ -15,4 +15,8 @@ class NotificationClass {
     this.type, this.sender, this.referencedPostID, this.referencedPostType, this.time, this.content, this.mediasDatas,
     this.senderName, this.senderProfilePicLink, this.parentPostType, this.postDeleted
   );
+
+  factory NotificationClass.getFakeData(){
+    return NotificationClass('', '', '', '', '', '', [], '', '', '', false);
+  }
 }

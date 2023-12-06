@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/GroupChatRoom.dart';
 import 'package:social_media_app/PrivateChatRoom.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
@@ -19,10 +20,11 @@ class CustomChatWidget extends StatefulWidget {
   final UserDataClass? recipientData;
   final UserSocialClass? recipientSocials;
   final Function deleteChat;
+  final bool skeletonMode;
 
   const CustomChatWidget({
     super.key, required this.chatData, required this.recipientData, required this.recipientSocials,
-    required this.deleteChat
+    required this.deleteChat, required this.skeletonMode
   });
 
   @override
@@ -84,124 +86,219 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
 
   @override
   Widget build(BuildContext context) {
-    String latestMessageSender = chatData.latestMessageData.sender;
-    bool senderIsCurrentID = false;
-    String subject = '';
-    if(chatData.latestMessageData.type == 'message'){
-      senderIsCurrentID = latestMessageSender == appStateClass.currentID;
-      subject = senderIsCurrentID ? 'You' : appStateClass.usersDataNotifiers.value[latestMessageSender]!.notifier.value.name;
-    }
-    if(chatData.deleted){
-      return Container();
-    }
-    if(chatData.type == 'private'){
-      if(recipientData!.blockedByCurrentID || recipientData!.blocksCurrentID || recipientData!.suspended || recipientData!.deleted){
+    if(!widget.skeletonMode){
+      String latestMessageSender = chatData.latestMessageData.sender;
+      bool senderIsCurrentID = false;
+      String subject = '';
+      if(chatData.latestMessageData.type == 'message'){
+        senderIsCurrentID = latestMessageSender == appStateClass.currentID;
+        subject = senderIsCurrentID ? 'You' : appStateClass.usersDataNotifiers.value[latestMessageSender]!.notifier.value.name;
+      }
+      if(chatData.deleted){
         return Container();
       }
-      
-      return Card(
-        clipBehavior: Clip.antiAlias,
-        margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
-        color: Colors.transparent,
-        child: Material(
+      if(chatData.type == 'private'){
+        if(recipientData!.blockedByCurrentID || recipientData!.blocksCurrentID || recipientData!.suspended || recipientData!.deleted){
+          return Container();
+        }
+        return Card(
+          clipBehavior: Clip.antiAlias,
+          margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
           color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              navigateToPrivateChat();
-            },
-            splashFactory: InkRipple.splashFactory,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Row(
-                          children: [
-                            GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: (){
-                                navigateToProfilePage(context, recipientData!.userID);
-                              },
-                              child: Container(
-                                width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
-                                decoration: BoxDecoration(
-                                  border: Border.all(width: 2, color: Colors.white),
-                                  borderRadius: BorderRadius.circular(100),
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                      recipientData!.profilePicLink
-                                    ), fit: BoxFit.fill
-                                  )
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                navigateToPrivateChat();
+              },
+              splashFactory: InkRipple.splashFactory,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Row(
+                            children: [
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: (){
+                                  navigateToProfilePage(context, recipientData!.userID);
+                                },
+                                child: Container(
+                                  width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(width: 2, color: Colors.white),
+                                    borderRadius: BorderRadius.circular(100),
+                                    image: DecorationImage(
+                                      image: NetworkImage(
+                                        recipientData!.profilePicLink
+                                      ), fit: BoxFit.fill
+                                    )
+                                  ),
                                 ),
                               ),
-                            ),
-                            SizedBox(
-                              width: getScreenWidth() * 0.02
-                            ),
-                            Flexible(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      Flexible(child: Text(StringEllipsis.convertToEllipsis(recipientData!.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize * 0.9, fontWeight: FontWeight.bold))),
-                                      recipientData!.verified && !recipientData!.suspended && !recipientData!.deleted ?
-                                        Row(
-                                          children: [
-                                            SizedBox(
-                                              width: iconsBesideNameProfileMargin
-                                            ),
-                                            Icon(Icons.verified_rounded, size: verifiedIconProfileWidgetSize),
-                                          ]
-                                        )
-                                      : Container(),
-                                      recipientData!.private && !recipientData!.suspended && !recipientData!.deleted ?
-                                        Row(
-                                          children: [
-                                            SizedBox(
-                                              width: iconsBesideNameProfileMargin
-                                            ),
-                                            Icon(FontAwesomeIcons.lock, size: lockIconProfileWidgetSize),
-                                          ],
-                                        )
-                                      : Container(),
-                                      recipientData!.mutedByCurrentID && !recipientData!.suspended && !recipientData!.deleted ?
-                                        Row(
-                                          children: [
-                                            SizedBox(
-                                              width: iconsBesideNameProfileMargin
-                                            ),
-                                            Icon(FontAwesomeIcons.volumeXmark, size: muteIconProfileWidgetSize),
-                                          ],
-                                        )
-                                      : Container()
-                                    ],
-                                  ),
-                                  SizedBox(height: getScreenHeight() * 0.005),
-                                  Text(chatData.latestMessageData.content.isEmpty ? '' : '$subject: ${chatData.latestMessageData.content}', maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.blueGrey)),
-                                  SizedBox(height: getScreenHeight() * 0.005),
-                                  Text(chatData.latestMessageData.uploadTime.isNotEmpty ? getTimeDifference(chatData.latestMessageData.uploadTime) : '', style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey)),
-                                ],
+                              SizedBox(
+                                width: getScreenWidth() * 0.02
                               ),
-                            ),
-                          ],
+                              Flexible(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Flexible(child: Text(StringEllipsis.convertToEllipsis(recipientData!.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize * 0.9, fontWeight: FontWeight.bold))),
+                                        recipientData!.verified && !recipientData!.suspended && !recipientData!.deleted ?
+                                          Row(
+                                            children: [
+                                              SizedBox(
+                                                width: iconsBesideNameProfileMargin
+                                              ),
+                                              Icon(Icons.verified_rounded, size: verifiedIconProfileWidgetSize),
+                                            ]
+                                          )
+                                        : Container(),
+                                        recipientData!.private && !recipientData!.suspended && !recipientData!.deleted ?
+                                          Row(
+                                            children: [
+                                              SizedBox(
+                                                width: iconsBesideNameProfileMargin
+                                              ),
+                                              Icon(FontAwesomeIcons.lock, size: lockIconProfileWidgetSize),
+                                            ],
+                                          )
+                                        : Container(),
+                                        recipientData!.mutedByCurrentID && !recipientData!.suspended && !recipientData!.deleted ?
+                                          Row(
+                                            children: [
+                                              SizedBox(
+                                                width: iconsBesideNameProfileMargin
+                                              ),
+                                              Icon(FontAwesomeIcons.volumeXmark, size: muteIconProfileWidgetSize),
+                                            ],
+                                          )
+                                        : Container()
+                                      ],
+                                    ),
+                                    SizedBox(height: getScreenHeight() * 0.005),
+                                    Text(chatData.latestMessageData.content.isEmpty ? '' : '$subject: ${chatData.latestMessageData.content}', maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.blueGrey)),
+                                    SizedBox(height: getScreenHeight() * 0.005),
+                                    Text(chatData.latestMessageData.uploadTime.isNotEmpty ? getTimeDifference(chatData.latestMessageData.uploadTime) : '', style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ]
+                      ],
+                    ),
+                  ]
+                )
               )
             )
           )
-        )
-      );
+        );
+      }else{
+        UserDataClass? senderProfileData = chatData.latestMessageData.messageID.isNotEmpty ? appStateClass.usersDataNotifiers.value[chatData.latestMessageData.sender]!.notifier.value : null;
+        return Card(
+          clipBehavior: Clip.antiAlias,
+          margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
+          color: Colors.transparent,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: (){
+                navigateToGroupChat();
+              },
+              splashFactory: InkRipple.splashFactory,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Row(
+                            children: [
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () {
+                                  runDelay(() => Navigator.push(
+                                    context,
+                                    SliderRightToLeftRoute(
+                                      page: GroupProfilePageWidget(chatID: chatData.chatID, groupProfileData: chatData.groupProfileData!)
+                                    ),
+                                  ), navigatorDelayTime);
+                                },
+                                child: Container(
+                                  width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(width: 2, color: Colors.white),
+                                    borderRadius: BorderRadius.circular(100),
+                                    image: DecorationImage(
+                                      image: NetworkImage(
+                                        chatData.groupProfileData!.profilePicLink
+                                      ), fit: BoxFit.fill
+                                    )
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                width: getScreenWidth() * 0.02
+                              ),
+                              Flexible(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            StringEllipsis.convertToEllipsis(chatData.groupProfileData!.name),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(fontSize: defaultTextFontSize * 0.9, fontWeight: FontWeight.bold),
+                                            softWrap: true,
+                                          )
+                                        )
+                                      ],
+                                    ),
+                                    SizedBox(height: getScreenHeight() * 0.005),
+                                    Text(
+                                      senderProfileData == null ? '' : 
+                                      senderProfileData.blockedByCurrentID || senderProfileData.blocksCurrentID ?
+                                        'This message is unavailable'
+                                      :
+                                        chatData.latestMessageData.type == 'message' ? '$subject: ${chatData.latestMessageData.content}' : chatData.latestMessageData.content,
+                                      maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.blueGrey)
+                                    ),
+                                    SizedBox(height: getScreenHeight() * 0.005),
+                                    Text(chatData.latestMessageData.uploadTime.isNotEmpty ? getTimeDifference(chatData.latestMessageData.uploadTime) : '', style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey)),
+                                  ],
+                                
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ]
+                    ),
+                  ]
+                )
+              )
+            )
+          )
+        );
+      }
     }else{
-      UserDataClass? senderProfileData = chatData.latestMessageData.messageID.isNotEmpty ? appStateClass.usersDataNotifiers.value[chatData.latestMessageData.sender]!.notifier.value : null;
       return Card(
         clipBehavior: Clip.antiAlias,
         margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
@@ -209,9 +306,6 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: (){
-              navigateToGroupChat();
-            },
             splashFactory: InkRipple.splashFactory,
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
@@ -219,33 +313,17 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Flexible(
                         child: Row(
                           children: [
-                            GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: () {
-                                runDelay(() => Navigator.push(
-                                  context,
-                                  SliderRightToLeftRoute(
-                                    page: GroupProfilePageWidget(chatID: chatData.chatID, groupProfileData: chatData.groupProfileData!)
-                                  ),
-                                ), navigatorDelayTime);
-                              },
-                              child: Container(
-                                width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
-                                decoration: BoxDecoration(
-                                  border: Border.all(width: 2, color: Colors.white),
-                                  borderRadius: BorderRadius.circular(100),
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                      chatData.groupProfileData!.profilePicLink
-                                    ), fit: BoxFit.fill
-                                  )
-                                ),
-                              ),
+                            Skeleton.replace(
+                              width: getScreenWidth() * 0.1, 
+                              height: getScreenWidth() * 0.1,
+                              child: CircleAvatar(
+                                radius: getScreenWidth() * 0.05,
+                                backgroundImage: const NetworkImage(''),
+                              )
                             ),
                             SizedBox(
                               width: getScreenWidth() * 0.02
@@ -259,35 +337,36 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
                                       Flexible(
-                                        child: Text(
-                                          StringEllipsis.convertToEllipsis(chatData.groupProfileData!.name),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(fontSize: defaultTextFontSize * 0.9, fontWeight: FontWeight.bold),
-                                          softWrap: true,
-                                        )
-                                      )
+                                        child: Card(
+                                          child: SizedBox(
+                                            height: getScreenHeight() * 0.025,
+                                            width: double.infinity,
+                                          )
+                                        ),
+                                      ),
                                     ],
                                   ),
                                   SizedBox(height: getScreenHeight() * 0.005),
-                                  Text(
-                                    senderProfileData == null ? '' : 
-                                    senderProfileData.blockedByCurrentID || senderProfileData.blocksCurrentID ?
-                                      'This message is unavailable'
-                                    :
-                                      chatData.latestMessageData.type == 'message' ? '$subject: ${chatData.latestMessageData.content}' : chatData.latestMessageData.content,
-                                    maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.blueGrey)
+                                  Card(
+                                    child: SizedBox(
+                                      height: getScreenHeight() * 0.02,
+                                      width: double.infinity,
+                                    )
                                   ),
                                   SizedBox(height: getScreenHeight() * 0.005),
-                                  Text(chatData.latestMessageData.uploadTime.isNotEmpty ? getTimeDifference(chatData.latestMessageData.uploadTime) : '', style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey)),
+                                  Card(
+                                    child: SizedBox(
+                                      height: getScreenHeight() * 0.015,
+                                      width: double.infinity,
+                                    )
+                                  ),
                                 ],
-                              
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ]
+                    ],
                   ),
                 ]
               )

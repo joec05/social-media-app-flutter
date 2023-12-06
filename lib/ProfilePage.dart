@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/ProfileRepliesPage.dart';
 import 'package:social_media_app/ProfilePostsPage.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
@@ -37,7 +38,7 @@ var dio = Dio();
 class _ProfilePageWidgetStatefulState extends State<_ProfilePageWidgetStateful> with SingleTickerProviderStateMixin, LifecycleListenerMixin{
   late TabController _tabController;
   late String userID;
-  ValueNotifier<bool> isLoading = ValueNotifier(false);
+  ValueNotifier<bool> isLoading = ValueNotifier(true);
   ValueNotifier<UniqueKey?> profilePostsWidgetUniqueKey = ValueNotifier(null);
   ValueNotifier<UniqueKey?> profileRepliesWidgetUniqueKey = ValueNotifier(null);
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
@@ -199,14 +200,23 @@ class _ProfilePageWidgetStatefulState extends State<_ProfilePageWidgetStateful> 
                             valueListenable: appStateClass.usersDataNotifiers.value[userID]!.notifier,
                             builder: ((context, userData, child) {
                               return CustomProfileHeader(
-                                userID: userID, userData: userData, key: UniqueKey()
+                                userID: userID, userData: userData, key: UniqueKey(),
+                                skeletonMode: false,
                               );
                             }),
                           );
                         }
                         return Container();
                       }else{
-                        return loadingPageWidget();
+                        return Skeletonizer(
+                          enabled: true,
+                          child: CustomProfileHeader(
+                            userID: userID, 
+                            userData: UserDataClass.getFakeData(), 
+                            skeletonMode: true,
+                            key: UniqueKey()
+                          ),
+                        );
                       }
                     }
                   )

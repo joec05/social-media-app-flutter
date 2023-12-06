@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/CommentBookmarksList.dart';
 import 'package:social_media_app/CommentLikesList.dart';
 import 'package:social_media_app/ProfilePage.dart';
@@ -30,16 +31,16 @@ class CustomCommentWidget extends StatefulWidget{
   final UserDataClass senderData;
   final UserSocialClass senderSocials;
   final CommentDisplayType pageDisplayType;
+  final bool skeletonMode;
   
   const CustomCommentWidget({super.key, required this.commentData, required this.senderData, 
-  required this.senderSocials, required this.pageDisplayType});
+  required this.senderSocials, required this.pageDisplayType, required this.skeletonMode});
 
   @override
   State<CustomCommentWidget> createState() =>_CustomCommentWidgetState();
 }
 
 class _CustomCommentWidgetState extends State<CustomCommentWidget>{
-
   late CommentClass commentData;
   late UserDataClass senderData;
   late UserSocialClass senderSocials;
@@ -168,235 +169,308 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
 
   @override
   Widget build(BuildContext context){
-    if(commentData.deleted || senderData.suspended || senderData.deleted){
-      return Container();
-    }
-    if(widget.pageDisplayType == CommentDisplayType.profileComment && !senderData.blocksCurrentID){}
-    else if(senderData.mutedByCurrentID || senderData.blockedByCurrentID || senderData.blocksCurrentID){
-      return Container();
-    }
-    if(senderData.private && !senderSocials.followedByCurrentID && senderData.userID != appStateClass.currentID){
-      return Container();
-    }
-    if(widget.pageDisplayType == CommentDisplayType.bookmark && !commentData.bookmarkedByCurrentID){
-      return Container();
-    }
-    List<MediaDatasClass> mediasDatas = (commentData.mediasDatas);
-    UserDataClass parentPostSender = appStateClass.usersDataNotifiers.value[commentData.parentPostSender]!.notifier.value;
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
-      color: Colors.transparent,
-      child: Material(
+    if(!widget.skeletonMode){
+      if(commentData.deleted || senderData.suspended || senderData.deleted){
+        return Container();
+      }
+      if(widget.pageDisplayType == CommentDisplayType.profileComment && !senderData.blocksCurrentID){}
+      else if(senderData.mutedByCurrentID || senderData.blockedByCurrentID || senderData.blocksCurrentID){
+        return Container();
+      }
+      if(senderData.private && !senderSocials.followedByCurrentID && senderData.userID != appStateClass.currentID){
+        return Container();
+      }
+      if(widget.pageDisplayType == CommentDisplayType.bookmark && !commentData.bookmarkedByCurrentID){
+        return Container();
+      }
+      List<MediaDatasClass> mediasDatas = (commentData.mediasDatas);
+      UserDataClass parentPostSender = appStateClass.usersDataNotifiers.value[commentData.parentPostSender]!.notifier.value;
+      return Card(
+        clipBehavior: Clip.antiAlias,
+        margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
         color: Colors.transparent,
-        child: InkWell(
-          onTap: (){
-            runDelay(() => Navigator.push(
-              context,
-              SliderRightToLeftRoute(
-                page: ViewCommentCommentsWidget(selectedCommentData: commentData)
-              )
-            ), navigatorDelayTime);
-          },
-          splashFactory: InkRipple.splashFactory,
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Flexible(
-                      child: Row(
-                        children: [
-                          GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: (){
-                              runDelay(() => Navigator.push(
-                                context,
-                                SliderRightToLeftRoute(
-                                  page: ProfilePageWidget(userID: commentData.sender)
-                                )
-                              ), 0);
-                            },
-                            child: Container(
-                              width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
-                              decoration: BoxDecoration(
-                                border: Border.all(width: 2, color: Colors.white),
-                                borderRadius: BorderRadius.circular(100),
-                                image: DecorationImage(
-                                  image: NetworkImage(
-                                    senderData.profilePicLink
-                                  ), fit: BoxFit.fill
-                                )
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: (){
+              runDelay(() => Navigator.push(
+                context,
+                SliderRightToLeftRoute(
+                  page: ViewCommentCommentsWidget(selectedCommentData: commentData)
+                )
+              ), navigatorDelayTime);
+            },
+            splashFactory: InkRipple.splashFactory,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Flexible(
+                        child: Row(
+                          children: [
+                            GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: (){
+                                runDelay(() => Navigator.push(
+                                  context,
+                                  SliderRightToLeftRoute(
+                                    page: ProfilePageWidget(userID: commentData.sender)
+                                  )
+                                ), 0);
+                              },
+                              child: Container(
+                                width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
+                                decoration: BoxDecoration(
+                                  border: Border.all(width: 2, color: Colors.white),
+                                  borderRadius: BorderRadius.circular(100),
+                                  image: DecorationImage(
+                                    image: NetworkImage(
+                                      senderData.profilePicLink
+                                    ), fit: BoxFit.fill
+                                  )
+                                ),
                               ),
                             ),
-                          ),
-                          SizedBox(
-                            width: getScreenWidth() * 0.02
-                          ),
-                          Flexible(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Flexible(
-                                      child: Row(
-                                        children: [
-                                          Flexible(
-                                            child: Text(
-                                              StringEllipsis.convertToEllipsis(senderData.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize * 0.9, fontWeight: FontWeight.bold)
-                                            )
-                                          ),
-                                          senderData.verified && !senderData.suspended && !senderData.deleted ?
-                                            Row(
-                                              children: [
-                                                SizedBox(
-                                                  width: iconsBesideNameProfileMargin
-                                                ),
-                                                Icon(Icons.verified_rounded, size: verifiedIconProfileWidgetSize),
-                                              ]
-                                            )
-                                          : Container(),
-                                          senderData.private && !senderData.suspended && !senderData.deleted ?
-                                            Row(
-                                              children: [
-                                                SizedBox(
-                                                  width: iconsBesideNameProfileMargin
-                                                ),
-                                                Icon(FontAwesomeIcons.lock, size: lockIconProfileWidgetSize),
-                                              ],
-                                            )
-                                          : Container(),
-                                        ],
-                                      ),
-                                    ),
-                                    generatePostMoreOptionsWidget(
-                                      () => runDelay(() => displayCommentBottomSheet(), actionDelayTime),
-                                      Icon(Icons.more_horiz, size: moreIconProfileWidgetSize)
-                                    )
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text('@${senderData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.lightBlue)),
-                                    Text(getTimeDifference(commentData.uploadTime), style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey))
-                                  ],
-                                ),
-                              ],
+                            SizedBox(
+                              width: getScreenWidth() * 0.02
                             ),
-                          ),
-                        ],
+                            Flexible(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Flexible(
+                                        child: Row(
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                StringEllipsis.convertToEllipsis(senderData.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize * 0.9, fontWeight: FontWeight.bold)
+                                              )
+                                            ),
+                                            senderData.verified && !senderData.suspended && !senderData.deleted ?
+                                              Row(
+                                                children: [
+                                                  SizedBox(
+                                                    width: iconsBesideNameProfileMargin
+                                                  ),
+                                                  Icon(Icons.verified_rounded, size: verifiedIconProfileWidgetSize),
+                                                ]
+                                              )
+                                            : Container(),
+                                            senderData.private && !senderData.suspended && !senderData.deleted ?
+                                              Row(
+                                                children: [
+                                                  SizedBox(
+                                                    width: iconsBesideNameProfileMargin
+                                                  ),
+                                                  Icon(FontAwesomeIcons.lock, size: lockIconProfileWidgetSize),
+                                                ],
+                                              )
+                                            : Container(),
+                                          ],
+                                        ),
+                                      ),
+                                      generatePostMoreOptionsWidget(
+                                        () => runDelay(() => displayCommentBottomSheet(), actionDelayTime),
+                                        Icon(Icons.more_horiz, size: moreIconProfileWidgetSize)
+                                      )
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Text('@${senderData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.lightBlue)),
+                                      Text(getTimeDifference(commentData.uploadTime), style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey))
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ]
-                ),
-                SizedBox(height: getScreenHeight() * 0.01),
-                Text("Replying to @${parentPostSender.username}'s ${commentData.parentPostType}", style: TextStyle(fontSize: defaultTextFontSize * 0.875, color: Colors.blueGrey)),
-                SizedBox(height: getScreenHeight() * 0.01),
-                const Divider(
-                  color: Colors.white, height: 2.5, thickness: 1
-                ),
-                SizedBox(height: getScreenHeight() * 0.01),
-                DisplayTextComponent(
-                  text: commentData.content, tagsPressable: true, overflow: TextOverflow.ellipsis, 
-                  maxLines: 100, style: TextStyle(fontSize: defaultTextFontSize * 0.95), alignment: TextAlign.left, 
-                  context: context
-                ),
-                SizedBox(height: commentData.content.isNotEmpty ? getScreenHeight() * 0.01 : 0),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    for(int i = 0; i < mediasDatas.length; i++)
-                    mediaDataPostComponentWidget(mediasDatas[i], context)
-                  ],
-                ),
-                const Divider(
-                  color: Colors.white, height: 2.5, thickness: 1
-                ),
-                SizedBox(height: getScreenHeight() * 0.005),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    generatePostActionWidget(
-                      (){
-                        runDelay((){
-                          if(commentData.likedByCurrentID){
-                            unlikeComment(commentData);
-                          }else{
-                            likeComment(commentData);
-                          }
-                        }, actionDelayTime);
-                      },
-                      Row(
-                        children: [
-                          commentData.likedByCurrentID ?
-                            const Icon(FontAwesomeIcons.solidHeart, size: 20, color: Colors.red)
-                          : 
-                            const Icon(FontAwesomeIcons.heart, size: 20),
-                          SizedBox(width: getScreenWidth() * 0.02),
-                          Text(displayShortenedCount(commentData.likesCount))
-                        ],
-                      )
-                    ),
-                    generatePostActionWidget(
-                      (){
-                        runDelay((){
-                          if(commentData.bookmarkedByCurrentID){
-                            unbookmarkComment(commentData);
-                          }else{
-                            bookmarkComment(commentData);
-                          }
-                        }, actionDelayTime);
-                      },
-                      Row(
-                        children: [
-                          commentData.bookmarkedByCurrentID ?
-                              const Icon(Icons.bookmark_added, size: 22.5, color: Colors.green)
+                    ]
+                  ),
+                  SizedBox(height: getScreenHeight() * 0.01),
+                  Text("Replying to @${parentPostSender.username}'s ${commentData.parentPostType}", style: TextStyle(fontSize: defaultTextFontSize * 0.875, color: Colors.blueGrey)),
+                  SizedBox(height: getScreenHeight() * 0.01),
+                  const Divider(
+                    color: Colors.white, height: 2.5, thickness: 1
+                  ),
+                  SizedBox(height: getScreenHeight() * 0.01),
+                  DisplayTextComponent(
+                    text: commentData.content, tagsPressable: true, overflow: TextOverflow.ellipsis, 
+                    maxLines: 100, style: TextStyle(fontSize: defaultTextFontSize * 0.95), alignment: TextAlign.left, 
+                    context: context
+                  ),
+                  SizedBox(height: commentData.content.isNotEmpty ? getScreenHeight() * 0.01 : 0),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for(int i = 0; i < mediasDatas.length; i++)
+                      mediaDataPostComponentWidget(mediasDatas[i], context)
+                    ],
+                  ),
+                  const Divider(
+                    color: Colors.white, height: 2.5, thickness: 1
+                  ),
+                  SizedBox(height: getScreenHeight() * 0.005),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      generatePostActionWidget(
+                        (){
+                          runDelay((){
+                            if(commentData.likedByCurrentID){
+                              unlikeComment(commentData);
+                            }else{
+                              likeComment(commentData);
+                            }
+                          }, actionDelayTime);
+                        },
+                        Row(
+                          children: [
+                            commentData.likedByCurrentID ?
+                              const Icon(FontAwesomeIcons.solidHeart, size: 20, color: Colors.red)
                             : 
-                              const Icon(Icons.bookmark_add, size: 22.5),
-                          SizedBox(width: getScreenWidth() * 0.02),
-                          Text(displayShortenedCount(commentData.bookmarksCount))
-                        ],
+                              const Icon(FontAwesomeIcons.heart, size: 20),
+                            SizedBox(width: getScreenWidth() * 0.02),
+                            Text(displayShortenedCount(commentData.likesCount))
+                          ],
+                        )
                       ),
-                    ),
-                    generatePostActionWidget(
-                      (){
-                        runDelay((){
-                          Navigator.push(
-                            context,
-                            SliderRightToLeftRoute(
-                              page: WriteCommentWidget(
-                                parentPostSender: commentData.sender,
-                                parentPostID: commentData.commentID,
-                                parentPostType: 'comment',
+                      generatePostActionWidget(
+                        (){
+                          runDelay((){
+                            if(commentData.bookmarkedByCurrentID){
+                              unbookmarkComment(commentData);
+                            }else{
+                              bookmarkComment(commentData);
+                            }
+                          }, actionDelayTime);
+                        },
+                        Row(
+                          children: [
+                            commentData.bookmarkedByCurrentID ?
+                                const Icon(Icons.bookmark_added, size: 22.5, color: Colors.green)
+                              : 
+                                const Icon(Icons.bookmark_add, size: 22.5),
+                            SizedBox(width: getScreenWidth() * 0.02),
+                            Text(displayShortenedCount(commentData.bookmarksCount))
+                          ],
+                        ),
+                      ),
+                      generatePostActionWidget(
+                        (){
+                          runDelay((){
+                            Navigator.push(
+                              context,
+                              SliderRightToLeftRoute(
+                                page: WriteCommentWidget(
+                                  parentPostSender: commentData.sender,
+                                  parentPostID: commentData.commentID,
+                                  parentPostType: 'comment',
+                                )
                               )
-                            )
-                          );
-                        }, navigatorDelayTime);
-                      },
-                      Row(
-                        children: [
-                          const Icon(FontAwesomeIcons.solidComment, size: 20, color: Colors.grey),
-                          SizedBox(width: getScreenWidth() * 0.02),
-                          Text(displayShortenedCount(commentData.commentsCount))
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ],
+                            );
+                          }, navigatorDelayTime);
+                        },
+                        Row(
+                          children: [
+                            const Icon(FontAwesomeIcons.solidComment, size: 20, color: Colors.grey),
+                            SizedBox(width: getScreenWidth() * 0.02),
+                            Text(displayShortenedCount(commentData.commentsCount))
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              )
             )
           )
         )
-      )
-    );
+      );
+    }else{
+      return Card(
+        clipBehavior: Clip.antiAlias,
+        margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
+        color: Colors.transparent,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            splashFactory: InkRipple.splashFactory,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Flexible(
+                        child: Row(
+                          children: [
+                            Skeleton.replace(
+                              width: getScreenWidth() * 0.1, 
+                              height: getScreenWidth() * 0.1,
+                              child: CircleAvatar(
+                                radius: getScreenWidth() * 0.05,
+                                backgroundImage: const NetworkImage(''),
+                              )
+                            ),
+                            SizedBox(
+                              width: getScreenWidth() * 0.02
+                            ),
+                            Flexible(
+                              child: Card(
+                                child: SizedBox(
+                                  height: getScreenHeight() * 0.055,
+                                  width: double.infinity,
+                                )
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ]
+                  ),
+                  SizedBox(height: getScreenHeight() * 0.01),
+                  Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize)),
+                  SizedBox(height: getScreenHeight() * 0.01),
+                  const Divider(
+                    color: Colors.white, height: 2.5, thickness: 1
+                  ),
+                  SizedBox(height: getScreenHeight() * 0.01),
+                  Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize)),
+                  Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize)),
+                  Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize)),
+                  SizedBox(height: getScreenHeight() * 0.01),
+                  const Divider(
+                    color: Colors.white, height: 2.5, thickness: 1
+                  ),
+                  SizedBox(height: getScreenHeight() * 0.005),
+                  Card(
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: getScreenHeight() * 0.05
+                    )
+                  )
+                ],
+              ),
+            )
+          )
+        )
+      );
+    }
   }
 }

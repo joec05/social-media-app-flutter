@@ -5,11 +5,11 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:dio/dio.dart' as d;
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/MediaDataClass.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'caching/sqfliteConfiguration.dart';
 import 'class/DisplayPostDataClass.dart';
@@ -41,7 +41,7 @@ class _SearchedPostsWidgetStateful extends StatefulWidget {
 
 class _SearchedPostsWidgetStatefulState extends State<_SearchedPostsWidgetStateful> with AutomaticKeepAliveClientMixin{
   late String searchedText;
-  ValueNotifier<bool> isLoading = ValueNotifier(false);
+  ValueNotifier<bool> isLoading = ValueNotifier(true);
   ValueNotifier<List<DisplayPostDataClass>> posts = ValueNotifier([]);
   ValueNotifier<LoadingStatus> loadingPostsStatus = ValueNotifier(LoadingStatus.loaded);
   ValueNotifier<int> totalPostsLength = ValueNotifier(postsServerFetchLimit);
@@ -178,97 +178,108 @@ class _SearchedPostsWidgetStatefulState extends State<_SearchedPostsWidgetStatef
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      body: Stack(
-        children: [
-         SafeArea(
-            top: false,
-            bottom: false,
-            child: Builder(
-              builder: (BuildContext context) {
-                return ValueListenableBuilder(
-                  valueListenable: loadingPostsStatus,
-                  builder: (context, loadingStatusValue, child){
-                    return ValueListenableBuilder(
-                      valueListenable: totalPostsLength,
-                      builder: (context, totalPostsLengthValue, child){
-                        return ValueListenableBuilder(
-                          valueListenable: posts,
-                          builder: ((context, posts, child) {
-                            return LoadMoreBottom(
-                              addBottomSpace: posts.length < totalPostsLengthValue,
-                              loadMore: () async{
-                                if(posts.length < totalPostsLengthValue){
-                                  await loadMorePosts();
-                                }
-                              },
-                              status: loadingStatusValue,
-                              refresh: refresh,
-                              child: CustomScrollView(
-                                controller: _scrollController,
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                slivers: <Widget>[
-                                  SliverOverlapInjector(
-                                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
-                                  ),
-                                  SliverList(delegate: SliverChildBuilderDelegate(
-                                    childCount: posts.length, 
-                                    (context, index) {
-                                      if(appStateClass.postsNotifiers.value[posts[index].sender] == null){
-                                        return Container();
-                                      }
-                                      if(appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID] == null){
-                                        return Container();
-                                      }
-                                      return ValueListenableBuilder<PostClass>(
-                                        valueListenable: appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID]!.notifier,
-                                        builder: ((context, postData, child) {
-                                          return ValueListenableBuilder(
-                                            valueListenable: appStateClass.usersDataNotifiers.value[posts[index].sender]!.notifier, 
-                                            builder: ((context, userData, child) {
-                                              if(!postData.deleted){
-                                                return ValueListenableBuilder(
-                                                  valueListenable: appStateClass.usersSocialsNotifiers.value[posts[index].sender]!.notifier, 
-                                                  builder: ((context, userSocials, child) {
-                                                    return CustomPostWidget(
-                                                      postData: postData, 
-                                                      senderData: userData,
-                                                      senderSocials: userSocials,
-                                                      pageDisplayType: PostDisplayType.searchedPost,
-                                                      key: UniqueKey()
-                                                    );
-                                                  })
-                                                );
-                                              }
-                                              return Container();
-                                            })
-                                          );
-                                        }),
-                                      );
-                                      
-                                    }
-                                  ))                                    
-                                ]
-                              )
-                            );
-                          })
-                        );
-                      }
-                    );
-                  }
-                );
-              }
-            )
-          ),
-          ValueListenableBuilder(
-            valueListenable: isLoading,
-            builder: ((context, isLoadingValue, child) {
-              if(isLoadingValue){
-                return loadingPageWidget();
-              }
-              return Container();
-            })
-          )
-        ]
+      body: ValueListenableBuilder(
+        valueListenable: isLoading,
+        builder: ((context, isLoadingValue, child) {
+          if(isLoadingValue){
+            return Skeletonizer(
+              enabled: true,
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: <Widget>[
+                  SliverOverlapInjector(
+                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
+                  ),
+                  SliverList(delegate: SliverChildBuilderDelegate(
+                    childCount: postsPaginationLimit, 
+                    (context, index) {
+                      return CustomPostWidget(
+                        postData: PostClass.getFakeData(),
+                        senderData: UserDataClass.getFakeData(), 
+                        senderSocials: UserSocialClass.getFakeData(), 
+                        pageDisplayType: PostDisplayType.searchedPost,
+                        skeletonMode: true,
+                      );
+                    }
+                  ))
+                ]
+              )
+            );
+          }
+          return ValueListenableBuilder(
+           valueListenable: loadingPostsStatus,
+           builder: (context, loadingStatusValue, child){
+             return ValueListenableBuilder(
+               valueListenable: totalPostsLength,
+               builder: (context, totalPostsLengthValue, child){
+                 return ValueListenableBuilder(
+                   valueListenable: posts,
+                   builder: ((context, posts, child) {
+                     return LoadMoreBottom(
+                       addBottomSpace: posts.length < totalPostsLengthValue,
+                       loadMore: () async{
+                         if(posts.length < totalPostsLengthValue){
+                           await loadMorePosts();
+                         }
+                       },
+                       status: loadingStatusValue,
+                       refresh: refresh,
+                       child: CustomScrollView(
+                         controller: _scrollController,
+                         physics: const AlwaysScrollableScrollPhysics(),
+                         slivers: <Widget>[
+                           SliverOverlapInjector(
+                             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
+                           ),
+                           SliverList(delegate: SliverChildBuilderDelegate(
+                             childCount: posts.length, 
+                             (context, index) {
+                               if(appStateClass.postsNotifiers.value[posts[index].sender] == null){
+                                 return Container();
+                               }
+                               if(appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID] == null){
+                                 return Container();
+                               }
+                               return ValueListenableBuilder<PostClass>(
+                                 valueListenable: appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID]!.notifier,
+                                 builder: ((context, postData, child) {
+                                   return ValueListenableBuilder(
+                                     valueListenable: appStateClass.usersDataNotifiers.value[posts[index].sender]!.notifier, 
+                                     builder: ((context, userData, child) {
+                                       if(!postData.deleted){
+                                         return ValueListenableBuilder(
+                                           valueListenable: appStateClass.usersSocialsNotifiers.value[posts[index].sender]!.notifier, 
+                                           builder: ((context, userSocials, child) {
+                                             return CustomPostWidget(
+                                               postData: postData, 
+                                               senderData: userData,
+                                               senderSocials: userSocials,
+                                               pageDisplayType: PostDisplayType.searchedPost,
+                                               key: UniqueKey(),
+                                               skeletonMode: false,
+                                             );
+                                           })
+                                         );
+                                       }
+                                       return Container();
+                                     })
+                                   );
+                                 }),
+                               );
+                               
+                             }
+                           ))                                    
+                         ]
+                       )
+                     );
+                   })
+                 );
+               }
+             );
+           }
+          );
+        })
       ),
       floatingActionButton: ValueListenableBuilder<bool>(
         valueListenable: displayFloatingBtn,

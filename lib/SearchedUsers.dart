@@ -5,10 +5,10 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:dio/dio.dart' as d;
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'caching/sqfliteConfiguration.dart';
 import 'custom/CustomPagination.dart';
@@ -40,7 +40,7 @@ class _SearchedUsersWidgetStatefulState extends State<_SearchedUsersWidgetStatef
   final ScrollController _scrollController = ScrollController();
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
   late String searchedText;
-  ValueNotifier<bool> isLoading = ValueNotifier(false);
+  ValueNotifier<bool> isLoading = ValueNotifier(true);
   ValueNotifier<List<String>> users = ValueNotifier([]);
   ValueNotifier<LoadingStatus> loadingUsersStatus = ValueNotifier(LoadingStatus.loaded);
   ValueNotifier<int> totalUsersLength = ValueNotifier(usersServerFetchLimit);
@@ -165,87 +165,101 @@ class _SearchedUsersWidgetStatefulState extends State<_SearchedUsersWidgetStatef
   Widget build(BuildContext context) {
     super.build(context);
      return Scaffold(
-      body: Stack(
-        children: [
-          SafeArea(
-            top: false,
-            bottom: false,
-            child: Builder(
-              builder: (BuildContext context) {
-                return ValueListenableBuilder(
-                  valueListenable: loadingUsersStatus,
-                  builder: (context, loadingStatusValue, child){
-                    return ValueListenableBuilder(
-                      valueListenable: totalUsersLength,
-                      builder: (context, totalUsersLengthValue, child){
-                        return ValueListenableBuilder(
-                          valueListenable: users,
-                          builder: ((context, users, child) {
-                            return LoadMoreBottom(
-                              addBottomSpace: users.length < totalUsersLength.value,
-                              loadMore: () async{
-                                if(users.length < totalUsersLength.value){
-                                  await loadMoreUsers();
+      body: ValueListenableBuilder(
+        valueListenable: isLoading,
+        builder: ((context, isLoadingValue, child) {
+          if(isLoadingValue){
+            return Skeletonizer(
+              enabled: true,
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: <Widget>[
+                  SliverOverlapInjector(
+                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
+                  ),
+                  SliverList(delegate: SliverChildBuilderDelegate(
+                    childCount: usersPaginationLimit, 
+                    (context, index) {
+                      return CustomUserDataWidget(
+                        userData: UserDataClass.getFakeData(), 
+                        userSocials: UserSocialClass.getFakeData(), 
+                        userDisplayType: UserDisplayType.searchedUsers,
+                        profilePageUserID: null,
+                        isLiked: null,
+                        isBookmarked: null,
+                        skeletonMode: true,
+                        key: UniqueKey()
+                      );
+                    }
+                  ))
+                ]
+              )
+            ); 
+          }
+          return ValueListenableBuilder(
+            valueListenable: loadingUsersStatus,
+            builder: (context, loadingStatusValue, child){
+              return ValueListenableBuilder(
+                valueListenable: totalUsersLength,
+                builder: (context, totalUsersLengthValue, child){
+                  return ValueListenableBuilder(
+                    valueListenable: users,
+                    builder: ((context, users, child) {
+                      return LoadMoreBottom(
+                        addBottomSpace: users.length < totalUsersLength.value,
+                        loadMore: () async{
+                          if(users.length < totalUsersLength.value){
+                            await loadMoreUsers();
+                          }
+                        },
+                        status: loadingStatusValue,
+                        refresh: refresh,
+                        child: CustomScrollView(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          slivers: <Widget>[
+                            SliverOverlapInjector(
+                              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
+                            ),
+                            SliverList(delegate: SliverChildBuilderDelegate(
+                              childCount: users.length, 
+                              (context, index) {
+                                if(appStateClass.usersDataNotifiers.value[users[index]] != null){
+                                  return ValueListenableBuilder(
+                                    valueListenable: appStateClass.usersDataNotifiers.value[users[index]]!.notifier, 
+                                    builder: ((context, userData, child) {
+                                      return ValueListenableBuilder(
+                                        valueListenable: appStateClass.usersSocialsNotifiers.value[users[index]]!.notifier, 
+                                        builder: ((context, userSocial, child) {
+                                          return CustomUserDataWidget(
+                                            userData: userData,
+                                            userSocials: userSocial,
+                                            userDisplayType: UserDisplayType.searchedUsers,
+                                            profilePageUserID: null,
+                                            isLiked: null,
+                                            isBookmarked: null,
+                                            skeletonMode: false,
+                                            key: UniqueKey()
+                                          );
+                                        })
+                                      );
+                                    })
+                                  );
                                 }
-                              },
-                              status: loadingStatusValue,
-                              refresh: refresh,
-                              child: CustomScrollView(
-                                controller: _scrollController,
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                slivers: <Widget>[
-                                  SliverOverlapInjector(
-                                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
-                                  ),
-                                  SliverList(delegate: SliverChildBuilderDelegate(
-                                    childCount: users.length, 
-                                    (context, index) {
-                                      if(appStateClass.usersDataNotifiers.value[users[index]] != null){
-                                        return ValueListenableBuilder(
-                                          valueListenable: appStateClass.usersDataNotifiers.value[users[index]]!.notifier, 
-                                          builder: ((context, userData, child) {
-                                            return ValueListenableBuilder(
-                                              valueListenable: appStateClass.usersSocialsNotifiers.value[users[index]]!.notifier, 
-                                              builder: ((context, userSocial, child) {
-                                                return CustomUserDataWidget(
-                                                  userData: userData,
-                                                  userSocials: userSocial,
-                                                  userDisplayType: UserDisplayType.searchedUsers,
-                                                  profilePageUserID: null,
-                                                  isLiked: null,
-                                                  isBookmarked: null,
-                                                  key: UniqueKey()
-                                                );
-                                              })
-                                            );
-                                          })
-                                        );
-                                      }
-                                      return Container();  
-                                    }
-                                  ))                                    
-                                ]
-                              )
-                            );
-                          })
-                        );
-                      }
-                    );
-                  }
-                );
-              }
-            )
-          ),
-          ValueListenableBuilder(
-            valueListenable: isLoading,
-            builder: ((context, isLoadingValue, child) {
-              if(isLoadingValue){
-                return loadingPageWidget();
-              }
-              return Container();
-            })
-          )
-        ]
+                                return Container();  
+                              }
+                            ))                                    
+                          ]
+                        )
+                      );
+                    })
+                  );
+                }
+              );
+            }
+          );
+        })
       ),
       floatingActionButton: ValueListenableBuilder<bool>(
         valueListenable: displayFloatingBtn,

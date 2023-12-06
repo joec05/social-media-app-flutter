@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/MediaDataClass.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
@@ -41,7 +42,7 @@ class _ProfilePageBookmarksWidgetStateful extends StatefulWidget {
 
 class _ProfilePageBookmarksWidgetStatefulState extends State<_ProfilePageBookmarksWidgetStateful>{
   late String userID;
-  ValueNotifier<bool> isLoading = ValueNotifier(false);
+  ValueNotifier<bool> isLoading = ValueNotifier(true);
   ValueNotifier<List> posts = ValueNotifier([]);
   ValueNotifier<LoadingStatus> loadingBookmarksStatus = ValueNotifier(LoadingStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
@@ -184,146 +185,149 @@ class _ProfilePageBookmarksWidgetStatefulState extends State<_ProfilePageBookmar
           decoration: defaultAppBarDecoration
         )
       ),
-      body: Stack(
-        children: [
-          SafeArea(
-            top: false,
-            bottom: false,
-            child: Builder(
-              builder: (BuildContext context) {
+      body: ValueListenableBuilder(
+        valueListenable: isLoading,
+        builder: ((context, isLoadingValue, child) {
+          if(isLoadingValue){
+            return Skeletonizer(
+              enabled: true,
+              child: ListView.builder(
+                itemCount: postsPaginationLimit,
+                itemBuilder: (context, index){
+                  return CustomPostWidget(
+                    postData: PostClass.getFakeData(),
+                    senderData: UserDataClass.getFakeData(), 
+                    senderSocials: UserSocialClass.getFakeData(), 
+                    pageDisplayType: PostDisplayType.bookmark,
+                    skeletonMode: true,
+                  );
+                }
+              )
+            );
+          }
+          return ValueListenableBuilder(
+            valueListenable: loadingBookmarksStatus,
+            builder: (context, loadingStatusValue, child){
+              if(appStateClass.usersDataNotifiers.value[userID] != null){
                 return ValueListenableBuilder(
-                  valueListenable: loadingBookmarksStatus,
-                  builder: (context, loadingStatusValue, child){
-                    if(appStateClass.usersDataNotifiers.value[userID] != null){
-                      return ValueListenableBuilder(
-                        valueListenable: appStateClass.usersDataNotifiers.value[userID]!.notifier, 
-                        builder: ((context, profilePageUserData, child) {
-                          if(profilePageUserData.blocksCurrentID){
-                            return Container();
-                          }
-                          return ValueListenableBuilder(
-                            valueListenable: appStateClass.usersSocialsNotifiers.value[userID]!.notifier, 
-                            builder: ((context, profilePageUserSocials, child) {
-                              if(profilePageUserData.private && !profilePageUserSocials.followedByCurrentID && userID != appStateClass.currentID){
-                                return Container();
-                              }
-                              return ValueListenableBuilder(
-                                valueListenable: canPaginate,
-                                builder: (context, canPaginateValue, child){
-                                  return ValueListenableBuilder(
-                                    valueListenable: posts,
-                                    builder: ((context, posts, child) {
-                                      return LoadMoreBottom(
-                                        addBottomSpace: canPaginateValue,
-                                        loadMore: () async{
-                                          if(canPaginateValue){
-                                            await loadMoreBookmarks();
-                                          }
-                                        },
-                                        status: loadingStatusValue,
-                                        refresh: null,
-                                        child: CustomScrollView(
-                                          controller: _scrollController,
-                                          physics: const AlwaysScrollableScrollPhysics(),
-                                          slivers: <Widget>[
-                                            SliverList(delegate: SliverChildBuilderDelegate(
-                                              childCount: posts.length, 
-                                              (context, index) {
-                                                if(posts[index] is DisplayPostDataClass){
-                                                  if(appStateClass.postsNotifiers.value[posts[index].sender] == null){
-                                                    return Container();
-                                                  }
-                                                  if(appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID] == null){
-                                                    return Container();
-                                                  }
-                                                  return ValueListenableBuilder<PostClass>(
-                                                    valueListenable: appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID]!.notifier,
-                                                    builder: ((context, postData, child) {
-                                                      return ValueListenableBuilder(
-                                                        valueListenable: appStateClass.usersDataNotifiers.value[posts[index].sender]!.notifier, 
-                                                        builder: ((context, userData, child) {
-                                                          if(!postData.deleted){
-                                                            return ValueListenableBuilder(
-                                                              valueListenable: appStateClass.usersSocialsNotifiers.value[posts[index].sender]!.notifier, 
-                                                              builder: ((context, userSocials, child) {
-                                                                return CustomPostWidget(
-                                                                  postData: postData, 
-                                                                  senderData: userData,
-                                                                  senderSocials: userSocials,
-                                                                  pageDisplayType: PostDisplayType.bookmark,
-                                                                  key: UniqueKey()
-                                                                );
-                                                              })
-                                                            );
-                                                          }
-                                                          return Container();
-                                                        })
-                                                      );
-                                                    }),
-                                                  );
-                                                }else{
-                                                  if(appStateClass.commentsNotifiers.value[posts[index].sender] == null){
-                                                    return Container();
-                                                  }
-                                                  if(appStateClass.commentsNotifiers.value[posts[index].sender]![posts[index].commentID] == null){
-                                                    return Container();
-                                                  }
-                                                  return ValueListenableBuilder<CommentClass>(
-                                                    valueListenable: appStateClass.commentsNotifiers.value[posts[index].sender]![posts[index].commentID]!.notifier,
-                                                    builder: ((context, commentData, child) {
-                                                      return ValueListenableBuilder(
-                                                        valueListenable: appStateClass.usersDataNotifiers.value[posts[index].sender]!.notifier, 
-                                                        builder: ((context, userData, child) {
-                                                          if(!commentData.deleted){
-                                                            return ValueListenableBuilder(
-                                                              valueListenable: appStateClass.usersSocialsNotifiers.value[posts[index].sender]!.notifier, 
-                                                              builder: ((context, userSocials, child) {
-                                                                return CustomCommentWidget(
-                                                                  commentData: commentData, 
-                                                                  senderData: userData,
-                                                                  senderSocials: userSocials,
-                                                                  pageDisplayType: CommentDisplayType.bookmark,
-                                                                  key: UniqueKey()
-                                                                );
-                                                              })
-                                                            );
-                                                          }
-                                                          return Container();
-                                                        })
-                                                      );
-                                                    }),
-                                                  );
-                                                }  
-                                              }
-                                            ))                                    
-                                          ]
-                                        )
-                                      );
-                                    })
-                                  );
-                                }
-                              );
-                            })
-                          );
-                        })
-                      );
+                  valueListenable: appStateClass.usersDataNotifiers.value[userID]!.notifier, 
+                  builder: ((context, profilePageUserData, child) {
+                    if(profilePageUserData.blocksCurrentID){
+                      return Container();
                     }
-                    return Container();
-                  }
+                    return ValueListenableBuilder(
+                      valueListenable: appStateClass.usersSocialsNotifiers.value[userID]!.notifier, 
+                      builder: ((context, profilePageUserSocials, child) {
+                        if(profilePageUserData.private && !profilePageUserSocials.followedByCurrentID && userID != appStateClass.currentID){
+                          return Container();
+                        }
+                        return ValueListenableBuilder(
+                          valueListenable: canPaginate,
+                          builder: (context, canPaginateValue, child){
+                            return ValueListenableBuilder(
+                              valueListenable: posts,
+                              builder: ((context, posts, child) {
+                                return LoadMoreBottom(
+                                  addBottomSpace: canPaginateValue,
+                                  loadMore: () async{
+                                    if(canPaginateValue){
+                                      await loadMoreBookmarks();
+                                    }
+                                  },
+                                  status: loadingStatusValue,
+                                  refresh: null,
+                                  child: CustomScrollView(
+                                    controller: _scrollController,
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    slivers: <Widget>[
+                                      SliverList(delegate: SliverChildBuilderDelegate(
+                                        childCount: posts.length, 
+                                        (context, index) {
+                                          if(posts[index] is DisplayPostDataClass){
+                                            if(appStateClass.postsNotifiers.value[posts[index].sender] == null){
+                                              return Container();
+                                            }
+                                            if(appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID] == null){
+                                              return Container();
+                                            }
+                                            return ValueListenableBuilder<PostClass>(
+                                              valueListenable: appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID]!.notifier,
+                                              builder: ((context, postData, child) {
+                                                return ValueListenableBuilder(
+                                                  valueListenable: appStateClass.usersDataNotifiers.value[posts[index].sender]!.notifier, 
+                                                  builder: ((context, userData, child) {
+                                                    if(!postData.deleted){
+                                                      return ValueListenableBuilder(
+                                                        valueListenable: appStateClass.usersSocialsNotifiers.value[posts[index].sender]!.notifier, 
+                                                        builder: ((context, userSocials, child) {
+                                                          return CustomPostWidget(
+                                                            postData: postData, 
+                                                            senderData: userData,
+                                                            senderSocials: userSocials,
+                                                            pageDisplayType: PostDisplayType.bookmark,
+                                                            key: UniqueKey(),
+                                                            skeletonMode: false,
+                                                          );
+                                                        })
+                                                      );
+                                                    }
+                                                    return Container();
+                                                  })
+                                                );
+                                              }),
+                                            );
+                                          }else{
+                                            if(appStateClass.commentsNotifiers.value[posts[index].sender] == null){
+                                              return Container();
+                                            }
+                                            if(appStateClass.commentsNotifiers.value[posts[index].sender]![posts[index].commentID] == null){
+                                              return Container();
+                                            }
+                                            return ValueListenableBuilder<CommentClass>(
+                                              valueListenable: appStateClass.commentsNotifiers.value[posts[index].sender]![posts[index].commentID]!.notifier,
+                                              builder: ((context, commentData, child) {
+                                                return ValueListenableBuilder(
+                                                  valueListenable: appStateClass.usersDataNotifiers.value[posts[index].sender]!.notifier, 
+                                                  builder: ((context, userData, child) {
+                                                    if(!commentData.deleted){
+                                                      return ValueListenableBuilder(
+                                                        valueListenable: appStateClass.usersSocialsNotifiers.value[posts[index].sender]!.notifier, 
+                                                        builder: ((context, userSocials, child) {
+                                                          return CustomCommentWidget(
+                                                            commentData: commentData, 
+                                                            senderData: userData,
+                                                            senderSocials: userSocials,
+                                                            pageDisplayType: CommentDisplayType.bookmark,
+                                                            key: UniqueKey(),
+                                                            skeletonMode: false,
+                                                          );
+                                                        })
+                                                      );
+                                                    }
+                                                    return Container();
+                                                  })
+                                                );
+                                              }),
+                                            );
+                                          }  
+                                        }
+                                      ))                                    
+                                    ]
+                                  )
+                                );
+                              })
+                            );
+                          }
+                        );
+                      })
+                    );
+                  })
                 );
               }
-            )
-          ),
-          ValueListenableBuilder(
-            valueListenable: isLoading,
-            builder: ((context, isLoadingValue, child) {
-              if(isLoadingValue){
-                return loadingPageWidget();
-              }
               return Container();
-            })
-          )
-        ]
+            }
+          );
+        })
       ),
       floatingActionButton: ValueListenableBuilder<bool>(
         valueListenable: displayFloatingBtn,

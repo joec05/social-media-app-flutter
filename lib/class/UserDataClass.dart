@@ -43,6 +43,10 @@ class UserDataClass{
     );
   }
 
+  factory UserDataClass.getFakeData(){
+    return UserDataClass('', '', '', '', '', '', '', false, false, false, false, false, false, false, false, false);
+  }
+
   Map<String, dynamic> toMap(){
     return {
       'user_id': userID,

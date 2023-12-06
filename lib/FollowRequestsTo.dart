@@ -4,10 +4,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomFollowRequestWidget.dart';
 import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'custom/CustomPagination.dart';
 import 'streams/RequestsToDataStreamClass.dart';
@@ -36,7 +36,7 @@ class _FollowRequestsToWidgetStateful extends StatefulWidget {
 
 
 class _FollowRequestsToWidgetStatefulState extends State<_FollowRequestsToWidgetStateful> with AutomaticKeepAliveClientMixin{
-  ValueNotifier<bool> isLoading = ValueNotifier(false);
+  ValueNotifier<bool> isLoading = ValueNotifier(true);
   ValueNotifier<List<String>> users = ValueNotifier([]);
   ValueNotifier<LoadingStatus> loadingUsersStatus = ValueNotifier(LoadingStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
@@ -95,7 +95,7 @@ class _FollowRequestsToWidgetStatefulState extends State<_FollowRequestsToWidget
         String stringified = jsonEncode({
           'currentID': appStateClass.currentID,
           'currentLength': currentPostsLength,
-          'paginationLimit': postsPaginationLimit,
+          'paginationLimit': followRequestsPaginationLimit,
           'maxFetchLimit': usersServerFetchLimit
         }); 
         var res = await dio.get('$serverDomainAddress/users/fetchFollowRequestsToUser', data: stringified);
@@ -155,9 +155,36 @@ class _FollowRequestsToWidgetStatefulState extends State<_FollowRequestsToWidget
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      body: Stack(
-        children: [
-          ValueListenableBuilder(
+      body: ValueListenableBuilder(
+        valueListenable: isLoading,
+        builder: ((context, isLoadingValue, child) {
+          if(isLoadingValue){
+            return Skeletonizer(
+              enabled: true,
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: <Widget>[
+                  SliverOverlapInjector(
+                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
+                  ),
+                  SliverList(delegate: SliverChildBuilderDelegate(
+                    childCount: followRequestsPaginationLimit, 
+                    (context, index) {
+                      return CustomFollowRequestWidget(
+                        userData: UserDataClass.getFakeData(), 
+                        userSocials: UserSocialClass.getFakeData(), 
+                        followRequestType: FollowRequestType.To,
+                        skeletonMode: true,
+                        key: UniqueKey()
+                      );
+                    }
+                  ))
+                ]
+              )
+            );
+          }
+          return ValueListenableBuilder(
             valueListenable: loadingUsersStatus,
             builder: (context, loadingStatusValue, child){
               return ValueListenableBuilder(
@@ -196,6 +223,7 @@ class _FollowRequestsToWidgetStatefulState extends State<_FollowRequestsToWidget
                                           return CustomFollowRequestWidget(
                                             userData: userData, userSocials: userSocial,
                                             key: UniqueKey(), followRequestType: FollowRequestType.To,
+                                            skeletonMode: false,
                                           );
                                         })
                                       );
@@ -213,17 +241,8 @@ class _FollowRequestsToWidgetStatefulState extends State<_FollowRequestsToWidget
                 }
               );
             }
-          ),
-          ValueListenableBuilder(
-            valueListenable: isLoading,
-            builder: ((context, isLoadingValue, child) {
-              if(isLoadingValue){
-                return loadingPageWidget();
-              }
-              return Container();
-            })
-          )
-        ],
+          );
+        })
       ),
       floatingActionButton: ValueListenableBuilder<bool>(
         valueListenable: displayFloatingBtn,

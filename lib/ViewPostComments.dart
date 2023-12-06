@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart' as d;
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/class/DisplayCommentDataClass.dart';
 import 'package:social_media_app/class/DisplayPostDataClass.dart';
@@ -12,13 +13,13 @@ import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomPagination.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
 import 'package:social_media_app/state/main.dart';
-import 'class/CommentClass.dart';
-import 'class/MediaDataClass.dart';
-import 'class/PostClass.dart';
-import 'custom/CustomCommentWidget.dart';
-import 'custom/CustomPostWidget.dart';
-import 'streams/CommentDataStreamClass.dart';
-import 'styles/AppStyles.dart';
+import '../class/CommentClass.dart';
+import '../class/MediaDataClass.dart';
+import '../class/PostClass.dart';
+import '../custom/CustomCommentWidget.dart';
+import '../custom/CustomPostWidget.dart';
+import '../streams/CommentDataStreamClass.dart';
+import '../styles/AppStyles.dart';
 
 var dio = d.Dio();
 
@@ -43,7 +44,7 @@ class ViewPostCommentsWidgetStateful extends StatefulWidget {
 
 class _ViewPostCommentsWidgetStatefulState extends State<ViewPostCommentsWidgetStateful> with LifecycleListenerMixin{
   late PostClass selectedPostData;
-  ValueNotifier<bool> isLoading = ValueNotifier(false);
+  ValueNotifier<bool> isLoading = ValueNotifier(true);
   ValueNotifier<List<DisplayCommentDataClass>> comments = ValueNotifier([]);
   ValueNotifier<DisplayPostDataClass?> selectedPost = ValueNotifier(null);
   ValueNotifier<LoadingStatus> loadingCommentsStatus = ValueNotifier(LoadingStatus.loaded);
@@ -241,6 +242,7 @@ class _ViewPostCommentsWidgetStatefulState extends State<ViewPostCommentsWidgetS
                                                           senderData: userData,
                                                           senderSocials: userSocials,
                                                           pageDisplayType: PostDisplayType.viewPost,
+                                                          skeletonMode: false,
                                                           key: UniqueKey()
                                                         );
                                                       })
@@ -252,57 +254,94 @@ class _ViewPostCommentsWidgetStatefulState extends State<ViewPostCommentsWidgetS
                                             }),
                                           );
                                         }else{
-                                          return loadingPageWidget();
+                                          return Skeletonizer(
+                                            enabled: true,
+                                            child: CustomPostWidget(
+                                              postData: PostClass.getFakeData(),
+                                              senderData: UserDataClass.getFakeData(), 
+                                              senderSocials: UserSocialClass.getFakeData(), 
+                                              pageDisplayType: PostDisplayType.viewPost,
+                                              skeletonMode: true,
+                                            )
+                                          );
                                         }
                                       })
                                     )
                                   ),
                                   SliverToBoxAdapter(
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(vertical: defaultVerticalPadding),
-                                      child: const Column(
-                                        children: [
-                                          Text('Comments', style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold))
-                                        ]
-                                      )
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(height: defaultVerticalPadding / 2),
+                                        Divider(color: Colors.grey, height: getScreenHeight() * 0.005),
+                                        Padding(
+                                          padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
+                                          child: const Text('Comments', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+                                        ),
+                                      ]
                                     )
                                   ),
-                                  SliverList(delegate: SliverChildBuilderDelegate(
-                                    childCount: comments.length, 
-                                    (context, index) {
-                                      if(appStateClass.commentsNotifiers.value[comments[index].sender] == null){
-                                        return Container();
-                                      }
-                                      if(appStateClass.commentsNotifiers.value[comments[index].sender]![comments[index].commentID] == null){
-                                        return Container();
-                                      }
-                                      return ValueListenableBuilder<CommentClass>(
-                                        valueListenable: appStateClass.commentsNotifiers.value[comments[index].sender]![comments[index].commentID]!.notifier,
-                                        builder: ((context, commentData, child) {
-                                          return ValueListenableBuilder(
-                                            valueListenable: appStateClass.usersDataNotifiers.value[comments[index].sender]!.notifier, 
-                                            builder: ((context, userData, child) {
-                                              if(!commentData.deleted){
+                                  ValueListenableBuilder(
+                                    valueListenable: isLoading,
+                                    builder: ((context, isLoadingValue, child) {
+                                      if(isLoadingValue){
+                                        return SliverList(delegate: SliverChildBuilderDelegate(
+                                          childCount: postsPaginationLimit, 
+                                          (context, index) {
+                                            return Skeletonizer(
+                                              enabled: true,
+                                              child: CustomCommentWidget(
+                                                commentData: CommentClass.getFakeData(), 
+                                                senderData: UserDataClass.getFakeData(),
+                                                senderSocials: UserSocialClass.getFakeData(),
+                                                pageDisplayType: CommentDisplayType.viewComment,
+                                                key: UniqueKey(),
+                                                skeletonMode: true,
+                                              )
+                                            );
+                                          },
+                                        ));
+                                      }else{
+                                        return SliverList(delegate: SliverChildBuilderDelegate(
+                                          childCount: comments.length, 
+                                          (context, index) {
+                                            if(appStateClass.commentsNotifiers.value[comments[index].sender] == null){
+                                              return Container();
+                                            }
+                                            if(appStateClass.commentsNotifiers.value[comments[index].sender]![comments[index].commentID] == null){
+                                              return Container();
+                                            }
+                                            return ValueListenableBuilder<CommentClass>(
+                                              valueListenable: appStateClass.commentsNotifiers.value[comments[index].sender]![comments[index].commentID]!.notifier,
+                                              builder: ((context, commentData, child) {
                                                 return ValueListenableBuilder(
-                                                  valueListenable: appStateClass.usersSocialsNotifiers.value[comments[index].sender]!.notifier, 
-                                                  builder: ((context, userSocials, child) {
-                                                    return CustomCommentWidget(
-                                                      commentData: commentData, 
-                                                      senderData: userData,
-                                                      senderSocials: userSocials,
-                                                      pageDisplayType: CommentDisplayType.viewComment,
-                                                      key: UniqueKey()
-                                                    );
+                                                  valueListenable: appStateClass.usersDataNotifiers.value[comments[index].sender]!.notifier, 
+                                                  builder: ((context, userData, child) {
+                                                    if(!commentData.deleted){
+                                                      return ValueListenableBuilder(
+                                                        valueListenable: appStateClass.usersSocialsNotifiers.value[comments[index].sender]!.notifier, 
+                                                        builder: ((context, userSocials, child) {
+                                                          return CustomCommentWidget(
+                                                            commentData: commentData, 
+                                                            senderData: userData,
+                                                            senderSocials: userSocials,
+                                                            pageDisplayType: CommentDisplayType.viewComment,
+                                                            key: UniqueKey(),
+                                                            skeletonMode: false
+                                                          );
+                                                        })
+                                                      );
+                                                    }
+                                                    return Container();
                                                   })
                                                 );
-                                              }
-                                              return Container();
-                                            })
-                                          );
-                                        }),
-                                      );
-                                    }
-                                  ))                                    
+                                              }),
+                                            );
+                                          }
+                                        ));
+                                      }
+                                    })
+                                  ),                                  
                                 ]
                               )
                             );
@@ -315,15 +354,6 @@ class _ViewPostCommentsWidgetStatefulState extends State<ViewPostCommentsWidgetS
               }
             )
           ),
-          ValueListenableBuilder(
-            valueListenable: isLoading,
-            builder: ((context, isLoadingValue, child) {
-              if(isLoadingValue){
-                return loadingPageWidget();
-              }
-              return Container();
-            })
-          )
         ]
       ),
       floatingActionButton: ValueListenableBuilder<bool>(

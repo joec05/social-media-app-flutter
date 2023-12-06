@@ -23,5 +23,5 @@ enum FollowRequestType{
 }
 
 enum UserDisplayType{
-  followers, following, likes, bookmarks, searchedUsers, groupMembers
+  followers, following, likes, bookmarks, searchedUsers, groupMembers, explore
 }

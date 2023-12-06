@@ -17,6 +17,10 @@ class UserSocialClass{
     );
   }
 
+  factory UserSocialClass.getFakeData(){
+    return UserSocialClass(0, 0, false, false);
+  }
+
   bool isNotEqual(UserSocialClass userSocialsClass){
     return
       followersCount != userSocialsClass.followersCount || followingCount != userSocialsClass.followingCount || 

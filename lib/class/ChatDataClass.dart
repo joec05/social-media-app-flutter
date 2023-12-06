@@ -27,4 +27,12 @@ class ChatDataClass {
       ), map['deleted']
     );
   }
+
+  factory ChatDataClass.getFakeData(){
+    return ChatDataClass(
+      '', '', '', ChatDataLatestMessageClass(
+        '', '', '', '', ''
+      ), null, false
+    );
+  }
 }

@@ -43,4 +43,8 @@ class CommentClass {
       map['deleted']
     );
   }
+
+  factory CommentClass.getFakeData(){
+    return CommentClass('', '', '', '', '', [], 0, false, 0, false, 0, '', '', '', false);
+  }
 }

@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart' as d;
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/DisplayCommentDataClass.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/custom/CustomPostWidget.dart';
@@ -11,7 +12,6 @@ import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
 import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/streams/CommentDataStreamClass.dart';
 import 'package:social_media_app/streams/PostDataStreamClass.dart';
-import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'caching/sqfliteConfiguration.dart';
 import 'class/CommentClass.dart';
@@ -44,7 +44,7 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
   ValueNotifier<List> posts = ValueNotifier([]);
   ValueNotifier<LoadingStatus> loadingPostsStatus = ValueNotifier(LoadingStatus.loaded);
   ValueNotifier<int> totalPostsLength = ValueNotifier(postsServerFetchLimit);
-  ValueNotifier<bool> isLoading = ValueNotifier(false);
+  ValueNotifier<bool> isLoading = ValueNotifier(true);
   late StreamSubscription postDataStreamClassSubscription;
   late StreamSubscription commentDataStreamClassSubscription;
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
@@ -200,9 +200,28 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      body: Stack(
-        children: [
-          ValueListenableBuilder(
+      body: ValueListenableBuilder(
+        valueListenable: isLoading,
+        builder: ((context, isLoadingValue, child) {
+          if(isLoadingValue){
+            return Skeletonizer(
+              enabled: true,
+              child: ListView.builder(
+                itemCount: postsPaginationLimit,
+                itemBuilder: (context, index) {
+                  return CustomPostWidget(
+                    postData: PostClass.getFakeData(), 
+                    senderData: UserDataClass.getFakeData(),
+                    senderSocials: UserSocialClass.getFakeData(),
+                    pageDisplayType: PostDisplayType.feed,
+                    skeletonMode: true,
+                    key: UniqueKey()
+                  ); 
+                }
+              )
+            );
+          }
+          return ValueListenableBuilder(
             valueListenable: loadingPostsStatus,
             builder: (context, loadingStatusValue, child){
               return ValueListenableBuilder(
@@ -249,6 +268,7 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
                                                   senderData: userData,
                                                   senderSocials: userSocials,
                                                   pageDisplayType: PostDisplayType.feed,
+                                                  skeletonMode: false,
                                                   key: UniqueKey()
                                                 );
                                               })
@@ -281,6 +301,7 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
                                                   senderData: userData,
                                                   senderSocials: userSocials,
                                                   pageDisplayType: CommentDisplayType.feed,
+                                                  skeletonMode: false,
                                                   key: UniqueKey()
                                                 );
                                               })
@@ -302,17 +323,8 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
                 }
               );
             }
-          ),
-          ValueListenableBuilder(
-            valueListenable: isLoading,
-            builder: ((context, isLoadingValue, child) {
-              if(isLoadingValue){
-                return loadingPageWidget();
-              }
-              return Container();
-            })
-          )
-        ],
+          );
+        })
       ),
       floatingActionButton: ValueListenableBuilder<bool>(
         valueListenable: displayFloatingBtn,

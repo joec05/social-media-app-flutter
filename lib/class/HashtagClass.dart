@@ -5,4 +5,8 @@ class HashtagClass{
   HashtagClass(
     this.hashtag, this.hashtagCount
   );
+
+  factory HashtagClass.getFakeData(){
+    return HashtagClass('', 0);
+  }
 }

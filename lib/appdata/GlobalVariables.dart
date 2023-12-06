@@ -53,6 +53,10 @@ int maxMediaCount = 2;
 
 int maxMessageMediaCount = 1;
 
+int notificationsPaginationLimit = 5;
+
+int followRequestsPaginationLimit = 5;
+
 int postsPaginationLimit = 5;
 
 int usersPaginationLimit = 5;

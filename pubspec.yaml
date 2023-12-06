@@ -63,6 +63,7 @@ dependencies:
   flutter_launcher_icons: 0.13.1
   flutterfire_cli: 0.3.0-dev.18
   firebase_app_check: 0.2.1+6
+  skeletonizer: ^0.8.0
 
 dependency_overrides:
 

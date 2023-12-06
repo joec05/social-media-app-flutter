@@ -385,13 +385,13 @@ BoxDecoration defaultAppBarDecoration = const BoxDecoration(
 
 Widget generatePostActionWidget(Function onTap, Widget child){
   return Container(
-    margin: EdgeInsets.only(right: getScreenWidth() * 0.015),
+    margin: EdgeInsets.only(right: getScreenWidth() * 0.05),
     child: Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => onTap(),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: getScreenHeight() * 0.008, horizontal: getScreenWidth() * 0.015),
+          padding: EdgeInsets.symmetric(vertical: getScreenHeight() * 0.01),
           child: child,
         )
       )

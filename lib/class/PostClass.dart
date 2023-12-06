@@ -53,4 +53,8 @@ class PostClass {
       map['deleted']
     );
   }
+
+  factory PostClass.getFakeData(){
+    return PostClass('', '', '', '', '', [], 0, false, 0, false, 0, false);
+  }
 }

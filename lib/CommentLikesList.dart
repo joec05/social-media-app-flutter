@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomUserDataWidget.dart';
@@ -38,7 +39,7 @@ var dio = Dio();
 
 class _CommentLikesListWidgetStatefulState extends State<_CommentLikesListWidgetStateful> with LifecycleListenerMixin{
   late String commentID;
-  ValueNotifier<bool> isLoading = ValueNotifier(false);
+  ValueNotifier<bool> isLoading = ValueNotifier(true);
   ValueNotifier<List<String>> users = ValueNotifier([]);
   ValueNotifier<LoadingStatus> loadingUsersStatus = ValueNotifier(LoadingStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
@@ -157,89 +158,94 @@ class _CommentLikesListWidgetStatefulState extends State<_CommentLikesListWidget
           decoration: defaultAppBarDecoration
         )
       ),
-      body: Stack(
-        children: [
-          SafeArea(
-            top: false,
-            bottom: false,
-            child: Builder(
-              builder: (BuildContext context) {
-                return ValueListenableBuilder(
-                  valueListenable: loadingUsersStatus,
-                  builder: (context, loadingStatusValue, child){
-                    return ValueListenableBuilder(
-                      valueListenable: canPaginate,
-                      builder: (context, canPaginateValue, child){
-                        return ValueListenableBuilder(
-                          valueListenable: users,
-                          builder: ((context, users, child) {
-                            return LoadMoreBottom(
-                              addBottomSpace: canPaginateValue,
-                              loadMore: () async{
-                                if(canPaginateValue){
-                                  await loadMoreUsers();
+      body: ValueListenableBuilder(
+        valueListenable: isLoading,
+        builder: ((context, isLoadingValue, child) {
+          if(isLoadingValue){
+            return Skeletonizer(
+              enabled: true,
+              child: ListView.builder(
+                itemCount: usersPaginationLimit,
+                itemBuilder: (context, index) {
+                  return CustomUserDataWidget(
+                    userData: UserDataClass.getFakeData(), 
+                    userSocials: UserSocialClass.getFakeData(), 
+                    userDisplayType: UserDisplayType.likes,
+                    isLiked: false,
+                    isBookmarked: null,
+                    profilePageUserID: null,
+                    key: UniqueKey(),
+                    skeletonMode: true,
+                  );
+                }
+              )
+            ); 
+          }
+          return ValueListenableBuilder(
+            valueListenable: loadingUsersStatus,
+            builder: (context, loadingStatusValue, child){
+              return ValueListenableBuilder(
+                valueListenable: canPaginate,
+                builder: (context, canPaginateValue, child){
+                  return ValueListenableBuilder(
+                    valueListenable: users,
+                    builder: ((context, users, child) {
+                      return LoadMoreBottom(
+                        addBottomSpace: canPaginateValue,
+                        loadMore: () async{
+                          if(canPaginateValue){
+                            await loadMoreUsers();
+                          }
+                        },
+                        status: loadingStatusValue,
+                        refresh: null,
+                        child: CustomScrollView(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          slivers: <Widget>[
+                            SliverList(delegate: SliverChildBuilderDelegate(
+                              childCount: users.length, 
+                              (context, index) {
+                                if(appStateClass.usersDataNotifiers.value[users[index]] != null){
+                                  return ValueListenableBuilder(
+                                    valueListenable: appStateClass.usersDataNotifiers.value[users[index]]!.notifier, 
+                                    builder: ((context, userData, child) {
+                                      return ValueListenableBuilder(
+                                        valueListenable: appStateClass.usersSocialsNotifiers.value[users[index]]!.notifier, 
+                                        builder: ((context, userSocial, child) {
+                                          return ValueListenableBuilder(
+                                            valueListenable: appStateClass.commentsNotifiers.value[widget.commentSender]![widget.commentID]!.notifier, 
+                                            builder: ((context, commentData, child) {
+                                              return CustomUserDataWidget(
+                                                userData: userData,
+                                                userSocials: userSocial,
+                                                userDisplayType: UserDisplayType.likes,
+                                                isLiked: commentData.likedByCurrentID,
+                                                isBookmarked: null,
+                                                profilePageUserID: null,
+                                                key: UniqueKey(),
+                                                skeletonMode: false,
+                                              );
+                                            })
+                                          );
+                                        })
+                                      );
+                                    })
+                                  );
                                 }
-                              },
-                              status: loadingStatusValue,
-                              refresh: null,
-                              child: CustomScrollView(
-                                controller: _scrollController,
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                slivers: <Widget>[
-                                  SliverList(delegate: SliverChildBuilderDelegate(
-                                    childCount: users.length, 
-                                    (context, index) {
-                                      if(appStateClass.usersDataNotifiers.value[users[index]] != null){
-                                        return ValueListenableBuilder(
-                                          valueListenable: appStateClass.usersDataNotifiers.value[users[index]]!.notifier, 
-                                          builder: ((context, userData, child) {
-                                            return ValueListenableBuilder(
-                                              valueListenable: appStateClass.usersSocialsNotifiers.value[users[index]]!.notifier, 
-                                              builder: ((context, userSocial, child) {
-                                                return ValueListenableBuilder(
-                                                  valueListenable: appStateClass.commentsNotifiers.value[widget.commentSender]![widget.commentID]!.notifier, 
-                                                  builder: ((context, commentData, child) {
-                                                    return CustomUserDataWidget(
-                                                      userData: userData,
-                                                      userSocials: userSocial,
-                                                      userDisplayType: UserDisplayType.likes,
-                                                      isLiked: commentData.likedByCurrentID,
-                                                      isBookmarked: null,
-                                                      profilePageUserID: null,
-                                                      key: UniqueKey()
-                                                    );
-                                                  })
-                                                );
-                                              })
-                                            );
-                                          })
-                                        );
-                                      }
-                                      return Container();                                                
-                                    }
-                                  ))                                    
-                                ]
-                              )
-                            );
-                          })
-                        );
-                      }
-                    );
-                  }
-                );
-              }
-            )
-          ),
-          ValueListenableBuilder(
-            valueListenable: isLoading,
-            builder: ((context, isLoadingValue, child) {
-              if(isLoadingValue){
-                return loadingPageWidget();
-              }
-              return Container();
-            })
-          )
-        ]
+                                return Container();                                                
+                              }
+                            ))                                    
+                          ]
+                        )
+                      );
+                    })
+                  );
+                }
+              );
+            }
+          );
+        })
       ),
       floatingActionButton: ValueListenableBuilder<bool>(
         valueListenable: displayFloatingBtn,

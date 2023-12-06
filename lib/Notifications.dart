@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/NotificationClass.dart';
 import 'package:social_media_app/custom/CustomNotificationWidget.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
 import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/streams/NotificationDataStreamClass.dart';
-import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'custom/CustomPagination.dart';
 
@@ -30,7 +30,7 @@ class _NotificationsWidgetStateful extends StatefulWidget {
 }
 
 class _NotificationsWidgetStatefulState extends State<_NotificationsWidgetStateful> with AutomaticKeepAliveClientMixin, LifecycleListenerMixin{
-  ValueNotifier<bool> isLoading = ValueNotifier(false);
+  ValueNotifier<bool> isLoading = ValueNotifier(true);
   ValueNotifier<List<NotificationClass>> notifications = ValueNotifier([]);
   ValueNotifier<LoadingStatus> loadingNotificationsStatus = ValueNotifier(LoadingStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
@@ -101,7 +101,7 @@ class _NotificationsWidgetStatefulState extends State<_NotificationsWidgetStatef
         String stringified = jsonEncode({
           'currentID': appStateClass.currentID,
           'currentLength': currentPostsLength,
-          'paginationLimit': postsPaginationLimit,
+          'paginationLimit': notificationsPaginationLimit,
           'maxFetchLimit': notificationsServerFetchLimit
         }); 
         var res = await dio.get('$serverDomainAddress/users/fetchUserNotifications', data: stringified);
@@ -161,9 +161,24 @@ class _NotificationsWidgetStatefulState extends State<_NotificationsWidgetStatef
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      body: Stack(
-        children: [
-          ValueListenableBuilder(
+      body: ValueListenableBuilder(
+        valueListenable: isLoading,
+        builder: ((context, isLoadingValue, child) {
+          if(isLoadingValue){
+            return Skeletonizer(
+              enabled: true,
+              child: ListView.builder(
+                itemCount: notificationsPaginationLimit,
+                itemBuilder: (context, index) {
+                  return CustomNotificationWidget(
+                    notificationClass: NotificationClass.getFakeData(), 
+                    skeletonMode: true
+                  );
+                }
+              )
+            );
+          }
+          return ValueListenableBuilder(
             valueListenable: loadingNotificationsStatus,
             builder: (context, loadingStatusValue, child){
               return ValueListenableBuilder(
@@ -188,7 +203,11 @@ class _NotificationsWidgetStatefulState extends State<_NotificationsWidgetStatef
                             SliverList(delegate: SliverChildBuilderDelegate(
                               childCount: notifications.length, 
                               (context, index) {
-                                return CustomNotificationWidget(notificationClass: notifications[index], key: UniqueKey());
+                                return CustomNotificationWidget(
+                                  notificationClass: notifications[index], 
+                                  skeletonMode: false,
+                                  key: UniqueKey()
+                                );
                               }
                             ))
                           ]
@@ -199,17 +218,8 @@ class _NotificationsWidgetStatefulState extends State<_NotificationsWidgetStatef
                 }
               );
             }
-          ),
-          ValueListenableBuilder(
-            valueListenable: isLoading,
-            builder: ((context, isLoadingValue, child) {
-              if(isLoadingValue){
-                return loadingPageWidget();
-              }
-              return Container();
-            })
-          )
-        ],
+          );
+        })
       ),
       floatingActionButton: ValueListenableBuilder<bool>(
         valueListenable: displayFloatingBtn,
