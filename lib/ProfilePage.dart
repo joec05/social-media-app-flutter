@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/ProfileRepliesPage.dart';
 import 'package:social_media_app/ProfilePostsPage.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
@@ -208,9 +207,8 @@ class _ProfilePageWidgetStatefulState extends State<_ProfilePageWidgetStateful> 
                         }
                         return Container();
                       }else{
-                        return Skeletonizer(
-                          enabled: true,
-                          child: CustomProfileHeader(
+                        return shimmerSkeletonWidget(
+                          CustomProfileHeader(
                             userID: userID, 
                             userData: UserDataClass.getFakeData(), 
                             skeletonMode: true,

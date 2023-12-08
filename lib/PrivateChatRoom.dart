@@ -63,7 +63,7 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
   ValueNotifier<bool> isLoading = ValueNotifier(false);
   ValueNotifier<bool> isListeningLink = ValueNotifier(false);
   ValueNotifier<List<PrivateMessageNotifier>> messages = ValueNotifier([]);
-  ValueNotifier<LoadingStatus> loadingMessagesStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
   CustomTextFieldEditingController messageController = CustomTextFieldEditingController();
   ValueNotifier<bool> verifyMessageFormat = ValueNotifier(false);
@@ -166,7 +166,7 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
     super.dispose();
     isLoading.dispose();
     messages.dispose();
-    loadingMessagesStatus.dispose();
+    paginationStatus.dispose();
     canPaginate.dispose();
     messageController.dispose();
     verifyMessageFormat.dispose();
@@ -245,12 +245,12 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
   Future<void> loadMoreChats() async{
     try {
       if(mounted){
-        loadingMessagesStatus.value = LoadingStatus.loading;
+        paginationStatus.value = PaginationStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
           await fetchPrivateChatData(messages.value.length, false, true);
           if(mounted){
-            loadingMessagesStatus.value = LoadingStatus.loaded;
+            paginationStatus.value = PaginationStatus.loaded;
           }
         });
       }
@@ -416,7 +416,7 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
       mediasDatas.value[index].storagePath = uniqueID;
     })
     .catchError((error) {
-      debugPrint(error.response);
+      debugPrint(error.toString());
     });
     return loadedUri;
   }
@@ -794,7 +794,7 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
       body: Stack(
         children: [
           ValueListenableBuilder(
-            valueListenable: loadingMessagesStatus,
+            valueListenable: paginationStatus,
             builder: (context, loadingStatusValue, child){
               return ValueListenableBuilder(
                 valueListenable: canPaginate,

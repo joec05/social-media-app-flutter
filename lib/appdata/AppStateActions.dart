@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:social_media_app/appdata/GlobalFunctions.dart';
 import 'package:social_media_app/appdata/NavigationActions.dart';
 import 'package:social_media_app/class/PostClass.dart';
+import 'package:social_media_app/class/SharedPreferencesClass.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/state/main.dart';
-import '../caching/sqfliteConfiguration.dart';
 import '../class/CommentClass.dart';
 import '../class/CommentNotifier.dart';
 import '../class/PostNotifier.dart';
@@ -76,7 +76,7 @@ void logOut(BuildContext context) async{
   try {
     if(context.mounted){
       navigateBackToInitialScreen(context);
-      await DatabaseHelper().deleteCurrentUser();
+      SharedPreferencesClass().resetCurrentUser();
     }
   } on Exception catch (e) {
     doSomethingWithException(e);

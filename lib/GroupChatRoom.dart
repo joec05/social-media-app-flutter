@@ -64,7 +64,7 @@ class _GroupChatRoomWidgetStatefulState extends State<_GroupChatRoomWidgetStatef
   ValueNotifier<bool> isListeningLink = ValueNotifier(false);
   ValueNotifier<List<GroupMessageNotifier>> messages = ValueNotifier([]);
   ValueNotifier<GroupProfileClass> groupProfile = ValueNotifier(GroupProfileClass('', '', '', []));
-  ValueNotifier<LoadingStatus> loadingMessagesStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
   CustomTextFieldEditingController messageController = CustomTextFieldEditingController();
   ValueNotifier<bool> verifyMessageFormat = ValueNotifier(false);
@@ -206,7 +206,7 @@ class _GroupChatRoomWidgetStatefulState extends State<_GroupChatRoomWidgetStatef
     isLoading.dispose();
     messages.dispose();
     groupProfile.dispose();
-    loadingMessagesStatus.dispose();
+    paginationStatus.dispose();
     canPaginate.dispose();
     messageController.dispose();
     verifyMessageFormat.dispose();
@@ -317,12 +317,12 @@ class _GroupChatRoomWidgetStatefulState extends State<_GroupChatRoomWidgetStatef
   Future<void> loadMoreChats() async{
     try {
       if(mounted){
-        loadingMessagesStatus.value = LoadingStatus.loading;
+        paginationStatus.value = PaginationStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
           await fetchGroupChatData(messages.value.length, false, true);
           if(mounted){
-            loadingMessagesStatus.value = LoadingStatus.loaded;
+            paginationStatus.value = PaginationStatus.loaded;
           }
         });
       }
@@ -824,7 +824,7 @@ class _GroupChatRoomWidgetStatefulState extends State<_GroupChatRoomWidgetStatef
       body: Stack(
         children: [
           ValueListenableBuilder(
-            valueListenable: loadingMessagesStatus,
+            valueListenable: paginationStatus,
             builder: (context, loadingStatusValue, child){
               return ValueListenableBuilder(
                 valueListenable: canPaginate,

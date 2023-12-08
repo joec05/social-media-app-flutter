@@ -7,10 +7,10 @@ import 'package:social_media_app/class/CommentClass.dart';
 import 'package:social_media_app/class/DisplayCommentDataClass.dart';
 import 'package:social_media_app/class/DisplayPostDataClass.dart';
 import 'package:social_media_app/class/NotificationClass.dart';
+import 'package:social_media_app/class/SharedPreferencesClass.dart';
 import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/streams/BookmarkDataStreamClass.dart';
 import 'package:social_media_app/streams/NotificationDataStreamClass.dart';
-import '../caching/sqfliteConfiguration.dart';
 import '../class/PostClass.dart';
 import '../class/UserDataClass.dart';
 import '../class/UserSocialClass.dart';
@@ -439,7 +439,7 @@ void deleteAccount(context) async{
     });
     var res = await dio.delete('$serverDomainAddress/users/deleteAccount', data: stringified);
     if(res.data.isNotEmpty){
-      await DatabaseHelper().deleteCurrentUser();
+      SharedPreferencesClass().resetCurrentUser();
       appStateClass.resetSession();
       navigateBackToInitialScreen(context);
     }

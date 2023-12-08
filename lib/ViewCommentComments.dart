@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart' as d;
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/class/DisplayCommentDataClass.dart';
 import 'package:social_media_app/class/PostClass.dart';
@@ -44,9 +43,9 @@ class ViewCommentCommentsWidgetStateful extends StatefulWidget {
 
 class _ViewCommentCommentsWidgetStatefulState extends State<ViewCommentCommentsWidgetStateful> with LifecycleListenerMixin{
   late CommentClass selectedCommentData;
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
+  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
   ValueNotifier<List<DisplayCommentDataClass>> comments = ValueNotifier([]);
-  ValueNotifier<LoadingStatus> loadingCommentsStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
   ValueNotifier<DisplayCommentDataClass?> selectedComment = ValueNotifier(null);
   ValueNotifier<dynamic> parentPost = ValueNotifier(null);
@@ -84,9 +83,9 @@ class _ViewCommentCommentsWidgetStatefulState extends State<ViewCommentCommentsW
   @override void dispose(){
     commentDataStreamClassSubscription.cancel();
     super.dispose();
-    isLoading.dispose();
+    loadingState.dispose();
     comments.dispose();
-    loadingCommentsStatus.dispose();
+    paginationStatus.dispose();
     canPaginate.dispose();
     selectedComment.dispose();
     parentPost.dispose();
@@ -97,7 +96,6 @@ class _ViewCommentCommentsWidgetStatefulState extends State<ViewCommentCommentsW
   Future<void> fetchCommentData(int currentCommentsLength, bool isRefreshing, bool isPaginating) async{
     try {
       if(mounted){
-        isLoading.value = true;
         String stringified = jsonEncode({
           'sender': selectedCommentData.sender,
           'commentID': selectedCommentData.commentID,
@@ -167,7 +165,7 @@ class _ViewCommentCommentsWidgetStatefulState extends State<ViewCommentCommentsW
             }
           }
           if(mounted){
-            isLoading.value = false;
+            loadingState.value = LoadingState.loaded;
           }
         }
       }
@@ -179,12 +177,13 @@ class _ViewCommentCommentsWidgetStatefulState extends State<ViewCommentCommentsW
   Future<void> loadMoreComments() async{
     try {
       if(mounted){
-        loadingCommentsStatus.value = LoadingStatus.loading;
+        loadingState.value = LoadingState.paginating;
+        paginationStatus.value = PaginationStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
           await fetchCommentData(comments.value.length, false, true);
           if(mounted){
-            loadingCommentsStatus.value = LoadingStatus.loaded;
+            paginationStatus.value = PaginationStatus.loaded;
           }
         });
       }
@@ -205,7 +204,7 @@ class _ViewCommentCommentsWidgetStatefulState extends State<ViewCommentCommentsW
         )
       ),
       body:  ValueListenableBuilder(
-        valueListenable: loadingCommentsStatus,
+        valueListenable: paginationStatus,
         builder: (context, loadingStatusValue, child){
           return ValueListenableBuilder(
             valueListenable: canPaginate,
@@ -287,9 +286,8 @@ class _ViewCommentCommentsWidgetStatefulState extends State<ViewCommentCommentsW
                                   )
                                 : Container();
                               }else{
-                                return Skeletonizer(
-                                  enabled: true,
-                                  child: CustomPostWidget(
+                                return shimmerSkeletonWidget(
+                                  CustomPostWidget(
                                     postData: PostClass.getFakeData(),
                                     senderData: UserDataClass.getFakeData(), 
                                     senderSocials: UserSocialClass.getFakeData(), 
@@ -334,9 +332,8 @@ class _ViewCommentCommentsWidgetStatefulState extends State<ViewCommentCommentsW
                                   }),
                                 );
                               }else{
-                                return Skeletonizer(
-                                  enabled: true,
-                                  child: CustomCommentWidget(
+                                return shimmerSkeletonWidget(
+                                  CustomCommentWidget(
                                     commentData: CommentClass.getFakeData(), 
                                     senderData: UserDataClass.getFakeData(),
                                     senderSocials: UserSocialClass.getFakeData(),
@@ -363,15 +360,14 @@ class _ViewCommentCommentsWidgetStatefulState extends State<ViewCommentCommentsW
                           )
                         ),
                         ValueListenableBuilder(
-                          valueListenable: isLoading,
-                          builder: ((context, isLoadingValue, child) {
-                            if(isLoadingValue){
+                          valueListenable: loadingState,
+                          builder: ((context, loadingStateValue, child) {
+                            if(shouldCallSkeleton(loadingStateValue)){
                               return SliverList(delegate: SliverChildBuilderDelegate(
                                 childCount: postsPaginationLimit, 
                                 (context, index) {
-                                  return Skeletonizer(
-                                    enabled: true,
-                                    child: CustomCommentWidget(
+                                  return shimmerSkeletonWidget(
+                                    CustomCommentWidget(
                                       commentData: CommentClass.getFakeData(), 
                                       senderData: UserDataClass.getFakeData(),
                                       senderSocials: UserSocialClass.getFakeData(),

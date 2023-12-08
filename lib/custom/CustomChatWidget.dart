@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/GroupChatRoom.dart';
 import 'package:social_media_app/PrivateChatRoom.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
@@ -317,13 +316,9 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
                       Flexible(
                         child: Row(
                           children: [
-                            Skeleton.replace(
-                              width: getScreenWidth() * 0.1, 
-                              height: getScreenWidth() * 0.1,
-                              child: CircleAvatar(
-                                radius: getScreenWidth() * 0.05,
-                                backgroundImage: const NetworkImage(''),
-                              )
+                            CircleAvatar(
+                              radius: getScreenWidth() * 0.05,
+                              backgroundImage: NetworkImage(defaultUserProfilePicLink),
                             ),
                             SizedBox(
                               width: getScreenWidth() * 0.02
@@ -338,8 +333,9 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
                                     children: [
                                       Flexible(
                                         child: Card(
+                                          margin: EdgeInsets.zero,
                                           child: SizedBox(
-                                            height: getScreenHeight() * 0.025,
+                                            height: getScreenHeight() * 0.0275,
                                             width: double.infinity,
                                           )
                                         ),
@@ -348,15 +344,17 @@ class _CustomChatWidgetState extends State<CustomChatWidget> {
                                   ),
                                   SizedBox(height: getScreenHeight() * 0.005),
                                   Card(
+                                    margin: EdgeInsets.zero,
                                     child: SizedBox(
-                                      height: getScreenHeight() * 0.02,
+                                      height: getScreenHeight() * 0.0225,
                                       width: double.infinity,
                                     )
                                   ),
                                   SizedBox(height: getScreenHeight() * 0.005),
                                   Card(
+                                    margin: EdgeInsets.zero,
                                     child: SizedBox(
-                                      height: getScreenHeight() * 0.015,
+                                      height: getScreenHeight() * 0.02,
                                       width: double.infinity,
                                     )
                                   ),

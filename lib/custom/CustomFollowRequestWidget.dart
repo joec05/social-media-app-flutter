@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import '../ProfilePage.dart';
@@ -236,19 +235,16 @@ class _CustomFollowRequestWidgetState extends State<CustomFollowRequestWidget>{
                             Flexible(
                               child: Row(
                                 children: [
-                                  Skeleton.replace(
-                                    width: getScreenWidth() * 0.1, 
-                                    height: getScreenWidth() * 0.1,
-                                    child: CircleAvatar(
-                                      radius: getScreenWidth() * 0.05,
-                                      backgroundImage: const NetworkImage(''),
-                                    )
+                                  CircleAvatar(
+                                    radius: getScreenWidth() * 0.05,
+                                    backgroundImage: NetworkImage(defaultUserProfilePicLink),
                                   ),
                                   SizedBox(
                                     width: getScreenWidth() * 0.02
                                   ),
                                   Flexible(
                                     child: Card(
+                                      margin: EdgeInsets.zero,
                                       child: SizedBox(
                                         height: getScreenHeight() * 0.055,
                                         width: double.infinity,
@@ -265,6 +261,7 @@ class _CustomFollowRequestWidgetState extends State<CustomFollowRequestWidget>{
                   ),
                   SizedBox(height: getScreenHeight() * 0.015),
                   Card(
+                    margin: EdgeInsets.zero,
                     child: CustomButton(
                       width: double.infinity, height: getScreenHeight() * 0.055, 
                       buttonColor: Colors.transparent, 

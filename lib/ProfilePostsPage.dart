@@ -4,12 +4,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/MediaDataClass.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
+import 'package:social_media_app/styles/AppStyles.dart';
 import 'class/DisplayPostDataClass.dart';
 import 'class/PostClass.dart';
 import 'custom/CustomPagination.dart';
@@ -40,9 +40,9 @@ class _ProfilePagePostsWidgetStateful extends StatefulWidget {
 
 class _ProfilePagePostsWidgetStatefulState extends State<_ProfilePagePostsWidgetStateful> with AutomaticKeepAliveClientMixin{
   late String userID;
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
+  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
   ValueNotifier<List<DisplayPostDataClass>> posts = ValueNotifier([]);
-  ValueNotifier<LoadingStatus> loadingPostsStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
   late StreamSubscription postDataStreamClassSubscription;
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
@@ -76,9 +76,9 @@ class _ProfilePagePostsWidgetStatefulState extends State<_ProfilePagePostsWidget
   @override void dispose() async{
     postDataStreamClassSubscription.cancel();
     super.dispose();
-    isLoading.dispose();
+    loadingState.dispose();
     posts.dispose();
-    loadingPostsStatus.dispose();
+    paginationStatus.dispose();
     canPaginate.dispose();
     displayFloatingBtn.dispose();
     _scrollController.dispose();
@@ -87,7 +87,6 @@ class _ProfilePagePostsWidgetStatefulState extends State<_ProfilePagePostsWidget
   Future<void> fetchProfilePosts(int currentPostsLength, bool isRefreshing) async{
     try {
       if(mounted){
-        isLoading.value = true;
         String stringified = jsonEncode({
           'userID': userID,
           'currentID': appStateClass.currentID,
@@ -129,7 +128,7 @@ class _ProfilePagePostsWidgetStatefulState extends State<_ProfilePagePostsWidget
             }
           }
           if(mounted){
-            isLoading.value = false;
+            loadingState.value = LoadingState.loaded;
           }
         }
       }
@@ -141,12 +140,13 @@ class _ProfilePagePostsWidgetStatefulState extends State<_ProfilePagePostsWidget
   Future<void> loadMorePosts() async{
     try {
       if(mounted){
-        loadingPostsStatus.value = LoadingStatus.loading;
+        loadingState.value = LoadingState.paginating;
+        paginationStatus.value = PaginationStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
           await fetchProfilePosts(posts.value.length, false);
           if(mounted){
-            loadingPostsStatus.value = LoadingStatus.loaded;
+            paginationStatus.value = PaginationStatus.loaded;
           }
         });
       }
@@ -160,12 +160,11 @@ class _ProfilePagePostsWidgetStatefulState extends State<_ProfilePagePostsWidget
     super.build(context);
     return Scaffold(
       body: ValueListenableBuilder(
-        valueListenable: isLoading,
-        builder: ((context, isLoadingValue, child) {
-          if(isLoadingValue){
-            return Skeletonizer(
-              enabled: true,
-              child: CustomScrollView(
+        valueListenable: loadingState,
+        builder: ((context, loadingStateValue, child) {
+          if(shouldCallSkeleton(loadingStateValue)){
+            return shimmerSkeletonWidget(
+               CustomScrollView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: <Widget>[
@@ -189,7 +188,7 @@ class _ProfilePagePostsWidgetStatefulState extends State<_ProfilePagePostsWidget
             ); 
           }
           return ValueListenableBuilder(
-            valueListenable: loadingPostsStatus,
+            valueListenable: paginationStatus,
             builder: (context, loadingStatusValue, child){
               if(appStateClass.usersDataNotifiers.value[userID] != null){
                 return ValueListenableBuilder(

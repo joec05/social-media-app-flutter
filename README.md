@@ -1,6 +1,6 @@
 # Social Media App
 
-A simple social media project app made with Flutter accompanied with multiple useful features. 
+A simple social media project app made with Flutter wrapped in simple and beautiful design. 
 
 ## Stack
 
@@ -14,9 +14,11 @@ A simple social media project app made with Flutter accompanied with multiple us
 
 * Appwrite as cloud storage for images
 
-* Redux as primary state management
+* Custom class as primary state management
 
 ## Features
+
+* Skeleton loading
 
 * Sign up and login
 
@@ -56,42 +58,34 @@ A simple social media project app made with Flutter accompanied with multiple us
 
 * Add other users to group
 
+* Auto login
+
 ## Basic preview of the application
 
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_12.jpg?raw=true "Social media app preview 12")
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_1.png?raw=true "Social media app preview 1")
 
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_9.jpg?raw=true "Social media app preview 9")
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_2.png?raw=true "Social media app preview 2")
 
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_8.jpg?raw=true "Social media app preview 8")
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_3.png?raw=true "Social media app preview 3")
 
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_1.jpg?raw=true "Social media app preview 1")
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_4.png?raw=true "Social media app preview 4")
 
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_10.jpg?raw=true "Social media app preview 10")
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_5.png?raw=true "Social media app preview 5")
 
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_13.jpg?raw=true "Social media app preview 13")
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_6.png?raw=true "Social media app preview 6")
 
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_7.jpg?raw=true "Social media app preview 7")
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_7.png?raw=true "Social media app preview 7")
 
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_4.jpg?raw=true "Social media app preview 4")
-
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_2.jpg?raw=true "Social media app preview 2")
-
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_6.jpg?raw=true "Social media app preview 6")
-
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_11.jpg?raw=true "Social media app preview 11")
-
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/social_media_app_demo_5.jpg?raw=true "Social media app preview 5")
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_8.png?raw=true "Social media app preview 8")
 
 ## Things to fix and improve
 
 * Database still cannot handle 1 million rows yet
 
-* Image and video size still not yet adapted to the device width and height
-
 * Adding more options of files to upload such as audio and PDF
 
 * Adding push notifications
 
-* Fix the scrolling lags when initially loading a list of items
+* Fix the nested scrolling bug in the profile page 
 
-* Fix the nested scrolling inconvenience / bug in the profile page 
+* Make improvements to cloud storage management

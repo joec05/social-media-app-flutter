@@ -5,11 +5,11 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:dio/dio.dart' as d;
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
+import 'package:social_media_app/styles/AppStyles.dart';
 import 'caching/sqfliteConfiguration.dart';
 import 'custom/CustomPagination.dart';
 import 'custom/CustomUserDataWidget.dart';
@@ -40,9 +40,9 @@ class _SearchedUsersWidgetStatefulState extends State<_SearchedUsersWidgetStatef
   final ScrollController _scrollController = ScrollController();
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
   late String searchedText;
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
+  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
   ValueNotifier<List<String>> users = ValueNotifier([]);
-  ValueNotifier<LoadingStatus> loadingUsersStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
   ValueNotifier<int> totalUsersLength = ValueNotifier(usersServerFetchLimit);
   
 
@@ -68,18 +68,17 @@ class _SearchedUsersWidgetStatefulState extends State<_SearchedUsersWidgetStatef
 
   @override void dispose(){
     super.dispose();
-    isLoading.dispose();
+    loadingState.dispose();
     _scrollController.dispose();
     displayFloatingBtn.dispose();
     users.dispose();
-    loadingUsersStatus.dispose();
+    paginationStatus.dispose();
     totalUsersLength.dispose();
   }
 
   Future<void> fetchSearchedUsers(int currentUsersLength, bool isRefreshing, bool isPaginating) async{
     try {
       if(mounted){
-        isLoading.value = true;
         String stringified = '';
         d.Response res;
         if(!isPaginating){
@@ -131,7 +130,7 @@ class _SearchedUsersWidgetStatefulState extends State<_SearchedUsersWidgetStatef
             }
           }
           if(mounted){
-            isLoading.value = false;
+            loadingState.value = LoadingState.loaded;
           }
         }
       }
@@ -143,12 +142,13 @@ class _SearchedUsersWidgetStatefulState extends State<_SearchedUsersWidgetStatef
   Future<void> loadMoreUsers() async{
     try {
       if(mounted){
-        loadingUsersStatus.value = LoadingStatus.loading;
+        loadingState.value = LoadingState.paginating;
+        paginationStatus.value = PaginationStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
           await fetchSearchedUsers(users.value.length, false, true);
           if(mounted){
-            loadingUsersStatus.value = LoadingStatus.loaded;
+            paginationStatus.value = PaginationStatus.loaded;
           }
         });
       }
@@ -158,6 +158,7 @@ class _SearchedUsersWidgetStatefulState extends State<_SearchedUsersWidgetStatef
   }
 
   Future<void> refresh() async{
+    loadingState.value = LoadingState.refreshing;
     fetchSearchedUsers(0, true, false);
   }
 
@@ -166,12 +167,11 @@ class _SearchedUsersWidgetStatefulState extends State<_SearchedUsersWidgetStatef
     super.build(context);
      return Scaffold(
       body: ValueListenableBuilder(
-        valueListenable: isLoading,
-        builder: ((context, isLoadingValue, child) {
-          if(isLoadingValue){
-            return Skeletonizer(
-              enabled: true,
-              child: CustomScrollView(
+        valueListenable: loadingState,
+        builder: ((context, loadingStateValue, child) {
+          if(shouldCallSkeleton(loadingStateValue)){
+            return shimmerSkeletonWidget(
+              CustomScrollView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: <Widget>[
@@ -198,7 +198,7 @@ class _SearchedUsersWidgetStatefulState extends State<_SearchedUsersWidgetStatef
             ); 
           }
           return ValueListenableBuilder(
-            valueListenable: loadingUsersStatus,
+            valueListenable: paginationStatus,
             builder: (context, loadingStatusValue, child){
               return ValueListenableBuilder(
                 valueListenable: totalUsersLength,

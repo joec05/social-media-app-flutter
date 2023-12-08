@@ -7,13 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:social_media_app/CompleteSignUpProfile.dart';
 import 'package:social_media_app/EmailVerification.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
+import 'package:social_media_app/class/SharedPreferencesClass.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
 import 'package:social_media_app/firebase/firebase_constants.dart';
 import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
-import 'caching/sqfliteConfiguration.dart';
 import 'styles/AppStyles.dart';
 
 var dio = Dio();
@@ -216,7 +216,7 @@ class _SignUpStatefulState extends State<SignUpStateful> {
                           updateUserData(userDataClass, context);
                           updateUserSocials(userDataClass, userSocialClass, context);
                         }
-                        await DatabaseHelper().replaceCurrentUser(res.data['userID']);
+                        SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
                         runDelay(() => Navigator.push(
                           context,
                           SliderRightToLeftRoute(

@@ -270,3 +270,6 @@ Future<String> downloadAndSaveVideo(String videoLink, String fileName) async {
   return file.path;
 }
 
+bool shouldCallSkeleton(LoadingState loadingState){
+  return loadingState == LoadingState.loading || loadingState == LoadingState.refreshing;
+}

@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/DisplayCommentDataClass.dart';
 import 'package:social_media_app/class/MediaDataClass.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
@@ -12,6 +11,7 @@ import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomCommentWidget.dart';
 import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
+import 'package:social_media_app/styles/AppStyles.dart';
 import 'class/CommentClass.dart';
 import 'custom/CustomPagination.dart';
 import 'streams/CommentDataStreamClass.dart';
@@ -40,9 +40,9 @@ var dio = Dio();
 
 class _ProfilePageRepliesWidgetStatefulState extends State<_ProfilePageRepliesWidgetStateful> with AutomaticKeepAliveClientMixin{
   late String userID;
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
+  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
   ValueNotifier<List<DisplayCommentDataClass>> comments = ValueNotifier([]);
-  ValueNotifier<LoadingStatus> loadingCommentsStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
   late StreamSubscription commentDataStreamClassSubscription;
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
@@ -76,9 +76,9 @@ class _ProfilePageRepliesWidgetStatefulState extends State<_ProfilePageRepliesWi
   @override void dispose(){
     commentDataStreamClassSubscription.cancel();
     super.dispose();
-    isLoading.dispose();
+    loadingState.dispose();
     comments.dispose();
-    loadingCommentsStatus.dispose();
+    paginationStatus.dispose();
     canPaginate.dispose();
     displayFloatingBtn.dispose();
     _scrollController.dispose();
@@ -87,7 +87,6 @@ class _ProfilePageRepliesWidgetStatefulState extends State<_ProfilePageRepliesWi
   Future<void> fetchProfileReplies(int currentCommentsLength, bool isRefreshing) async{
     try {
       if(mounted){
-        isLoading.value = true;
         String stringified = jsonEncode({
           'userID': userID,
           'currentID': appStateClass.currentID,
@@ -129,7 +128,7 @@ class _ProfilePageRepliesWidgetStatefulState extends State<_ProfilePageRepliesWi
             }
           }
           if(mounted){
-            isLoading.value = false;
+            loadingState.value = LoadingState.loaded;
           }
         }
       }
@@ -141,12 +140,13 @@ class _ProfilePageRepliesWidgetStatefulState extends State<_ProfilePageRepliesWi
   Future<void> loadMoreComments() async{
     try {
       if(mounted){
-        loadingCommentsStatus.value = LoadingStatus.loading;
+        loadingState.value = LoadingState.paginating;
+        paginationStatus.value = PaginationStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
           await fetchProfileReplies(comments.value.length, false);
           if(mounted){
-            loadingCommentsStatus.value = LoadingStatus.loaded;
+            paginationStatus.value = PaginationStatus.loaded;
           }
         });
       }
@@ -160,12 +160,11 @@ class _ProfilePageRepliesWidgetStatefulState extends State<_ProfilePageRepliesWi
     super.build(context);
     return Scaffold(
       body: ValueListenableBuilder(
-        valueListenable: isLoading,
-        builder: ((context, isLoadingValue, child) {
-          if(isLoadingValue){
-            return Skeletonizer(
-              enabled: true,
-              child: CustomScrollView(
+        valueListenable: loadingState,
+        builder: ((context, loadingStateValue, child) {
+          if(shouldCallSkeleton(loadingStateValue)){
+            return shimmerSkeletonWidget(
+              CustomScrollView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: <Widget>[
@@ -190,7 +189,7 @@ class _ProfilePageRepliesWidgetStatefulState extends State<_ProfilePageRepliesWi
             );
           }
           return ValueListenableBuilder(
-            valueListenable: loadingCommentsStatus,
+            valueListenable: paginationStatus,
             builder: (context, loadingStatusValue, child){
               if(appStateClass.usersDataNotifiers.value[userID] != null){
                 return ValueListenableBuilder(

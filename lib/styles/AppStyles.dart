@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:shimmer/shimmer.dart';
 import 'package:social_media_app/custom/CustomVideoPlayer.dart' as cvp;
 import 'package:flutter/material.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
@@ -237,6 +238,7 @@ Widget mediaDataMessageComponentWidget(MediaDatasClass mediaData, BuildContext c
         }, navigatorDelayTime);
       },
       child: Container(
+        margin: EdgeInsets.only(bottom: mediaComponentMargin),
         constraints: BoxConstraints(
           maxHeight: min(mediaData.mediaSize!.height, getScreenHeight() * 0.75),
           maxWidth: min(mediaData.mediaSize!.width, getScreenWidth() * 0.7)
@@ -246,6 +248,7 @@ Widget mediaDataMessageComponentWidget(MediaDatasClass mediaData, BuildContext c
     );
   }else if(mediaData.mediaType == MediaType.video){
     return Container(
+      margin: EdgeInsets.only(bottom: mediaComponentMargin),
       constraints: BoxConstraints(
         maxHeight: min(mediaData.mediaSize!.height, getScreenHeight() * 0.75),
         maxWidth: min(mediaData.mediaSize!.width, getScreenWidth() * 0.7)
@@ -269,6 +272,7 @@ Widget mediaDataMessageComponentWidget(MediaDatasClass mediaData, BuildContext c
     );
   }else if(mediaData.mediaType == MediaType.websiteCard){
     return Container(
+      margin: EdgeInsets.only(bottom: mediaComponentMargin),
       child: CustomWebsiteCardComponent(
         websiteCardData: mediaData.websiteCardData!, websiteCardState: WebsiteCardState.uploaded
       ),
@@ -417,5 +421,13 @@ Widget defaultLeadingWidget(BuildContext context){
     splashFactory: InkRipple.splashFactory,
     onTap: () => context.mounted ? runDelay(() => Navigator.pop(context), 60) : (){},
     child: const Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.white)
+  );
+}
+
+Widget shimmerSkeletonWidget(Widget child){
+  return Shimmer.fromColors(
+    baseColor: Colors.grey.withOpacity(0.5),
+    highlightColor: const Color.fromARGB(179, 167, 155, 155),
+    child: child
   );
 }

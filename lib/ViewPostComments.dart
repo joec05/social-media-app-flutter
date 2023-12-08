@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart' as d;
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/class/DisplayCommentDataClass.dart';
 import 'package:social_media_app/class/DisplayPostDataClass.dart';
@@ -44,10 +43,10 @@ class ViewPostCommentsWidgetStateful extends StatefulWidget {
 
 class _ViewPostCommentsWidgetStatefulState extends State<ViewPostCommentsWidgetStateful> with LifecycleListenerMixin{
   late PostClass selectedPostData;
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
+  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
   ValueNotifier<List<DisplayCommentDataClass>> comments = ValueNotifier([]);
   ValueNotifier<DisplayPostDataClass?> selectedPost = ValueNotifier(null);
-  ValueNotifier<LoadingStatus> loadingCommentsStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(true);
   late StreamSubscription commentDataStreamClassSubscription;
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
@@ -83,9 +82,9 @@ class _ViewPostCommentsWidgetStatefulState extends State<ViewPostCommentsWidgetS
   @override void dispose(){
     commentDataStreamClassSubscription.cancel();
     super.dispose();
-    isLoading.dispose();
+    loadingState.dispose();
     comments.dispose();
-    loadingCommentsStatus.dispose();
+    paginationStatus.dispose();
     canPaginate.dispose();
     selectedPost.dispose();
     displayFloatingBtn.dispose();
@@ -95,7 +94,6 @@ class _ViewPostCommentsWidgetStatefulState extends State<ViewPostCommentsWidgetS
   Future<void> fetchPostData(int currentCommentsLength, bool isRefreshing, bool isPaginating) async{
     try {
       if(mounted){
-        isLoading.value = true;
         String stringified = jsonEncode({
           'sender': selectedPostData.sender,
           'postID': selectedPostData.postID,
@@ -156,7 +154,7 @@ class _ViewPostCommentsWidgetStatefulState extends State<ViewPostCommentsWidgetS
             }
           }
           if(mounted){
-            isLoading.value = false;
+            loadingState.value = LoadingState.loaded;
           }
         }
       }
@@ -168,12 +166,13 @@ class _ViewPostCommentsWidgetStatefulState extends State<ViewPostCommentsWidgetS
   Future<void> loadMoreComments() async{
     try {
       if(mounted){
-        loadingCommentsStatus.value = LoadingStatus.loading;
+        loadingState.value = LoadingState.paginating;
+        paginationStatus.value = PaginationStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
           await fetchPostData(comments.value.length, false, true);
           if(mounted){
-            loadingCommentsStatus.value = LoadingStatus.loaded;
+            paginationStatus.value = PaginationStatus.loaded;
           }
         });
       }
@@ -201,7 +200,7 @@ class _ViewPostCommentsWidgetStatefulState extends State<ViewPostCommentsWidgetS
             child: Builder(
               builder: (BuildContext context) {
                 return ValueListenableBuilder(
-                  valueListenable: loadingCommentsStatus,
+                  valueListenable: paginationStatus,
                   builder: (context, loadingStatusValue, child){
                     return ValueListenableBuilder(
                       valueListenable: canPaginate,
@@ -254,9 +253,8 @@ class _ViewPostCommentsWidgetStatefulState extends State<ViewPostCommentsWidgetS
                                             }),
                                           );
                                         }else{
-                                          return Skeletonizer(
-                                            enabled: true,
-                                            child: CustomPostWidget(
+                                          return shimmerSkeletonWidget(
+                                            CustomPostWidget(
                                               postData: PostClass.getFakeData(),
                                               senderData: UserDataClass.getFakeData(), 
                                               senderSocials: UserSocialClass.getFakeData(), 
@@ -282,15 +280,14 @@ class _ViewPostCommentsWidgetStatefulState extends State<ViewPostCommentsWidgetS
                                     )
                                   ),
                                   ValueListenableBuilder(
-                                    valueListenable: isLoading,
-                                    builder: ((context, isLoadingValue, child) {
-                                      if(isLoadingValue){
+                                    valueListenable: loadingState,
+                                    builder: ((context, loadingStateValue, child) {
+                                      if(shouldCallSkeleton(loadingStateValue)){
                                         return SliverList(delegate: SliverChildBuilderDelegate(
                                           childCount: postsPaginationLimit, 
                                           (context, index) {
-                                            return Skeletonizer(
-                                              enabled: true,
-                                              child: CustomCommentWidget(
+                                            return shimmerSkeletonWidget(
+                                              CustomCommentWidget(
                                                 commentData: CommentClass.getFakeData(), 
                                                 senderData: UserDataClass.getFakeData(),
                                                 senderSocials: UserSocialClass.getFakeData(),

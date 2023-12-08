@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/MediaDataClass.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
@@ -42,9 +41,9 @@ class _ProfilePageBookmarksWidgetStateful extends StatefulWidget {
 
 class _ProfilePageBookmarksWidgetStatefulState extends State<_ProfilePageBookmarksWidgetStateful>{
   late String userID;
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
+  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
   ValueNotifier<List> posts = ValueNotifier([]);
-  ValueNotifier<LoadingStatus> loadingBookmarksStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
   late StreamSubscription bookmarkDataStreamClassSubscription;
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
@@ -83,9 +82,9 @@ class _ProfilePageBookmarksWidgetStatefulState extends State<_ProfilePageBookmar
   @override void dispose(){
     bookmarkDataStreamClassSubscription.cancel();
     super.dispose();
-    isLoading.dispose();
+    loadingState.dispose();
     posts.dispose();
-    loadingBookmarksStatus.dispose();
+    paginationStatus.dispose();
     canPaginate.dispose();
     displayFloatingBtn.dispose();
     _scrollController.dispose();
@@ -94,7 +93,6 @@ class _ProfilePageBookmarksWidgetStatefulState extends State<_ProfilePageBookmar
   Future<void> fetchProfileBookmarks(int currentBookmarksLength, bool isRefreshing) async{
     try {
       if(mounted){
-        isLoading.value = true;
         String stringified = jsonEncode({
           'userID': userID,
           'currentID': appStateClass.currentID,
@@ -148,7 +146,7 @@ class _ProfilePageBookmarksWidgetStatefulState extends State<_ProfilePageBookmar
             }
           }
           if(mounted){
-            isLoading.value = false;
+            loadingState.value = LoadingState.loaded;
           }
         }
       }
@@ -160,12 +158,13 @@ class _ProfilePageBookmarksWidgetStatefulState extends State<_ProfilePageBookmar
   Future<void> loadMoreBookmarks() async{
     try {
       if(mounted){
-        loadingBookmarksStatus.value = LoadingStatus.loading;
+        loadingState.value = LoadingState.paginating;
+        paginationStatus.value = PaginationStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
           await fetchProfileBookmarks(posts.value.length, false);
           if(mounted){
-            loadingBookmarksStatus.value = LoadingStatus.loaded;
+            paginationStatus.value = PaginationStatus.loaded;
           }
         });
       }
@@ -186,12 +185,11 @@ class _ProfilePageBookmarksWidgetStatefulState extends State<_ProfilePageBookmar
         )
       ),
       body: ValueListenableBuilder(
-        valueListenable: isLoading,
-        builder: ((context, isLoadingValue, child) {
-          if(isLoadingValue){
-            return Skeletonizer(
-              enabled: true,
-              child: ListView.builder(
+        valueListenable: loadingState,
+        builder: ((context, loadingStateValue, child) {
+          if(shouldCallSkeleton(loadingStateValue)){
+            return shimmerSkeletonWidget(
+              ListView.builder(
                 itemCount: postsPaginationLimit,
                 itemBuilder: (context, index){
                   return CustomPostWidget(
@@ -206,7 +204,7 @@ class _ProfilePageBookmarksWidgetStatefulState extends State<_ProfilePageBookmar
             );
           }
           return ValueListenableBuilder(
-            valueListenable: loadingBookmarksStatus,
+            valueListenable: paginationStatus,
             builder: (context, loadingStatusValue, child){
               if(appStateClass.usersDataNotifiers.value[userID] != null){
                 return ValueListenableBuilder(

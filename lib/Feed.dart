@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart' as d;
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/DisplayCommentDataClass.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/custom/CustomPostWidget.dart';
@@ -13,6 +12,7 @@ import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/streams/CommentDataStreamClass.dart';
 import 'package:social_media_app/streams/PostDataStreamClass.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
+import 'package:social_media_app/styles/AppStyles.dart';
 import 'caching/sqfliteConfiguration.dart';
 import 'class/CommentClass.dart';
 import 'class/DisplayPostDataClass.dart';
@@ -42,9 +42,9 @@ class _FeedWidgetStateful extends StatefulWidget {
 
 class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with AutomaticKeepAliveClientMixin, LifecycleListenerMixin{
   ValueNotifier<List> posts = ValueNotifier([]);
-  ValueNotifier<LoadingStatus> loadingPostsStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
+  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
   ValueNotifier<int> totalPostsLength = ValueNotifier(postsServerFetchLimit);
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
   late StreamSubscription postDataStreamClassSubscription;
   late StreamSubscription commentDataStreamClassSubscription;
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
@@ -84,8 +84,8 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
     commentDataStreamClassSubscription.cancel();
     super.dispose();
     posts.dispose();
-    loadingPostsStatus.dispose();
-    isLoading.dispose();
+    paginationStatus.dispose();
+    loadingState.dispose();
     totalPostsLength.dispose();
     displayFloatingBtn.dispose();
     _scrollController.dispose();
@@ -94,7 +94,6 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
   Future<void> fetchFeedPosts(int currentPostsLength, bool isRefreshing, bool isPaginating) async{
     try {
       if(mounted){
-        isLoading.value = true;
         String stringified = '';
         d.Response res;
         if(!isPaginating){
@@ -166,7 +165,7 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
             }
           }
           if(mounted){
-            isLoading.value = false;
+            loadingState.value = LoadingState.loaded;
           }
         }
       }
@@ -178,12 +177,13 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
   Future<void> loadMorePosts() async{
     try {
       if(mounted){
-        loadingPostsStatus.value = LoadingStatus.loading;
+        loadingState.value = LoadingState.paginating;
+        paginationStatus.value = PaginationStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
           await fetchFeedPosts(posts.value.length, false, true);
           if(mounted){
-            loadingPostsStatus.value = LoadingStatus.loaded;
+            paginationStatus.value = PaginationStatus.loaded;
           }
         });
       }
@@ -193,6 +193,7 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
   }
 
   Future<void> refresh() async{
+    loadingState.value = LoadingState.refreshing;
     await fetchFeedPosts(0, true, false);
   }
 
@@ -201,12 +202,11 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
     super.build(context);
     return Scaffold(
       body: ValueListenableBuilder(
-        valueListenable: isLoading,
-        builder: ((context, isLoadingValue, child) {
-          if(isLoadingValue){
-            return Skeletonizer(
-              enabled: true,
-              child: ListView.builder(
+        valueListenable: loadingState,
+        builder: ((context, loadingStateValue, child) {
+          if(shouldCallSkeleton(loadingStateValue)){
+            return shimmerSkeletonWidget(
+              ListView.builder(
                 itemCount: postsPaginationLimit,
                 itemBuilder: (context, index) {
                   return CustomPostWidget(
@@ -222,7 +222,7 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
             );
           }
           return ValueListenableBuilder(
-            valueListenable: loadingPostsStatus,
+            valueListenable: paginationStatus,
             builder: (context, loadingStatusValue, child){
               return ValueListenableBuilder(
                 valueListenable: totalPostsLength,

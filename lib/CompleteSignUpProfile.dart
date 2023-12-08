@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
-import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
 import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
 import 'MainPage.dart';
@@ -35,7 +34,7 @@ class CompleteSignUpProfileStateful extends StatefulWidget {
   State<CompleteSignUpProfileStateful> createState() => _CompleteSignUpProfileStatefulState();
 }
 
-class _CompleteSignUpProfileStatefulState extends State<CompleteSignUpProfileStateful> with LifecycleListenerMixin{
+class _CompleteSignUpProfileStatefulState extends State<CompleteSignUpProfileStateful>{
   ValueNotifier<String> imageFilePath = ValueNotifier('');
   TextEditingController bioController = TextEditingController();
   ValueNotifier<bool> verifyBioFormat = ValueNotifier(false);

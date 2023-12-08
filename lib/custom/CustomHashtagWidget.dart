@@ -84,9 +84,21 @@ class _CustomHashtagDataWidgetState extends State<CustomHashtagDataWidget>{
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize),),
+                  Card(
+                    margin: EdgeInsets.zero,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: getScreenHeight() * 0.0275
+                    )
+                  ),
                   SizedBox(height: getScreenHeight() * 0.005),
-                  Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize * 0.9),)
+                  Card(
+                    margin: EdgeInsets.zero,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: getScreenHeight() * 0.025
+                    )
+                  ),
                 ]
               )
             )

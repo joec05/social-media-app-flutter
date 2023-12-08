@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/EditUserProfile.dart';
 import 'package:social_media_app/ProfileFollowersPage.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
@@ -269,7 +268,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
                               children: [
                                 Text(displayShortenedCount(userSocials.followersCount), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                                 SizedBox(height: getScreenHeight() * 0.0025),
-                                Text('Followers', style: TextStyle(fontSize: defaultTextFontSize * 0.7),)
+                                Text(userSocials.followersCount == 1 ? 'Follower' : 'Followers', style: TextStyle(fontSize: defaultTextFontSize * 0.7),)
                               ],
                             ),
                           );
@@ -381,34 +380,53 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
         padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding, vertical: defaultVerticalPadding),
         child: Column(
           children: [
-            Skeleton.replace(
-              width: getScreenWidth() * 0.2, 
-              height: getScreenWidth() * 0.2,
-              child: CircleAvatar(
-                radius: getScreenWidth() * 0.1,
-                backgroundImage: const NetworkImage(''),
-              )
+            CircleAvatar(
+              radius: getScreenWidth() * 0.1,
+              backgroundImage: NetworkImage(defaultUserProfilePicLink),
             ),
             SizedBox(
               height: getScreenHeight() * 0.01
             ),
-            Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: const TextStyle(fontSize: 21)),
+            Card(
+              margin: EdgeInsets.zero,
+              child: SizedBox(
+                width: double.infinity,
+                height: getScreenHeight() * 0.04
+              )
+            ),
             SizedBox(
               height: getScreenHeight() * 0.005
             ),
-            Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize)),
+            Card(
+              margin: EdgeInsets.zero,
+              child: SizedBox(
+                width: double.infinity,
+                height: getScreenHeight() * 0.025
+              )
+            ),
             Column(
               children: [
                 SizedBox(height: getScreenHeight() * 0.015),
-                Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize)),
-                Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize)),
-                Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize)),
+                for(int i = 0; i < 3; i++)
+                Column(
+                  children: [
+                    Card(
+                      margin: EdgeInsets.zero,
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: getScreenHeight() * 0.025
+                      )
+                    ),
+                    SizedBox(height: i < 2 ? getScreenHeight() * 0.005 : 0)
+                  ],
+                ),
               ],
             ),
             SizedBox(
                height: getScreenHeight() * 0.0225
             ),
             Card(
+              margin: EdgeInsets.zero,
               child: CustomButton(
                 width: getScreenWidth() * 0.55, height: getScreenHeight() * 0.055,
                 buttonColor: Colors.transparent, 
@@ -425,6 +443,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
                   height: getScreenHeight() * 0.0225
                 ),
                 Card(
+                  margin: EdgeInsets.zero,
                   child: SizedBox(
                     height: getScreenHeight() * 0.075,
                     width: getScreenWidth() * 0.55
@@ -434,8 +453,9 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
                   height: getScreenHeight() * 0.02
                 ),
                 Card(
+                  margin: EdgeInsets.zero,
                   child: SizedBox(
-                    height: getScreenHeight() * 0.03,
+                    height: getScreenHeight() * 0.025,
                     width: getScreenWidth() * 0.55
                   )
                 ),

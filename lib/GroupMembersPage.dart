@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomUserDataWidget.dart';
@@ -38,9 +37,9 @@ class _GroupMembersPageStatefulState extends State<_GroupMembersPageStateful> wi
   final ScrollController _scrollController = ScrollController();
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
   late List<String> usersID;
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
+  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
   ValueNotifier<List<String>> users = ValueNotifier([]);
-  ValueNotifier<LoadingStatus> loadingUsersStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
   ValueNotifier<int> totalUsersLength = ValueNotifier(0);
 
   @override
@@ -71,16 +70,15 @@ class _GroupMembersPageStatefulState extends State<_GroupMembersPageStateful> wi
     super.dispose();
     _scrollController.dispose();
     displayFloatingBtn.dispose();
-    isLoading.dispose();
+    loadingState.dispose();
     users.dispose();
-    loadingUsersStatus.dispose();
+    paginationStatus.dispose();
     totalUsersLength.dispose();
   }
 
   Future<void> fetchGroupMembersData(int currentUsersLength, bool isRefreshing) async{
     try {
       if(mounted){
-        isLoading.value = true;
         String stringified = jsonEncode({
           'usersID': usersID,
           'currentID': appStateClass.currentID,
@@ -108,7 +106,7 @@ class _GroupMembersPageStatefulState extends State<_GroupMembersPageStateful> wi
             }
           }
           if(mounted){
-            isLoading.value = false;
+            loadingState.value = LoadingState.loaded;
           }
         }
       }
@@ -120,12 +118,13 @@ class _GroupMembersPageStatefulState extends State<_GroupMembersPageStateful> wi
   Future<void> loadMoreUsers() async{
     try {
       if(mounted){
-        loadingUsersStatus.value = LoadingStatus.loading;
+        loadingState.value = LoadingState.paginating;
+        paginationStatus.value = PaginationStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
           await fetchGroupMembersData(users.value.length, false);
           if(mounted){
-            loadingUsersStatus.value = LoadingStatus.loaded;
+            paginationStatus.value = PaginationStatus.loaded;
           }
         });
       }
@@ -146,12 +145,11 @@ class _GroupMembersPageStatefulState extends State<_GroupMembersPageStateful> wi
         )
       ),
       body: ValueListenableBuilder(
-        valueListenable: isLoading,
-        builder: ((context, isLoadingValue, child) {
-          if(isLoadingValue){
-            return Skeletonizer(
-              enabled: true,
-              child: ListView.builder(
+        valueListenable: loadingState,
+        builder: ((context, loadingStateValue, child) {
+          if(shouldCallSkeleton(loadingStateValue)){
+            return shimmerSkeletonWidget(
+              ListView.builder(
                 itemCount: usersPaginationLimit,
                 itemBuilder: (context, index) {
                   return CustomUserDataWidget(
@@ -169,7 +167,7 @@ class _GroupMembersPageStatefulState extends State<_GroupMembersPageStateful> wi
             ); 
           }
           return ValueListenableBuilder(
-            valueListenable: loadingUsersStatus,
+            valueListenable: paginationStatus,
             builder: (context, loadingStatusValue, child){
               return ValueListenableBuilder(
                 valueListenable: totalUsersLength,

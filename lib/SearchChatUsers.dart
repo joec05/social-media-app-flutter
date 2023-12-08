@@ -37,7 +37,7 @@ class __SearchChatUsersWidgetStatefulState extends State<_SearchChatUsersWidgetS
   TextEditingController searchedController = TextEditingController();
   ValueNotifier<bool> isSearching = ValueNotifier(false);
   ValueNotifier<List<String>> users = ValueNotifier([]);
-  ValueNotifier<LoadingStatus> loadingUsersStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
   ValueNotifier<List<String>> selectedUsersID = ValueNotifier([]);
   ValueNotifier<bool> verifySearchedFormat = ValueNotifier(false);
 
@@ -56,7 +56,7 @@ class __SearchChatUsersWidgetStatefulState extends State<_SearchChatUsersWidgetS
     searchedController.dispose();
     isSearching.dispose();
     users.dispose();
-    loadingUsersStatus.dispose();
+    paginationStatus.dispose();
     selectedUsersID.dispose();
     verifySearchedFormat.dispose();
   }

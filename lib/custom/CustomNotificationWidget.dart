@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/ProfilePage.dart';
 import 'package:social_media_app/ViewCommentComments.dart';
 import 'package:social_media_app/ViewPostComments.dart';
@@ -213,13 +212,9 @@ class _CustomNotificationWidgetState extends State<CustomNotificationWidget>{
               padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
               child: Row(
                 children: [
-                  Skeleton.replace(
-                    width: getScreenWidth() * 0.1, 
-                    height: getScreenWidth() * 0.1,
-                    child: CircleAvatar(
-                      radius: getScreenWidth() * 0.05,
-                      backgroundImage: const NetworkImage(''),
-                    )
+                  CircleAvatar(
+                    radius: getScreenWidth() * 0.05,
+                    backgroundImage: NetworkImage(defaultUserProfilePicLink),
                   ),
                   SizedBox(
                     width: getScreenWidth() * 0.025
@@ -229,13 +224,35 @@ class _CustomNotificationWidgetState extends State<CustomNotificationWidget>{
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontWeight: FontWeight.bold, fontSize: defaultTextFontSize), softWrap: true),
+                        Card(
+                          margin: EdgeInsets.zero,
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: getScreenHeight() * 0.0275
+                          )
+                        ),
                         SizedBox(height: getScreenHeight() * 0.005),
-                        Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize * 0.8)),
-                        Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize * 0.8)),
-                        Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize * 0.8)),
+                        for(int i = 0; i < 3; i++)
+                        Column(
+                          children: [
+                            Card(
+                              margin: EdgeInsets.zero,
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: getScreenHeight() * 0.0225
+                              )
+                            ),
+                            SizedBox(height: i < 2 ? getScreenHeight() * 0.005 : 0)
+                          ],
+                        ),
                         SizedBox(height: getScreenHeight() * 0.005),
-                        Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize * 0.675)),
+                        Card(
+                          margin: EdgeInsets.zero,
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: getScreenHeight() * 0.02
+                          )
+                        ),
                       ],
                     ),
                   )

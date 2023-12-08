@@ -145,7 +145,7 @@ class _EditGroupProfileStatefulState extends State<EditGroupProfileStateful> wit
       loadedUri = 'https://cloud.appwrite.io/v1/storage/buckets/$bucketID/files/$uniqueID/view?project=$appWriteUserID&mode=admin';
     })
     .catchError((error) {
-      debugPrint(error.response);
+      debugPrint(error.toString());
     });
     return loadedUri;
   }

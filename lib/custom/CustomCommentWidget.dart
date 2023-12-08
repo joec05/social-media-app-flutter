@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/CommentBookmarksList.dart';
 import 'package:social_media_app/CommentLikesList.dart';
 import 'package:social_media_app/ProfilePage.dart';
@@ -420,19 +419,16 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                       Flexible(
                         child: Row(
                           children: [
-                            Skeleton.replace(
-                              width: getScreenWidth() * 0.1, 
-                              height: getScreenWidth() * 0.1,
-                              child: CircleAvatar(
-                                radius: getScreenWidth() * 0.05,
-                                backgroundImage: const NetworkImage(''),
-                              )
+                            CircleAvatar(
+                              radius: getScreenWidth() * 0.05,
+                              backgroundImage: NetworkImage(defaultUserProfilePicLink),
                             ),
                             SizedBox(
                               width: getScreenWidth() * 0.02
                             ),
                             Flexible(
                               child: Card(
+                                margin: EdgeInsets.zero,
                                 child: SizedBox(
                                   height: getScreenHeight() * 0.055,
                                   width: double.infinity,
@@ -445,24 +441,41 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                     ]
                   ),
                   SizedBox(height: getScreenHeight() * 0.01),
-                  Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize)),
+                  Card(
+                    margin: EdgeInsets.zero,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: getScreenHeight() * 0.025
+                    )
+                  ),
                   SizedBox(height: getScreenHeight() * 0.01),
                   const Divider(
                     color: Colors.white, height: 2.5, thickness: 1
                   ),
                   SizedBox(height: getScreenHeight() * 0.01),
-                  Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize)),
-                  Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize)),
-                  Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize)),
+                  for(int i = 0; i < 3; i++)
+                  Column(
+                    children: [
+                      Card(
+                        margin: EdgeInsets.zero,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: getScreenHeight() * 0.025
+                        )
+                      ),
+                      SizedBox(height: i < 2 ? getScreenHeight() * 0.005 : 0)
+                    ],
+                  ),
                   SizedBox(height: getScreenHeight() * 0.01),
                   const Divider(
                     color: Colors.white, height: 2.5, thickness: 1
                   ),
                   SizedBox(height: getScreenHeight() * 0.005),
                   Card(
+                    margin: EdgeInsets.zero,
                     child: SizedBox(
                       width: double.infinity,
-                      height: getScreenHeight() * 0.05
+                      height: getScreenHeight() * 0.045
                     )
                   )
                 ],

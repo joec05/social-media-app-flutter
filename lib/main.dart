@@ -11,6 +11,7 @@ import 'package:social_media_app/LoginWithEmail.dart';
 import 'package:social_media_app/LoginWithUsername.dart';
 import 'package:social_media_app/SignUp.dart';
 import 'package:social_media_app/caching/sqfliteConfiguration.dart';
+import 'package:social_media_app/class/SharedPreferencesClass.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
 import 'package:social_media_app/firebase/firebase_constants.dart';
 import 'package:social_media_app/observer/GlobalObserver.dart';
@@ -106,32 +107,37 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void defaultLogin() async{
     try {
-      List<String> getCurrentUserIDList = await DatabaseHelper().fetchAllUsers();
-      List lifecycleData = await DatabaseHelper().getAllUsersLifecycleData();
-      bool hasPassedLoginLimit = lifecycleData.isEmpty ? false : lifecycleData[0]['last_lifecycle_time'].isEmpty ? false : DateTime.now().difference(DateTime.parse(lifecycleData[0]['last_lifecycle_time']).toLocal()).inMinutes > 10;
-      if(getCurrentUserIDList.isNotEmpty && lifecycleData[0]['user_id'].isNotEmpty && !hasPassedLoginLimit){
-        var verifyAccountExistence = await checkAccountExists(getCurrentUserIDList[0]);
-        if(verifyAccountExistence['message'] == 'Successfully checked account existence'){
-          if(verifyAccountExistence['exists'] == true){
-            appStateClass.currentID = getCurrentUserIDList[0];
-            runDelay(() => Navigator.push(
-              context,
-              SliderRightToLeftRoute(
-                page: const MainPageWidget()
-              )
-            ), navigatorDelayTime);
+      Map lifecycleData = await SharedPreferencesClass().fetchCurrentUser();
+      if(lifecycleData['user_id'].isEmpty){
+        if(mounted){
+          isLoginToAccount.value = false;
+        }
+      }else{
+        bool hasPassedLoginLimit =  DateTime.now().difference(DateTime.parse(lifecycleData['last_lifecycle_time']).toLocal()).inMinutes > timeDifferenceToLogOut;
+        if(!hasPassedLoginLimit){
+          var verifyAccountExistence = await checkAccountExists(lifecycleData['user_id']);
+          if(verifyAccountExistence['message'] == 'Successfully checked account existence'){
+            if(verifyAccountExistence['exists'] == true){
+              appStateClass.currentID = lifecycleData['user_id'];
+              runDelay(() => Navigator.push(
+                context,
+                SliderRightToLeftRoute(
+                  page: const MainPageWidget()
+                )
+              ), navigatorDelayTime);
+              if(mounted){
+                isLoginToAccount.value = true;
+              }
+            }
+          }else{
             if(mounted){
-              isLoginToAccount.value = true;
+              isLoginToAccount.value = false;
             }
           }
         }else{
           if(mounted){
             isLoginToAccount.value = false;
           }
-        }
-      }else{
-        if(mounted){
-          isLoginToAccount.value = false;
         }
       }
     } on Exception catch (e) {

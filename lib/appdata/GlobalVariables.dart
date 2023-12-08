@@ -6,9 +6,14 @@ String IP = '192.168.1.153';
 
 String PORT = '5001';
 
+String lifecycleDataKey = 'lifecycle_data_state';
+
+int timeDifferenceToMainPage = 1;
+
+int timeDifferenceToLogOut = 3;
+
 Map storageBucketIDs = {
-  'image': '64842b019dcd3146ae00',
-  'video': '64842b31aa2db1904581'
+  'image': '6572866b8a6c2cc7670c',
 };
 
 String appWriteUserID = '648336f2bc96857e5f14';

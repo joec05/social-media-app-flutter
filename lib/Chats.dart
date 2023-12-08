@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/SearchChatUsers.dart';
 import 'package:social_media_app/class/ChatDataClass.dart';
 import 'package:social_media_app/class/ChatDataLatestMessageClass.dart';
@@ -38,9 +37,9 @@ class _ChatsWidgetStateful extends StatefulWidget {
 }
 
 class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with AutomaticKeepAliveClientMixin, LifecycleListenerMixin{
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
+  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
   ValueNotifier<List<ChatDataNotifier>> chats = ValueNotifier([]);
-  ValueNotifier<LoadingStatus> loadingChatsStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
   final ScrollController _scrollController = ScrollController();
@@ -321,9 +320,9 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
   @override
   void dispose(){
     super.dispose();
-    isLoading.dispose();
+    loadingState.dispose();
     chats.dispose();
-    loadingChatsStatus.dispose();
+    paginationStatus.dispose();
     canPaginate.dispose();
     displayFloatingBtn.dispose();
     _scrollController.dispose();
@@ -332,7 +331,6 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
   Future<void> fetchChatsData(int currentPostsLength, bool isRefreshing, bool isPaginating) async{
     try {
       if(mounted){
-        isLoading.value = true;
         String stringified = jsonEncode({
           'userID': appStateClass.currentID,
           'currentLength': currentPostsLength,
@@ -385,7 +383,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
             }
           }
           if(mounted){
-            isLoading.value = false;
+            loadingState.value = LoadingState.loaded;
           }
         }
       }
@@ -397,12 +395,13 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
   Future<void> loadMoreChats() async{
     try {
       if(mounted){
-        loadingChatsStatus.value = LoadingStatus.loading;
+        loadingState.value = LoadingState.paginating;
+        paginationStatus.value = PaginationStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
           await fetchChatsData(chats.value.length, false, true);
           if(mounted){
-            loadingChatsStatus.value = LoadingStatus.loaded;
+            paginationStatus.value = PaginationStatus.loaded;
           }
         });
       }
@@ -412,6 +411,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
   }
 
   Future<void> refresh() async{
+    loadingState.value = LoadingState.refreshing;
     fetchChatsData(0, true, false);
   }
 
@@ -518,12 +518,11 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
         ],
       ),
       body: ValueListenableBuilder(
-        valueListenable: isLoading,
-        builder: ((context, isLoadingValue, child) {
-          if(isLoadingValue){
-            return Skeletonizer(
-              enabled: true,
-              child: ListView.builder(
+        valueListenable: loadingState,
+        builder: ((context, loadingStateValue, child) {
+          if(shouldCallSkeleton(loadingStateValue)){
+            return shimmerSkeletonWidget(
+              ListView.builder(
                 itemCount: postsPaginationLimit,
                 itemBuilder: (builder, context){
                   return CustomChatWidget(
@@ -538,7 +537,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
             );
           }
           return ValueListenableBuilder(
-            valueListenable: loadingChatsStatus,
+            valueListenable: paginationStatus,
             builder: (context, loadingStatusValue, child){
               return ValueListenableBuilder(
                 valueListenable: canPaginate,

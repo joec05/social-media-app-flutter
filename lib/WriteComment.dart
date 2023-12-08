@@ -242,7 +242,7 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
       mediasDatas.value[index].storagePath = uniqueID;
     })
     .catchError((error) {
-      debugPrint(error.response);
+      debugPrint(error.toString());
     });
     return loadedUri;
   }

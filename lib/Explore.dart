@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/Searched.dart';
 import 'package:social_media_app/class/DisplayPostDataClass.dart';
 import 'package:social_media_app/class/HashtagClass.dart';
@@ -44,7 +43,7 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
   ValueNotifier<List<DisplayPostDataClass>> posts = ValueNotifier([]);
   ValueNotifier<bool> verifySearchedFormat = ValueNotifier(false);
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
+  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
   final ScrollController _scrollController = ScrollController();
   final exploreDataLimit = 10;
 
@@ -81,7 +80,6 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
   }
 
   Future<void> fetchExploreData() async{
-    isLoading.value = true;
     try {
       String stringified = jsonEncode({
         'currentID': appStateClass.currentID,
@@ -125,7 +123,7 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
             hashtags.value = [...hashtags.value, HashtagClass(hashtagData['hashtag'], hashtagData['hashtag_count'])];
           }
         }
-        isLoading.value = false;
+        loadingState.value = LoadingState.loaded;
       }
     } on Exception catch (e) {
       doSomethingWithException(e);
@@ -137,7 +135,10 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
     super.build(context);
     return Scaffold(
       body: RefreshIndicator(
-        onRefresh: () => fetchExploreData(),
+        onRefresh: () async{
+          loadingState.value = LoadingState.refreshing;
+          await fetchExploreData();
+        },
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           controller: _scrollController,
@@ -179,12 +180,12 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
               ]
             ),
             ValueListenableBuilder(
-              valueListenable: isLoading,
-              builder: ((context, isLoadingValue, child) {
+              valueListenable: loadingState,
+              builder: ((context, loadingStateValue, child) {
                 return ValueListenableBuilder(
                   valueListenable: hashtags, 
                   builder: (context, hashtagsValue, child){
-                    if(!isLoadingValue){
+                    if(!shouldCallSkeleton(loadingStateValue)){
                       return ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
@@ -198,9 +199,8 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
                         }
                       );
                     }else{
-                      return Skeletonizer(
-                        enabled: true,
-                        child: ListView.builder(
+                      return shimmerSkeletonWidget(
+                        ListView.builder(
                           itemCount: exploreDataLimit,
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
@@ -232,12 +232,12 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
               ]
             ),
             ValueListenableBuilder(
-              valueListenable: isLoading,
-              builder: ((context, isLoadingValue, child) {
+              valueListenable: loadingState,
+              builder: ((context, loadingStateValue, child) {
                 return ValueListenableBuilder(
                   valueListenable: posts,
                   builder: ((context, posts, child) {
-                    if(!isLoadingValue){
+                    if(!shouldCallSkeleton(loadingStateValue)){
                       return ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: posts.length,
@@ -287,9 +287,8 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
                         }
                       );
                     }else{
-                      return Skeletonizer(
-                        enabled: true,
-                        child: ListView.builder(
+                      return shimmerSkeletonWidget(
+                        ListView.builder(
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: exploreDataLimit,
                           shrinkWrap: true,
@@ -323,12 +322,12 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
               ]
             ),
             ValueListenableBuilder(
-              valueListenable: isLoading,
-              builder: ((context, isLoadingValue, child) {
+              valueListenable: loadingState,
+              builder: ((context, loadingStateValue, child) {
                 return ValueListenableBuilder(
                   valueListenable: users,
                   builder: ((context, users, child) {
-                    if(!isLoadingValue){
+                    if(!shouldCallSkeleton(loadingStateValue)){
                       return ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: users.length,
@@ -360,9 +359,8 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
                         }
                       );
                     }else{
-                      return Skeletonizer(
-                        enabled: true,
-                        child: ListView.builder(
+                      return shimmerSkeletonWidget(
+                        ListView.builder(
                           physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
                           itemCount: exploreDataLimit,

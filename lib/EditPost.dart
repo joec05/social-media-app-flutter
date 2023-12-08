@@ -101,9 +101,8 @@ class __EditPostWidgetStatefulState extends State<_EditPostWidgetStateful> with 
             ];
           }
         }else if(e.mediaType == MediaType.video){
-          String filePath = await downloadAndSaveVideo(e.url, const Uuid().v4());
           MediaDatasClass updatedMediaData = MediaDatasClass(
-            e.mediaType, filePath, e.playerController, e.storagePath, MediaSourceType.file, e.websiteCardData, e.mediaSize
+            e.mediaType, e.url, e.playerController, e.storagePath, MediaSourceType.network, e.websiteCardData, e.mediaSize
           );
           if(mounted){
             mediasDatas.value = [...mediasDatas.value, updatedMediaData];
@@ -244,13 +243,18 @@ class __EditPostWidgetStatefulState extends State<_EditPostWidgetStateful> with 
   Future<void> editVideo(String videoLink, int index) async {
     try {
       runDelay(()async {
+        String filePath = videoLink;
+        if(mediasDatas.value[index].mediaSourceType == MediaSourceType.network){
+          filePath = await downloadAndSaveVideo(videoLink, const Uuid().v4());
+        }
         final updatedRes = await Navigator.push(
           context,
           SliderRightToLeftRoute(
-            page: VideoEditor.EditVideoComponent(videoLink: videoLink)
+            page: VideoEditor.EditVideoComponent(videoLink: filePath)
           )
         );
         if(updatedRes != null && updatedRes is VideoEditor.FinishedVideoData){
+          MediaDatasClass oldMediaData = mediasDatas.value[index];
           VideoPlayerController playerController = VideoPlayerController.file(File(updatedRes.url));
           await playerController.initialize();
           Size scaledDimension = getSizeScale(playerController.value.size.width, playerController.value.size.height);
@@ -261,6 +265,9 @@ class __EditPostWidgetStatefulState extends State<_EditPostWidgetStateful> with 
             List<Widget> mediasComponentsList = [...mediasComponents.value];
             mediasComponentsList[index] = mediaDataDraftPostComponentWidget(mediasDatas.value[index], scaledDimension);
             mediasComponents.value = [...mediasComponentsList];
+            if(oldMediaData.mediaSourceType == MediaSourceType.file){
+              oldMediaData.playerController!.dispose();
+            }
           }
         }
       }, navigatorDelayTime);
@@ -282,7 +289,7 @@ class __EditPostWidgetStatefulState extends State<_EditPostWidgetStateful> with 
       mediasDatas.value[index].storagePath = uniqueID;
     })
     .catchError((error) {
-      debugPrint(error.response);
+      debugPrint(error.toString());
     });
     return loadedUri;
   }

@@ -4,13 +4,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomFollowRequestWidget.dart';
 import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/streams/RequestsFromDataStreamClass.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
+import 'package:social_media_app/styles/AppStyles.dart';
 import 'custom/CustomPagination.dart';
 
 var dio = Dio();
@@ -36,9 +36,9 @@ class _FollowRequestsFromWidgetStateful extends StatefulWidget {
 
 
 class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWidgetStateful> with AutomaticKeepAliveClientMixin{
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
+  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
   ValueNotifier<List<String>> users = ValueNotifier([]);
-  ValueNotifier<LoadingStatus> loadingUsersStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
   late StreamSubscription requestsFromDataStreamClassSubscription;
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
@@ -76,9 +76,9 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
   void dispose(){
     requestsFromDataStreamClassSubscription.cancel();
     super.dispose();
-    isLoading.dispose();
+    loadingState.dispose();
     users.dispose();
-    loadingUsersStatus.dispose();
+    paginationStatus.dispose();
     canPaginate.dispose();
     displayFloatingBtn.dispose();
     _scrollController.dispose();
@@ -87,7 +87,6 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
   Future<void> fetchFollowRequestsFrom(int currentPostsLength, bool isRefreshing, bool isPaginating) async{
     try {
       if(mounted){
-        isLoading.value = true;
         String stringified = jsonEncode({
           'currentID': appStateClass.currentID,
           'currentLength': currentPostsLength,
@@ -117,7 +116,7 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
             }
           }
           if(mounted){
-            isLoading.value = false;
+            loadingState.value = LoadingState.loaded;
           }
         }
       }
@@ -129,12 +128,13 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
   Future<void> loadMoreUsers() async{
     try {
       if(mounted){
-        loadingUsersStatus.value = LoadingStatus.loading;
+        loadingState.value = LoadingState.paginating;
+        paginationStatus.value = PaginationStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
           await fetchFollowRequestsFrom(users.value.length, false, true);
           if(mounted){
-            loadingUsersStatus.value = LoadingStatus.loaded;
+            paginationStatus.value = PaginationStatus.loaded;
           }
         });
       }
@@ -144,6 +144,7 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
   }
 
   Future<void> refresh() async{
+    loadingState.value = LoadingState.refreshing;
     fetchFollowRequestsFrom(0, true, false);
   }
 
@@ -152,12 +153,11 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
     super.build(context);
     return Scaffold(
       body: ValueListenableBuilder(
-        valueListenable: isLoading,
-        builder: ((context, isLoadingValue, child) {
-          if(isLoadingValue){
-            return Skeletonizer(
-              enabled: true,
-              child: CustomScrollView(
+        valueListenable: loadingState,
+        builder: ((context, loadingStateValue, child) {
+          if(shouldCallSkeleton(loadingStateValue)){
+            return shimmerSkeletonWidget(
+              CustomScrollView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: <Widget>[
@@ -181,7 +181,7 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
             ); 
           }
           return ValueListenableBuilder(
-            valueListenable: loadingUsersStatus,
+            valueListenable: paginationStatus,
             builder: (context, loadingStatusValue, child){
               return ValueListenableBuilder(
                 valueListenable: canPaginate,

@@ -235,7 +235,7 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
       mediasDatas.value[index].storagePath = uniqueID;
     })
     .catchError((error) {
-      debugPrint(error.response);
+      debugPrint(error.toString());
     });
     return loadedUri;
   }

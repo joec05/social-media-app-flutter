@@ -31,10 +31,11 @@ class __MainPageWidgetStatefulState extends State<_MainPageWidgetStateful> with 
 
   @override void initState(){
     super.initState();
-    initLifecycleListener(changeBottomNavIndex: (){
-      onPageChanged(0);
-      _pageController.jumpToPage(0);
-    }, scaffoldKey: scaffoldKey);
+    initLifecycleListener(changeBottomNavIndex: resetBottomNavIndex, scaffoldKey: scaffoldKey);
+  }
+
+  void resetBottomNavIndex(){
+    _pageController.jumpToPage(0);
   }
 
   @override void dispose(){

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:social_media_app/appdata/GlobalVariables.dart';
 import 'package:social_media_app/streams/AutoNavigateLifecycleStreamClass.dart';
 import '../appdata/AppStateActions.dart';
 
 mixin LifecycleListenerMixin<T extends StatefulWidget> on State<T>{
   Function? _changeBottomNavIndex;
   GlobalKey<ScaffoldState>? _scaffoldKey;
-  int timeDifferenceToMainPage = 1800;
-  int timeDifferenceToLogOut = 60 * 60 * 24 * 30;
 
   void initLifecycleListener({
     required Function changeBottomNavIndex,
@@ -29,7 +28,7 @@ mixin LifecycleListenerMixin<T extends StatefulWidget> on State<T>{
             Navigator.of(context).popUntil((route) => route.isFirst);
             _changeBottomNavIndex?.call();
             if (_scaffoldKey?.currentState?.isDrawerOpen ?? false){
-              _scaffoldKey?.currentState?.openEndDrawer();
+              _scaffoldKey?.currentState!.closeDrawer();
             }
           }
         }else if(data.lastLifecycleState == AppLifecycleState.detached.name){

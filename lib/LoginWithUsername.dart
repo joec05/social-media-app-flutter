@@ -5,7 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/LoginWithEmail.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
-import 'package:social_media_app/caching/sqfliteConfiguration.dart';
+import 'package:social_media_app/class/SharedPreferencesClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
 import 'package:social_media_app/state/main.dart';
@@ -124,7 +124,7 @@ class _LoginWithUsernameStatefulState extends State<LoginWithUsernameStateful> {
                   updateUserData(userProfileDataClass, context);
                   updateUserSocials(userProfileDataClass, userSocialClass, context);
                 }
-                await DatabaseHelper().replaceCurrentUser(res.data['userID']);
+                SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
                 runDelay(() => Navigator.pushAndRemoveUntil(
                   context,
                   SliderRightToLeftRoute(

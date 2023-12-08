@@ -6,7 +6,7 @@ class LoadMoreBottom extends StatefulWidget {
   final VoidCallback loadMore;
   final CustomScrollView child;
   final Key customKey = const Key('load_more_page');
-  final LoadingStatus status;
+  final PaginationStatus status;
   final Future Function()? refresh;
   final bool addBottomSpace;
 
@@ -65,12 +65,12 @@ class LoadMoreBottomState extends State<LoadMoreBottom>{
     );
   }
 
-  Widget buildStatus(LoadingStatus status){
-    if(status == LoadingStatus.loaded){
+  Widget buildStatus(PaginationStatus status){
+    if(status == PaginationStatus.loaded){
       return buildLoaded();
-    }else if(status == LoadingStatus.loading){
+    }else if(status == PaginationStatus.loading){
       return buildLoading();
-    }else if(status == LoadingStatus.error){
+    }else if(status == PaginationStatus.error){
       return Container();
     }else{
       return Container();
@@ -101,7 +101,7 @@ class LoadMoreBottomState extends State<LoadMoreBottom>{
       onNotification: (ScrollEndNotification notification) {
         double currentExtent = notification.metrics.pixels;
         double maxExtent = notification.metrics.maxScrollExtent;
-        if (widget.status == LoadingStatus.loaded) {
+        if (widget.status == PaginationStatus.loaded) {
           if (currentExtent >= maxExtent) {
             _scrollListener();
             return true;

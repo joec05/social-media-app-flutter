@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:social_media_app/MainPage.dart';
 import 'package:social_media_app/LoginWithUsername.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
+import 'package:social_media_app/class/SharedPreferencesClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomButton.dart';
 import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
-import 'caching/sqfliteConfiguration.dart';
 import 'class/UserDataClass.dart';
 import 'styles/AppStyles.dart';
 
@@ -121,7 +121,7 @@ class _LoginWithEmailStatefulState extends State<LoginWithEmailStateful> {
                   updateUserData(userProfileDataClass, context);
                   updateUserSocials(userProfileDataClass, userSocialClass, context);
                 }
-                await DatabaseHelper().replaceCurrentUser(res.data['userID']);
+                SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
                 runDelay(() => Navigator.pushAndRemoveUntil(
                   context,
                   SliderRightToLeftRoute(

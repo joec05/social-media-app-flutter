@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/styles/AppStyles.dart';
 import 'package:social_media_app/transition/RightToLeftTransition.dart';
@@ -284,19 +283,16 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
                       Flexible(
                         child: Row(
                           children: [
-                            Skeleton.replace(
-                              width: getScreenWidth() * 0.1, 
-                              height: getScreenWidth() * 0.1,
-                              child: CircleAvatar(
-                                radius: getScreenWidth() * 0.05,
-                                backgroundImage: const NetworkImage(''),
-                              )
+                            CircleAvatar(
+                              radius: getScreenWidth() * 0.05,
+                              backgroundImage: NetworkImage(defaultUserProfilePicLink),
                             ),
                             SizedBox(
                               width: getScreenWidth() * 0.02
                             ),
                             Flexible(
                               child: Card(
+                                margin: EdgeInsets.zero,
                                 child: SizedBox(
                                   height: getScreenHeight() * 0.055,
                                   width: double.infinity,
@@ -311,15 +307,26 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
                   Column(
                     children: [
                       SizedBox(height: getScreenHeight() * 0.015),
-                      Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize)),
-                      Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize)),
-                      Text(List.generate(100, (index) => 'p').join(''), maxLines: 1, style: TextStyle(fontSize: defaultTextFontSize)),
+                      for(int i = 0; i < 3; i++)
+                      Column(
+                        children: [
+                          Card(
+                            margin: EdgeInsets.zero,
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: getScreenHeight() * 0.025
+                            )
+                          ),
+                          SizedBox(height: i < 2 ? getScreenHeight() * 0.005 : 0)
+                        ],
+                      ),
                     ],
                   ),
                   Column(
                     children: [
                       SizedBox(height: getScreenHeight() * 0.015),
                       Card(
+                        margin: EdgeInsets.zero,
                         child: CustomButton(
                           width: double.infinity, height: getScreenHeight() * 0.055, 
                           buttonColor: Colors.transparent, 

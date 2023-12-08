@@ -1,7 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as path;
 
@@ -25,15 +24,6 @@ class DatabaseHelper{
       pathToDatabase,
       version: 2,
       onCreate: (Database db, int version) async{
-        await db.execute(
-          """
-          CREATE TABLE IF NOT EXISTS current_user_complete_data(
-            user_id TEXT PRIMARY KEY NOT NULL,
-            last_lifecycle_state TEXT,
-            last_lifecycle_time TEXT
-          )
-          """
-        );
         await db.execute(
           """
           CREATE TABLE IF NOT EXISTS feed_posts_data(
@@ -77,49 +67,6 @@ class DatabaseHelper{
         }
       })
     );
-  }
-  Future<void> replaceCurrentUser(String newUserID) async{
-    final db = await database;
-    await db.delete('current_user_complete_data');
-    await db.insert('current_user_complete_data', {
-      'user_id': newUserID,
-      'last_lifecycle_state': '',
-      'last_lifecycle_time': ''
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
-  }
-
-  Future<void> deleteCurrentUser() async{
-    final db = await database;
-    await db.delete('current_user_complete_data');
-  }
-
-  Future<void> updateUserLifecycleData(String currentID, AppLifecycleState lastLifecycleState) async{
-    final db = await database;
-    await db.delete('current_user_complete_data');
-    await db.insert('current_user_complete_data', {
-      'user_id': currentID,
-      'last_lifecycle_state': lastLifecycleState.name,
-      'last_lifecycle_time': DateTime.now().toIso8601String()
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
-  }
-
-  Future<List<Map>> getAllUsersLifecycleData() async{
-    final db = await database;
-    List<Map> getAllUsers = [];
-    await db.query('current_user_complete_data').then((value) async{
-      getAllUsers = value;
-    });
-    return getAllUsers;
-  }
-
-  Future<List<String>> fetchAllUsers() async{
-    final db = await database;
-    List<Map> getAllUsers = [];
-    await db.query('current_user_complete_data').then((value) async{
-      getAllUsers = value;
-    });
-    final List<String> results = getAllUsers.map((e) => e['user_id'] as String).toList();
-    return results;
   }
 
   Future<void> replaceFeedPosts(List feedPosts) async{

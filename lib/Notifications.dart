@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/NotificationClass.dart';
 import 'package:social_media_app/custom/CustomNotificationWidget.dart';
 import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
 import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/streams/NotificationDataStreamClass.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
+import 'package:social_media_app/styles/AppStyles.dart';
 import 'custom/CustomPagination.dart';
 
 var dio = Dio();
@@ -30,9 +30,9 @@ class _NotificationsWidgetStateful extends StatefulWidget {
 }
 
 class _NotificationsWidgetStatefulState extends State<_NotificationsWidgetStateful> with AutomaticKeepAliveClientMixin, LifecycleListenerMixin{
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
+  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
   ValueNotifier<List<NotificationClass>> notifications = ValueNotifier([]);
-  ValueNotifier<LoadingStatus> loadingNotificationsStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
   late StreamSubscription notificationDataStreamClassSubscription;
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
@@ -86,9 +86,9 @@ class _NotificationsWidgetStatefulState extends State<_NotificationsWidgetStatef
   void dispose(){
     notificationDataStreamClassSubscription.cancel();
     super.dispose();
-    isLoading.dispose();
+    loadingState.dispose();
     notifications.dispose();
-    loadingNotificationsStatus.dispose();
+    paginationStatus.dispose();
     canPaginate.dispose();
     displayFloatingBtn.dispose();
     _scrollController.dispose();
@@ -97,7 +97,6 @@ class _NotificationsWidgetStatefulState extends State<_NotificationsWidgetStatef
   Future<void> fetchNotificationsData(int currentPostsLength, bool isRefreshing, bool isPaginating) async{
     try {
       if(mounted){
-        isLoading.value = true;
         String stringified = jsonEncode({
           'currentID': appStateClass.currentID,
           'currentLength': currentPostsLength,
@@ -127,7 +126,7 @@ class _NotificationsWidgetStatefulState extends State<_NotificationsWidgetStatef
             }
           }
           if(mounted){ 
-            isLoading.value = false;
+            loadingState.value = LoadingState.loaded;
           }
         }
       }
@@ -139,12 +138,13 @@ class _NotificationsWidgetStatefulState extends State<_NotificationsWidgetStatef
   Future<void> loadMoreNotifications() async{
     try {
       if(mounted){
-        loadingNotificationsStatus.value = LoadingStatus.loading;
+        loadingState.value = LoadingState.paginating;
+        paginationStatus.value = PaginationStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
           await fetchNotificationsData(notifications.value.length, false, true);
           if(mounted){
-            loadingNotificationsStatus.value = LoadingStatus.loaded;
+            paginationStatus.value = PaginationStatus.loaded;
           }
         });
       }
@@ -154,6 +154,7 @@ class _NotificationsWidgetStatefulState extends State<_NotificationsWidgetStatef
   }
 
   Future<void> refresh() async{
+    loadingState.value = LoadingState.refreshing;
     fetchNotificationsData(0, true, false);
   }
 
@@ -162,12 +163,11 @@ class _NotificationsWidgetStatefulState extends State<_NotificationsWidgetStatef
     super.build(context);
     return Scaffold(
       body: ValueListenableBuilder(
-        valueListenable: isLoading,
-        builder: ((context, isLoadingValue, child) {
-          if(isLoadingValue){
-            return Skeletonizer(
-              enabled: true,
-              child: ListView.builder(
+        valueListenable: loadingState,
+        builder: ((context, loadingStateValue, child) {
+          if(shouldCallSkeleton(loadingStateValue)){
+            return shimmerSkeletonWidget(
+              ListView.builder(
                 itemCount: notificationsPaginationLimit,
                 itemBuilder: (context, index) {
                   return CustomNotificationWidget(
@@ -179,7 +179,7 @@ class _NotificationsWidgetStatefulState extends State<_NotificationsWidgetStatef
             );
           }
           return ValueListenableBuilder(
-            valueListenable: loadingNotificationsStatus,
+            valueListenable: paginationStatus,
             builder: (context, loadingStatusValue, child){
               return ValueListenableBuilder(
                 valueListenable: canPaginate,

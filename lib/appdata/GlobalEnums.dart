@@ -1,4 +1,4 @@
-enum LoadingStatus{
+enum PaginationStatus{
   loading, error, loaded
 }
 
@@ -22,6 +22,14 @@ enum FollowRequestType{
   From, To
 }
 
+enum PostDisplayType{
+  feed, profilePost, viewPost, searchedPost, bookmark, explore
+}
+
 enum UserDisplayType{
   followers, following, likes, bookmarks, searchedUsers, groupMembers, explore
+}
+
+enum LoadingState{
+  loaded, loading, paginating, refreshing
 }

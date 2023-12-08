@@ -5,12 +5,12 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:dio/dio.dart' as d;
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/MediaDataClass.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/state/main.dart';
 import 'package:social_media_app/appdata/GlobalLibrary.dart';
+import 'package:social_media_app/styles/AppStyles.dart';
 import 'caching/sqfliteConfiguration.dart';
 import 'class/DisplayCommentDataClass.dart';
 import 'class/CommentClass.dart';
@@ -41,9 +41,9 @@ class _SearchedCommentsWidgetStateful extends StatefulWidget {
 
 class _SearchedCommentsWidgetStatefulState extends State<_SearchedCommentsWidgetStateful> with AutomaticKeepAliveClientMixin{
   late String searchedText;
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
+  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
   ValueNotifier<List<DisplayCommentDataClass>> comments = ValueNotifier([]);
-  ValueNotifier<LoadingStatus> loadingCommentsStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
   ValueNotifier<int> totalCommentsLength = ValueNotifier(postsServerFetchLimit);
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
   final ScrollController _scrollController = ScrollController();
@@ -70,9 +70,9 @@ class _SearchedCommentsWidgetStatefulState extends State<_SearchedCommentsWidget
 
   @override void dispose(){
     super.dispose();
-    isLoading.dispose();
+    loadingState.dispose();
     comments.dispose();
-    loadingCommentsStatus.dispose();
+    paginationStatus.dispose();
     totalCommentsLength.dispose();
     displayFloatingBtn.dispose();
     _scrollController.dispose();
@@ -81,7 +81,6 @@ class _SearchedCommentsWidgetStatefulState extends State<_SearchedCommentsWidget
   Future<void> fetchSearchedComments(int currentCommentsLength, bool isRefreshing, bool isPaginating) async{
     try {
       if(mounted){
-        isLoading.value = true;
         String stringified = '';
         d.Response res;
         if(!isPaginating){
@@ -144,7 +143,7 @@ class _SearchedCommentsWidgetStatefulState extends State<_SearchedCommentsWidget
             }
           }
           if(mounted){
-            isLoading.value = false;
+            loadingState.value = LoadingState.loaded;
           }
         }
       }
@@ -156,12 +155,13 @@ class _SearchedCommentsWidgetStatefulState extends State<_SearchedCommentsWidget
   Future<void> loadMoreComments() async{
     try {
       if(mounted){
-        loadingCommentsStatus.value = LoadingStatus.loading;
+        loadingState.value = LoadingState.paginating;
+        paginationStatus.value = PaginationStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
           await fetchSearchedComments(comments.value.length, false, true);
           if(mounted){
-            loadingCommentsStatus.value = LoadingStatus.loaded;
+            paginationStatus.value = PaginationStatus.loaded;
           }
         });
       }
@@ -171,6 +171,7 @@ class _SearchedCommentsWidgetStatefulState extends State<_SearchedCommentsWidget
   }
 
   Future<void> refresh() async{
+    loadingState.value = LoadingState.refreshing;
     await fetchSearchedComments(0, true, false);
   }
 
@@ -179,12 +180,11 @@ class _SearchedCommentsWidgetStatefulState extends State<_SearchedCommentsWidget
     super.build(context);
     return Scaffold(
       body: ValueListenableBuilder(
-        valueListenable: isLoading,
-        builder: ((context, isLoadingValue, child) {
-          if(isLoadingValue){
-            return Skeletonizer(
-              enabled: true,
-              child: CustomScrollView(
+        valueListenable: loadingState,
+        builder: ((context, loadingStateValue, child) {
+          if(shouldCallSkeleton(loadingStateValue)){
+            return shimmerSkeletonWidget(
+              CustomScrollView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: <Widget>[
@@ -209,7 +209,7 @@ class _SearchedCommentsWidgetStatefulState extends State<_SearchedCommentsWidget
             );
           }
           return ValueListenableBuilder(
-            valueListenable: loadingCommentsStatus,
+            valueListenable: paginationStatus,
             builder: (context, loadingStatusValue, child){
               return ValueListenableBuilder(
                 valueListenable: totalCommentsLength,

@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:social_media_app/class/UserDataClass.dart';
 import 'package:social_media_app/class/UserSocialClass.dart';
 import 'package:social_media_app/custom/CustomUserDataWidget.dart';
@@ -41,9 +40,9 @@ class _PostLikesListWidgetStatefulState extends State<_PostLikesListWidgetStatef
   final ScrollController _scrollController = ScrollController();
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(true);
   late String postID;
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
+  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
   ValueNotifier<List<String>> users = ValueNotifier([]);
-  ValueNotifier<LoadingStatus> loadingUsersStatus = ValueNotifier(LoadingStatus.loaded);
+  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
   late StreamSubscription userDataStreamClassSubscription;
 
@@ -81,16 +80,15 @@ class _PostLikesListWidgetStatefulState extends State<_PostLikesListWidgetStatef
     super.dispose();
     _scrollController.dispose();
     displayFloatingBtn.dispose();
-    isLoading.dispose();
+    loadingState.dispose();
     users.dispose();
-    loadingUsersStatus.dispose();
+    paginationStatus.dispose();
     canPaginate.dispose();
   }
 
   Future<void> fetchPostLikes(int currentUsersLength, bool isRefreshing) async{
     try {
       if(mounted){
-        isLoading.value = true;
         String stringified = jsonEncode({
           'postID': postID,
           'currentID': appStateClass.currentID,
@@ -121,7 +119,7 @@ class _PostLikesListWidgetStatefulState extends State<_PostLikesListWidgetStatef
             }
           }
           if(mounted){
-            isLoading.value = false;
+            loadingState.value = LoadingState.loaded;
           }
         }
       }
@@ -133,12 +131,13 @@ class _PostLikesListWidgetStatefulState extends State<_PostLikesListWidgetStatef
   Future<void> loadMoreUsers() async{
     try {
       if(mounted){
-        loadingUsersStatus.value = LoadingStatus.loading;
+        loadingState.value = LoadingState.paginating;
+        paginationStatus.value = PaginationStatus.loading;
         Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
           timer.cancel();
           await fetchPostLikes(users.value.length, false);
           if(mounted){
-            loadingUsersStatus.value = LoadingStatus.loaded;
+            paginationStatus.value = PaginationStatus.loaded;
           }
         });
       }
@@ -159,12 +158,11 @@ class _PostLikesListWidgetStatefulState extends State<_PostLikesListWidgetStatef
         )
       ),
       body: ValueListenableBuilder(
-        valueListenable: isLoading,
-        builder: ((context, isLoadingValue, child) {
-          if(isLoadingValue){
-            return Skeletonizer(
-              enabled: true,
-              child: ListView.builder(
+        valueListenable: loadingState,
+        builder: ((context, loadingStateValue, child) {
+          if(shouldCallSkeleton(loadingStateValue)){
+            return shimmerSkeletonWidget(
+              ListView.builder(
                 itemCount: usersPaginationLimit,
                 itemBuilder: (context, index) {
                   return CustomUserDataWidget(
@@ -182,7 +180,7 @@ class _PostLikesListWidgetStatefulState extends State<_PostLikesListWidgetStatef
             );
           }
           return ValueListenableBuilder(
-            valueListenable: loadingUsersStatus,
+            valueListenable: paginationStatus,
             builder: (context, loadingStatusValue, child){
               return ValueListenableBuilder(
                 valueListenable: canPaginate,
