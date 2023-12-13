@@ -119,11 +119,12 @@ class _MyHomePageState extends State<MyHomePage> {
           if(verifyAccountExistence['message'] == 'Successfully checked account existence'){
             if(verifyAccountExistence['exists'] == true){
               appStateClass.currentID = lifecycleData['user_id'];
-              runDelay(() => Navigator.push(
+              runDelay(() => Navigator.pushAndRemoveUntil(
                 context,
                 SliderRightToLeftRoute(
                   page: const MainPageWidget()
-                )
+                ),
+                (Route<dynamic> route) => false
               ), navigatorDelayTime);
               if(mounted){
                 isLoginToAccount.value = true;
