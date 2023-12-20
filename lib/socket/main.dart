@@ -1,7 +1,7 @@
-import 'package:social_media_app/appdata/GlobalLibrary.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:social_media_app/appdata/global_library.dart';
+import 'package:socket_io_client/socket_io_client.dart' as io;
 
-IO.Socket socket = IO.io(serverDomainAddress, <String, dynamic>{
+io.Socket socket = io.io(serverDomainAddress, <String, dynamic>{
   'transports': ['websocket'],
   'autoConnect': false
 });

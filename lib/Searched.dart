@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/SearchedComments.dart';
-import 'package:social_media_app/SearchedPosts.dart';
-import 'package:social_media_app/SearchedUsers.dart';
-import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
-import 'package:social_media_app/styles/AppStyles.dart';
+import 'package:social_media_app/searched_comments.dart';
+import 'package:social_media_app/searched_posts.dart';
+import 'package:social_media_app/searched_users.dart';
+import 'package:social_media_app/mixin/lifecycle_listener_mixin.dart';
+import 'package:social_media_app/styles/app_styles.dart';
 
 class SearchedWidget extends StatelessWidget {
   final String searchedText;

@@ -3,20 +3,20 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/Searched.dart';
-import 'package:social_media_app/class/DisplayPostDataClass.dart';
-import 'package:social_media_app/class/HashtagClass.dart';
-import 'package:social_media_app/class/MediaDataClass.dart';
-import 'package:social_media_app/class/PostClass.dart';
-import 'package:social_media_app/class/UserDataClass.dart';
-import 'package:social_media_app/class/UserSocialClass.dart';
-import 'package:social_media_app/custom/CustomHashtagWidget.dart';
-import 'package:social_media_app/custom/CustomPostWidget.dart';
-import 'package:social_media_app/custom/CustomUserDataWidget.dart';
-import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
+import 'package:social_media_app/class/display_post_data_class.dart';
+import 'package:social_media_app/class/hashtag_class.dart';
+import 'package:social_media_app/class/media_data_class.dart';
+import 'package:social_media_app/class/post_class.dart';
+import 'package:social_media_app/class/user_data_class.dart';
+import 'package:social_media_app/class/user_social_class.dart';
+import 'package:social_media_app/custom/custom_hashtag_widget.dart';
+import 'package:social_media_app/custom/custom_post_widget.dart';
+import 'package:social_media_app/custom/custom_user_data_widget.dart';
+import 'package:social_media_app/mixin/lifecycle_listener_mixin.dart';
 import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/AppStyles.dart';
-import 'package:social_media_app/appdata/GlobalLibrary.dart';
-import 'package:social_media_app/transition/RightToLeftTransition.dart';
+import 'package:social_media_app/styles/app_styles.dart';
+import 'package:social_media_app/appdata/global_library.dart';
+import 'package:social_media_app/transition/right_to_left_transition.dart';
 
 var dio = Dio();
 
@@ -103,7 +103,7 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
           newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
           PostClass postDataClass = PostClass.fromMap(postData, newMediasDatas);
           if(mounted){
-            updatePostData(postDataClass, context);
+            updatePostData(postDataClass);
             posts.value = [...posts.value, DisplayPostDataClass(postData['sender'], postData['post_id'])];
           } 
         }
@@ -112,8 +112,8 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
           UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
           UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
           if(mounted){
-            updateUserData(userDataClass, context);
-            updateUserSocials(userDataClass, userSocialClass, context);
+            updateUserData(userDataClass);
+            updateUserSocials(userDataClass, userSocialClass);
             users.value = [userProfileData['user_id'], ...users.value];
           }
         }

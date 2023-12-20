@@ -1,26 +1,24 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart' as d;
 import 'package:flutter/material.dart';
-import 'package:social_media_app/class/DisplayCommentDataClass.dart';
-import 'package:social_media_app/class/UserDataClass.dart';
-import 'package:social_media_app/custom/CustomPostWidget.dart';
-import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
+import 'package:social_media_app/class/display_comment_data_class.dart';
+import 'package:social_media_app/class/user_data_class.dart';
+import 'package:social_media_app/custom/custom_post_widget.dart';
+import 'package:social_media_app/mixin/lifecycle_listener_mixin.dart';
 import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/streams/CommentDataStreamClass.dart';
-import 'package:social_media_app/streams/PostDataStreamClass.dart';
-import 'package:social_media_app/appdata/GlobalLibrary.dart';
-import 'package:social_media_app/styles/AppStyles.dart';
-import 'caching/sqfliteConfiguration.dart';
-import 'class/CommentClass.dart';
-import 'class/DisplayPostDataClass.dart';
-import 'class/MediaDataClass.dart';
-import 'class/PostClass.dart';
-import 'class/UserSocialClass.dart';
-import 'custom/CustomCommentWidget.dart';
-import 'custom/CustomPagination.dart';
+import 'package:social_media_app/streams/comment_data_stream_class.dart';
+import 'package:social_media_app/streams/post_data_stream_class.dart';
+import 'package:social_media_app/appdata/global_library.dart';
+import 'package:social_media_app/styles/app_styles.dart';
+import 'caching/sqlite_configuration.dart';
+import 'class/comment_class.dart';
+import 'class/display_post_data_class.dart';
+import 'class/media_data_class.dart';
+import 'class/post_class.dart';
+import 'class/user_social_class.dart';
+import 'custom/custom_comment_widget.dart';
+import 'custom/custom_pagination.dart';
 
 var dio = d.Dio();
 
@@ -126,8 +124,8 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
               UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
               UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
               if(mounted){
-                updateUserData(userDataClass, context);
-                updateUserSocials(userDataClass, userSocialClass, context);
+                updateUserData(userDataClass);
+                updateUserSocials(userDataClass, userSocialClass);
               }
             }
             if(isRefreshing && mounted){
@@ -144,7 +142,7 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
                 newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
                 PostClass postDataClass = PostClass.fromMap(postData, newMediasDatas);
                 if(mounted){
-                  updatePostData(postDataClass, context);
+                  updatePostData(postDataClass);
                   posts.value = [...posts.value, DisplayPostDataClass(postData['sender'], postData['post_id'])];
                 }
               }else{
@@ -154,7 +152,7 @@ class __FeedWidgetStatefulState extends State<_FeedWidgetStateful> with Automati
                 newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
                 CommentClass commentDataClass = CommentClass.fromMap(commentData, newMediasDatas);
                 if(mounted){
-                  updateCommentData(commentDataClass, context);
+                  updateCommentData(commentDataClass);
                   posts.value = [...posts.value, DisplayCommentDataClass(commentData['sender'], commentData['comment_id'])];
                 }
               }

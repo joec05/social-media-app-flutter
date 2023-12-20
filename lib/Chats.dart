@@ -2,21 +2,21 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/SearchChatUsers.dart';
-import 'package:social_media_app/class/ChatDataClass.dart';
-import 'package:social_media_app/class/ChatDataLatestMessageClass.dart';
-import 'package:social_media_app/class/GroupProfileClass.dart';
-import 'package:social_media_app/class/ChatDataNotifier.dart';
-import 'package:social_media_app/class/UserDataClass.dart';
-import 'package:social_media_app/class/UserSocialClass.dart';
-import 'package:social_media_app/custom/CustomChatWidget.dart';
-import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
+import 'package:social_media_app/search_chat_users.dart';
+import 'package:social_media_app/class/chat_data_class.dart';
+import 'package:social_media_app/class/chat_data_latest_message_class.dart';
+import 'package:social_media_app/class/group_profile_class.dart';
+import 'package:social_media_app/class/chat_data_notifier.dart';
+import 'package:social_media_app/class/user_data_class.dart';
+import 'package:social_media_app/class/user_social_class.dart';
+import 'package:social_media_app/custom/custom_chat_widget.dart';
+import 'package:social_media_app/mixin/lifecycle_listener_mixin.dart';
 import 'package:social_media_app/socket/main.dart';
 import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/AppStyles.dart';
-import 'package:social_media_app/appdata/GlobalLibrary.dart';
-import 'package:social_media_app/transition/RightToLeftTransition.dart';
-import 'custom/CustomPagination.dart';
+import 'package:social_media_app/styles/app_styles.dart';
+import 'package:social_media_app/appdata/global_library.dart';
+import 'package:social_media_app/transition/right_to_left_transition.dart';
+import 'custom/custom_pagination.dart';
 
 var dio = Dio();
 
@@ -97,7 +97,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
               userData.blocksCurrentID, userData.private, userData.requestedByCurrentID, userData.requestsToCurrentID,
               userData.verified, userData.suspended, userData.deleted
             );
-            updateUserData(updatedUserData, context);
+            updateUserData(updatedUserData);
           }
         }else{
           UserDataClass senderData = UserDataClass.fromMap(data['senderData']);
@@ -105,7 +105,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
             senderData.userID, senderData.name, senderData.username, senderData.profilePicLink, senderData.dateJoined, 
             senderData.birthDate, senderData.bio, false, false, false, false, false, false, false, false, false
           );
-          updateUserData(updatedUserData, context);
+          updateUserData(updatedUserData);
         }
         bool chatDataFound = false;
         for(int i = 0; i < chats.value.length; i++){
@@ -263,7 +263,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
           userData.private, userData.requestedByCurrentID, userData.requestsToCurrentID,
           userData.verified, userData.suspended, userData.deleted
         );
-        updateUserData(updatedUserData, context);
+        updateUserData(updatedUserData);
       }
     });
     socket.on("update-block-sender-id-user-data-${appStateClass.currentID}", ( data ) async{
@@ -275,7 +275,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
           userData.private, userData.requestedByCurrentID, userData.requestsToCurrentID,
           userData.verified, userData.suspended, userData.deleted
         );
-        updateUserData(updatedUserData, context);
+        updateUserData(updatedUserData);
       }
     });
     socket.on("update-is-unblocked-by-sender-id-user-data-${appStateClass.currentID}", ( data ) async{
@@ -287,7 +287,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
           userData.private, userData.requestedByCurrentID, userData.requestsToCurrentID,
           userData.verified, userData.suspended, userData.deleted
         );
-        updateUserData(updatedUserData, context);
+        updateUserData(updatedUserData);
       }
     });
     socket.on("update-unblock-sender-id-user-data-${appStateClass.currentID}", ( data ) async{
@@ -299,7 +299,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
           userData.private, userData.requestedByCurrentID, userData.requestsToCurrentID,
           userData.verified, userData.suspended, userData.deleted
         );
-        updateUserData(updatedUserData, context);
+        updateUserData(updatedUserData);
       }
     });
     _scrollController.addListener(() {
@@ -355,8 +355,8 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
               UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
               UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
               if(mounted){
-                updateUserData(userDataClass, context);
-                updateUserSocials(userDataClass, userSocialClass, context);
+                updateUserData(userDataClass);
+                updateUserSocials(userDataClass, userSocialClass);
               }
             }
             for(int i = 0; i < userChatsData.length; i++){

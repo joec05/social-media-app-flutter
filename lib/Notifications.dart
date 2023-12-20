@@ -2,14 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/class/NotificationClass.dart';
-import 'package:social_media_app/custom/CustomNotificationWidget.dart';
-import 'package:social_media_app/mixin/LifecycleListenerMixin.dart';
+import 'package:social_media_app/class/notification_class.dart';
+import 'package:social_media_app/custom/custom_notification_widget.dart';
+import 'package:social_media_app/mixin/lifecycle_listener_mixin.dart';
 import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/streams/NotificationDataStreamClass.dart';
-import 'package:social_media_app/appdata/GlobalLibrary.dart';
-import 'package:social_media_app/styles/AppStyles.dart';
-import 'custom/CustomPagination.dart';
+import 'package:social_media_app/streams/notification_data_stream_class.dart';
+import 'package:social_media_app/appdata/global_library.dart';
+import 'package:social_media_app/styles/app_styles.dart';
+import 'custom/custom_pagination.dart';
 
 var dio = Dio();
 

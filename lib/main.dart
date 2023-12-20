@@ -1,26 +1,24 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:social_media_app/Chats.dart';
-import 'package:social_media_app/LoginWithEmail.dart';
-import 'package:social_media_app/LoginWithUsername.dart';
-import 'package:social_media_app/SignUp.dart';
-import 'package:social_media_app/caching/sqfliteConfiguration.dart';
-import 'package:social_media_app/class/SharedPreferencesClass.dart';
-import 'package:social_media_app/custom/CustomButton.dart';
+import 'package:social_media_app/chats.dart';
+import 'package:social_media_app/login_with_email.dart';
+import 'package:social_media_app/login_with_username.dart';
+import 'package:social_media_app/sign_up.dart';
+import 'package:social_media_app/caching/sqlite_configuration.dart';
+import 'package:social_media_app/class/shared_preferences_class.dart';
+import 'package:social_media_app/custom/custom_button.dart';
 import 'package:social_media_app/firebase/firebase_constants.dart';
-import 'package:social_media_app/observer/GlobalObserver.dart';
+import 'package:social_media_app/observer/global_observer.dart';
 import 'package:social_media_app/socket/main.dart';
 import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/AppStyles.dart';
-import 'package:social_media_app/transition/RightToLeftTransition.dart';
-import 'MainPage.dart';
-import 'package:social_media_app/appdata/GlobalLibrary.dart';
+import 'package:social_media_app/styles/app_styles.dart';
+import 'package:social_media_app/transition/right_to_left_transition.dart';
+import 'main_page.dart';
+import 'package:social_media_app/appdata/global_library.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -230,7 +228,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   buttonColor: const Color.fromARGB(255, 151, 145, 87), buttonText: 'Sign Up', 
                                   onTapped: (){
                                     runDelay((){
-                                      resetReduxData(context);
+                                      resetReduxData();
                                       runDelay(() => Navigator.push(
                                         context,
                                         SliderRightToLeftRoute(
@@ -247,7 +245,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   buttonColor: const Color.fromARGB(255, 151, 145, 87), buttonText: 'Login With Email', 
                                   onTapped: (){
                                     runDelay((){
-                                      resetReduxData(context);
+                                      resetReduxData();
                                       runDelay(() => Navigator.push(
                                         context,
                                         SliderRightToLeftRoute(
@@ -264,7 +262,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   buttonColor: const Color.fromARGB(255, 151, 145, 87), buttonText: 'Login With Username', 
                                   onTapped: (){
                                     runDelay((){
-                                      resetReduxData(context);
+                                      resetReduxData();
                                       runDelay(() => Navigator.push(
                                         context,
                                         SliderRightToLeftRoute(
