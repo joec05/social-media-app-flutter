@@ -20,19 +20,11 @@ import 'package:social_media_app/transition/right_to_left_transition.dart';
 import 'main_page.dart';
 import 'package:social_media_app/appdata/global_library.dart';
 
-class MyHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-  }
-}
-
 void main() async{
   try {
     WidgetsFlutterBinding.ensureInitialized();
-    HttpOverrides.global = MyHttpOverrides();
+    ByteData data = await PlatformAssetBundle().load('assets/certificate/ca.pem');
+    SecurityContext.defaultContext.setTrustedCertificatesBytes(data.buffer.asUint8List());
     await DatabaseHelper().initDatabase();
     GlobalObserver globalObserver = GlobalObserver();
     WidgetsBinding.instance.addObserver(globalObserver);
