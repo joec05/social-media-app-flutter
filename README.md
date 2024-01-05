@@ -36,7 +36,7 @@ You need to have basic knowledge of PostgreSQL and have PostgreSQL installed. It
 
 ## Setting up Express.ts
 
-You can download it [here](https://github.com/joec05/social-media-app-pgsql). Run `npm run build` if you modified any Typescript code, and run `npm start` to start or restart the server. 
+You can download it [here](https://github.com/joec05/social-media-app-expressjs-server). Run `npm run build` if you modified any Typescript code, and run `npm start` to start or restart the server. 
 
 Once you have set up all of these the app is ready to use. 
 
