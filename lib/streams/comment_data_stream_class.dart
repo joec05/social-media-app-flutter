@@ -1,5 +1,5 @@
 import 'dart:async';
-import '../class/display_comment_data_class.dart';
+import 'package:social_media_app/class/display/display_comment_data_class.dart';
 
 class CommentDataStreamControllerClass{
   final DisplayCommentDataClass commentClass;

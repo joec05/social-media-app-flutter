@@ -1,13 +1,15 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:shimmer/shimmer.dart';
-import 'package:social_media_app/custom/custom_video_player.dart' as cvp;
 import 'package:flutter/material.dart';
-import 'package:social_media_app/appdata/global_library.dart';
-import 'package:social_media_app/class/media_data_class.dart';
-import 'package:social_media_app/custom/custom_image_viewer.dart';
-import '../class/website_card_class.dart';
-import '../custom/custom_website_card_widget.dart';
+import 'package:social_media_app/class/attachment/media_data_class.dart';
+import 'package:social_media_app/class/attachment/website_card_class.dart';
+import 'package:social_media_app/constants/global_enums.dart';
+import 'package:social_media_app/constants/global_functions.dart';
+import 'package:social_media_app/constants/global_variables.dart';
+import 'package:social_media_app/custom/attachment/custom_image_viewer.dart';
+import 'package:social_media_app/custom/attachment/custom_video_player.dart' as cvp;
+import 'package:social_media_app/custom/attachment/custom_website_card_widget.dart';
 
 double defaultTextFontSize = 16;
 

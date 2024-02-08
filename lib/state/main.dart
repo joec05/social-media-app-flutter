@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:social_media_app/class/comment_notifier.dart';
-import 'package:social_media_app/class/post_notifier.dart';
-import 'package:social_media_app/class/user_data_notifier.dart';
-import 'package:social_media_app/class/user_social_notifier.dart';
+import 'package:social_media_app/class/comment/comment_notifier.dart';
+import 'package:social_media_app/class/post/post_notifier.dart';
+import 'package:social_media_app/class/user/user_data_notifier.dart';
+import 'package:social_media_app/class/user/user_social_notifier.dart';
 
 class AppStateClass{
   String currentID;
