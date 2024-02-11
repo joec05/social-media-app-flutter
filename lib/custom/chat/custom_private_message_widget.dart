@@ -1,15 +1,6 @@
 import 'dart:convert';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/class/attachment/media_data_class.dart';
-import 'package:social_media_app/class/chat/private-chat/private_message_class.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/custom/basic-widget/custom_button.dart';
-import 'package:social_media_app/custom/tagging/custom_text_span.dart';
-import 'package:social_media_app/socket/main.dart';
-import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/app_styles.dart';
+import 'package:social_media_app/global_files.dart';
 
 class CustomPrivateMessage extends StatefulWidget {
   final String? chatID;
@@ -29,8 +20,6 @@ class CustomPrivateMessage extends StatefulWidget {
   CustomPrivateMessageState createState() => CustomPrivateMessageState();
   
 }
-
-var dio = Dio();
 
 class CustomPrivateMessageState extends State<CustomPrivateMessage> {
   late PrivateMessageClass privateMessageData;
@@ -62,7 +51,7 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
       if(res.data.isNotEmpty){
       }
     } on Exception catch (e) {
-      doSomethingWithException(e);
+      
     }
   }
 
@@ -85,7 +74,7 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
       if(res.data.isNotEmpty){
       }
     } on Exception catch (e) {
-      doSomethingWithException(e);
+      
     }
   }
 

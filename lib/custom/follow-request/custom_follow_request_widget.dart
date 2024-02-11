@@ -1,18 +1,6 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:social_media_app/class/user/user_data_class.dart';
-import 'package:social_media_app/class/user/user_social_class.dart';
-import 'package:social_media_app/constants/global_enums.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/constants/server_actions.dart';
-import 'package:social_media_app/custom/basic-widget/custom_button.dart';
-import 'package:social_media_app/extenstions/string_ellipsis.dart';
-import 'package:social_media_app/screens/profile/profile_page.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-import 'package:social_media_app/transition/navigation.dart';
-var dio = Dio();
+import 'package:social_media_app/global_files.dart';
 
 class CustomFollowRequestWidget extends StatefulWidget{
   final UserDataClass userData;

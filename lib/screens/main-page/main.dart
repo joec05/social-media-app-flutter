@@ -1,28 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:social_media_app/caching/sqlite_configuration.dart';
-import 'package:social_media_app/class/local-storage/shared_preferences.dart';
-import 'package:social_media_app/constants/app_state_actions.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/custom/basic-widget/custom_button.dart';
-import 'package:social_media_app/firebase/constants.dart';
-import 'package:social_media_app/observer/global_observer.dart';
-import 'package:social_media_app/screens/authentication/login_with_email.dart';
-import 'package:social_media_app/screens/authentication/login_with_username.dart';
-import 'package:social_media_app/screens/authentication/sign_up.dart';
-import 'package:social_media_app/screens/chat/Chats.dart';
-import 'package:social_media_app/socket/main.dart';
-import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-import 'package:social_media_app/transition/navigation.dart';
-import 'main_page.dart';
+import 'package:social_media_app/global_files.dart';
 
 void main() async{
   try {
@@ -36,7 +19,7 @@ void main() async{
     await firebaseAppCheckInitialization;
     runApp(const MyApp());
   } on Exception catch (e) {
-    doSomethingWithException(e);
+    
   }
   //WidgetsBinding.instance.removeObserver(globalObserver);
 }
@@ -67,16 +50,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -136,7 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       }
     } on Exception catch (e) {
-      doSomethingWithException(e);
+      
     }
   }
 

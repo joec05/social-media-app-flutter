@@ -1,10 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/custom/basic-widget/custom_button.dart';
-import 'package:social_media_app/firebase/constants.dart';
-import 'package:social_media_app/styles/app_styles.dart';
+import 'package:social_media_app/global_files.dart';
 
 class EmailVerificationPage extends StatefulWidget {
   const EmailVerificationPage({super.key});
@@ -14,34 +10,19 @@ class EmailVerificationPage extends StatefulWidget {
 }
 
 class _EmailVerificationPageState extends State<EmailVerificationPage> {
-  bool verified = false;
-  Timer? timer;
+  late EmailVerificationController controller;
 
   @override
   void initState() {
     super.initState();
-    auth.currentUser?.sendEmailVerification();
-    timer = Timer.periodic(const Duration(seconds: 3), (_) => checkEmailVerified());
-  }
-
-  void checkEmailVerified() async {
-    await auth.currentUser?.reload().then((value){
-      if(mounted){
-        setState(() {
-          verified = auth.currentUser!.emailVerified;
-        });
-        if(verified) {
-          timer?.cancel();
-          Navigator.pop(context, verified);
-        }
-      }
-    });
+    controller = EmailVerificationController(context);
+    controller.initializeController();
   }
 
   @override
   void dispose() {
-    timer?.cancel();
     super.dispose();
+    controller.dispose();
   }
 
   @override
@@ -67,9 +48,14 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                 textAlign: TextAlign.center, style: const TextStyle(fontSize: 17)
               ),
               SizedBox(height: getScreenHeight() * 0.04),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                child: !verified ? const CircularProgressIndicator() : const Icon(FontAwesomeIcons.check)
+              ValueListenableBuilder(
+                valueListenable: controller.verified,
+                builder: (context, isVerified, child){
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    child: !isVerified ? const CircularProgressIndicator() : const Icon(FontAwesomeIcons.check)
+                  );
+                },
               ),
               SizedBox(height: getScreenHeight() * 0.04),
               CustomButton(

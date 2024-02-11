@@ -1,19 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/class/comment/comment_class.dart';
-import 'package:social_media_app/class/notification/notification_class.dart';
-import 'package:social_media_app/class/post/post_class.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/extenstions/string_ellipsis.dart';
-import 'package:social_media_app/screens/profile/profile_page.dart';
-import 'package:social_media_app/screens/view-comments/view_comment_comments.dart';
-import 'package:social_media_app/screens/view-comments/view_post_comments.dart';
-import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-import 'package:social_media_app/transition/navigation.dart';
-
-var dio = Dio();
+import 'package:social_media_app/global_files.dart';
 
 class CustomNotificationWidget extends StatefulWidget{
   final NotificationClass notificationClass;

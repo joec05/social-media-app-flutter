@@ -1,20 +1,5 @@
-import 'dart:convert';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/class/local-storage/shared_preferences.dart';
-import 'package:social_media_app/class/user/user_data_class.dart';
-import 'package:social_media_app/class/user/user_social_class.dart';
-import 'package:social_media_app/constants/app_state_actions.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/custom/basic-widget/custom_button.dart';
-import 'package:social_media_app/screens/authentication/login_with_username.dart';
-import 'package:social_media_app/screens/main-page/main_page.dart';
-import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-import 'package:social_media_app/transition/navigation.dart';
-
-var dio = Dio();
+import 'package:social_media_app/global_files.dart';
 
 class LoginWithEmailStateless extends StatelessWidget {
   const LoginWithEmailStateless({super.key});
@@ -33,139 +18,13 @@ class LoginWithEmailStateful extends StatefulWidget {
 }
 
 class _LoginWithEmailStatefulState extends State<LoginWithEmailStateful> {
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-  ValueNotifier<bool> verifyEmailFormat = ValueNotifier(false);
-  ValueNotifier<bool> verifyPasswordFormat = ValueNotifier(false);
-  final int passwordCharacterMinLimit = profileInputMinLimit['password'];
-  final int passwordCharacterMaxLimit = profileInputMaxLimit['password'];
-  ValueNotifier<bool> isLoading = ValueNotifier(false);
+  late LoginController controller;
 
   @override
   void initState(){
     super.initState();
-    emailController.addListener(() {
-      if(mounted){
-        String emailText = emailController.text;
-        verifyEmailFormat.value = emailText.isNotEmpty && checkEmailValid(emailText);
-      }
-    });
-    passwordController.addListener(() {
-      if(mounted){
-        String passwordText = passwordController.text;
-        verifyPasswordFormat.value = passwordText.isNotEmpty && passwordText.length >= passwordCharacterMinLimit
-        && passwordText.length <= passwordCharacterMaxLimit;
-      }
-    });
-  }
-
-  @override void dispose(){
-    super.dispose();
-    emailController.dispose();
-    passwordController.dispose();
-    verifyEmailFormat.dispose();
-    verifyPasswordFormat.dispose();
-    isLoading.dispose();
-  }
-  
-
-  void loginWithEmail() async{
-    try {
-      if(!isLoading.value){
-        if(checkEmailValid(emailController.text.trim()) == false){
-          showDialog(
-            context: context,
-            barrierDismissible: true,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Alert!!!', style: TextStyle(fontSize: defaultTextFontSize)),
-                content: SingleChildScrollView(
-                  child: ListBody(
-                    children: [
-                      Text('Email format is invalid.', style: TextStyle(fontSize: defaultTextFontSize)),
-                    ],
-                  ),
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: Text('Ok', style: TextStyle(fontSize: defaultTextFontSize)),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        }else{  
-          String stringified = jsonEncode({
-            'email': emailController.text.trim(),
-            'password': passwordController.text.trim(),
-          });
-          if(mounted){
-            isLoading.value = true;
-            var res = await dio.post('$serverDomainAddress/users/loginWithEmail', data: stringified);
-            if(res.data.isNotEmpty){
-              if(res.data['message'] == 'Login successful'){
-                appStateClass.currentID = res.data['userID'];
-                Map userProfileData = (res.data['userProfileData']);
-                UserDataClass userProfileDataClass = UserDataClass(
-                  userProfileData['user_id'], userProfileData['name'], userProfileData['username'], userProfileData['profile_picture_link'], 
-                  userProfileData['date_joined'], userProfileData['birth_date'], userProfileData['bio'], 
-                  false, false, false, userProfileData['private'], false, false, userProfileData['verified'], false, false
-                );
-                UserSocialClass userSocialClass = UserSocialClass(
-                  0, 0, false, false
-                );
-                if(mounted){
-                  updateUserData(userProfileDataClass);
-                  updateUserSocials(userProfileDataClass, userSocialClass);
-                }
-                SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
-                runDelay(() => Navigator.pushAndRemoveUntil(
-                  context,
-                  SliderRightToLeftRoute(
-                    page: const MainPageWidget()),
-                  (Route<dynamic> route) => false
-                ), navigatorDelayTime);
-              }else{
-                if(mounted){
-                  showDialog(
-                    context: context,
-                    barrierDismissible: true,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Alert!!!', style: TextStyle(fontSize: defaultTextFontSize)),
-                        content: SingleChildScrollView(
-                          child: ListBody(
-                            children: [
-                              Text(res.data['message'], style: TextStyle(fontSize: defaultTextFontSize)),
-                            ],
-                          ),
-                        ),
-                        actions: <Widget>[
-                          TextButton(
-                            child: Text('Continue', style: TextStyle(fontSize: defaultTextFontSize)),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                }
-              }
-              if(mounted){
-                isLoading.value = false;
-              }
-            }
-          }
-        }
-      }
-    } on Exception catch (e) {
-      doSomethingWithException(e);
-    }
+    controller = LoginController(context);
+    controller.initializeController();
   }
 
   @override
@@ -187,17 +46,17 @@ class _LoginWithEmailStatefulState extends State<LoginWithEmailStateful> {
           child: Stack(
             children: [
               Positioned(
-                      left: -getScreenWidth() * 0.45,
-                      top: -getScreenWidth() * 0.25,
-                      child: Container(
-                        width: getScreenWidth(),
-                        height: getScreenWidth(),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(200),
-                          color: Colors.amber.withOpacity(0.65)
-                        ),
-                      ),
-                    ),
+                left: -getScreenWidth() * 0.45,
+                top: -getScreenWidth() * 0.25,
+                child: Container(
+                  width: getScreenWidth(),
+                  height: getScreenWidth(),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(200),
+                    color: Colors.amber.withOpacity(0.65)
+                  ),
+                ),
+              ),
               Positioned(
                 right: -getScreenWidth() * 0.55,
                 top: getScreenWidth() * 0.85,
@@ -220,7 +79,7 @@ class _LoginWithEmailStatefulState extends State<LoginWithEmailStateful> {
                     containerMargin(
                       textFieldWithDescription(
                         TextField(
-                          controller: emailController,
+                          controller: controller.emailController,
                           decoration: generateProfileTextFieldDecoration('your email', Icons.mail),
                         ),
                         'Email',
@@ -233,13 +92,13 @@ class _LoginWithEmailStatefulState extends State<LoginWithEmailStateful> {
                         children: [
                           textFieldWithDescription(
                             TextField(
-                              controller: passwordController,
+                              controller: controller.passwordController,
                               decoration: generateProfileTextFieldDecoration('your password', Icons.lock),
                               keyboardType: TextInputType.visiblePassword,
-                              maxLength: passwordCharacterMaxLimit
+                              maxLength: controller.passwordCharacterMaxLimit
                             ),
                             'Password',
-                            "Your password should be between $passwordCharacterMinLimit and $passwordCharacterMaxLimit characters",
+                            "Your password should be between ${controller.passwordCharacterMinLimit} and ${controller.passwordCharacterMaxLimit} characters",
                           ),
                           SizedBox(
                             height: getScreenHeight() * 0.001,
@@ -254,24 +113,24 @@ class _LoginWithEmailStatefulState extends State<LoginWithEmailStateful> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        ValueListenableBuilder(
-                          valueListenable: verifyEmailFormat,
-                          builder: (context, emailVerified, child) {
-                            return ValueListenableBuilder(
-                              valueListenable: verifyPasswordFormat,
-                              builder: (context, passwordVerified, child) {
-                                return ValueListenableBuilder(
-                                  valueListenable: isLoading,
-                                  builder: (context, isLoadingValue, child) {
-                                    return CustomButton(
-                                      width: defaultTextFieldButtonSize.width, height: defaultTextFieldButtonSize.height,
-                                      buttonColor: emailVerified && passwordVerified && !isLoadingValue ? Colors.red : Colors.grey, buttonText: 'Login', 
-                                      onTapped: emailVerified && passwordVerified && !isLoadingValue ? loginWithEmail : (){},
-                                      setBorderRadius: true,
-                                    );
-                                  }
-                                );
-                              }
+                        ListenableBuilder(
+                          listenable: Listenable.merge([
+                            controller.verifyEmailFormat,
+                            controller.verifyPasswordFormat,
+                            controller.isLoading
+                          ]),
+                          builder: (context, child){
+                            bool emailVerified = controller.verifyEmailFormat.value;
+                            bool passwordVerified = controller.verifyPasswordFormat.value;
+                            bool isLoadingValue = controller.isLoading.value;
+                            return CustomButton(
+                              width: defaultTextFieldButtonSize.width, height: defaultTextFieldButtonSize.height,
+                              buttonColor: emailVerified && passwordVerified && !isLoadingValue ? 
+                                Colors.red : Colors.grey, 
+                              buttonText: 'Login', 
+                              onTapped: emailVerified && passwordVerified && !isLoadingValue ?
+                                controller.loginWithEmail : (){},
+                              setBorderRadius: true,
                             );
                           }
                         )
@@ -300,7 +159,7 @@ class _LoginWithEmailStatefulState extends State<LoginWithEmailStateful> {
                 ),
               ),
               ValueListenableBuilder(
-                valueListenable: isLoading,
+                valueListenable: controller.isLoading,
                 builder: (context, isLoadingValue, child) {
                   return isLoadingValue ?
                     loadingPageWidget()

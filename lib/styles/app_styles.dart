@@ -1,15 +1,17 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/class/attachment/media_data_class.dart';
-import 'package:social_media_app/class/attachment/website_card_class.dart';
-import 'package:social_media_app/constants/global_enums.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/custom/attachment/custom_image_viewer.dart';
-import 'package:social_media_app/custom/attachment/custom_video_player.dart' as cvp;
-import 'package:social_media_app/custom/attachment/custom_website_card_widget.dart';
+import 'package:social_media_app/global_files.dart';
+
+double getScreenHeight(){
+  return PlatformDispatcher.instance.views.first.physicalSize.height / PlatformDispatcher.instance.views.first.devicePixelRatio;
+}
+
+double getScreenWidth(){
+  return PlatformDispatcher.instance.views.first.physicalSize.width / PlatformDispatcher.instance.views.first.devicePixelRatio;
+}
 
 double defaultTextFontSize = 16;
 
@@ -203,13 +205,13 @@ Widget mediaDataPostComponentWidget(MediaDatasClass mediaData, BuildContext cont
         maxHeight: min(mediaData.mediaSize!.height, getScreenHeight() * 0.75),
         maxWidth: min(mediaData.mediaSize!.width, getScreenWidth())
       ),
-      child: cvp.CustomVideoPlayer(
+      child: CustomVideoPlayer(
         key: UniqueKey(),
         playerController: mediaData.playerController!,
         skipDuration: 10000, //how many milliseconds you want to skip
         rewindDuration: 10000, //how many milliseconds you want to rewind
-        videoSourceType: cvp.VideoSourceType.network, //the source of the video: assets, file, network,
-        durationEndDisplay: cvp.DurationEndDisplay.totalDuration, //whether to display in total duration or remaining duration
+        videoSourceType: VideoSourceType.network, //the source of the video: assets, file, network,
+        durationEndDisplay: DurationEndDisplay.totalDuration, //whether to display in total duration or remaining duration
         displayMenu: false, //whether to display menu
         thumbColor: Colors.red, //color of the slider's thumb
         activeTrackColor: Colors.pink, //color of active tracks
@@ -255,13 +257,13 @@ Widget mediaDataMessageComponentWidget(MediaDatasClass mediaData, BuildContext c
         maxHeight: min(mediaData.mediaSize!.height, getScreenHeight() * 0.75),
         maxWidth: min(mediaData.mediaSize!.width, getScreenWidth() * 0.7)
       ),
-      child: cvp.CustomVideoPlayer(
+      child: CustomVideoPlayer(
         key: UniqueKey(),
         playerController: mediaData.playerController!,
         skipDuration: 10000, //how many milliseconds you want to skip
         rewindDuration: 10000, //how many milliseconds you want to rewind
-        videoSourceType: cvp.VideoSourceType.network, //the source of the video: assets, file, network,
-        durationEndDisplay: cvp.DurationEndDisplay.totalDuration, //whether to display in total duration or remaining duration
+        videoSourceType: VideoSourceType.network, //the source of the video: assets, file, network,
+        durationEndDisplay: DurationEndDisplay.totalDuration, //whether to display in total duration or remaining duration
         displayMenu: false, //whether to display menu
         thumbColor: Colors.red, //color of the slider's thumb
         activeTrackColor: Colors.pink, //color of active tracks
@@ -298,13 +300,13 @@ Widget mediaDataDraftPostComponentWidget(MediaDatasClass mediaData, Size? scaled
         maxHeight: min(scaledDimension!.height, getScreenHeight() * 0.75),
         maxWidth: min(scaledDimension.width, getScreenWidth())
       ),
-      child: cvp.CustomVideoPlayer(
+      child: CustomVideoPlayer(
         key: UniqueKey(),
         playerController: mediaData.playerController!,
         skipDuration: 10000, //how many milliseconds you want to skip
         rewindDuration: 10000, //how many milliseconds you want to rewind
-        videoSourceType: cvp.VideoSourceType.network, //the source of the video: assets, file, network,
-        durationEndDisplay: cvp.DurationEndDisplay.totalDuration, //whether to display in total duration or remaining duration
+        videoSourceType: VideoSourceType.network, //the source of the video: assets, file, network,
+        durationEndDisplay: DurationEndDisplay.totalDuration, //whether to display in total duration or remaining duration
         displayMenu: false, //whether to display menu
         thumbColor: Colors.red, //color of the slider's thumb
         activeTrackColor: Colors.pink, //color of active tracks
@@ -338,13 +340,13 @@ Widget mediaDataDraftMessageComponentWidget(MediaDatasClass mediaData, Size? sca
         maxHeight: min(scaledDimension!.height, getScreenHeight() * 0.35),
         maxWidth: min(scaledDimension.width, getScreenWidth())
       ),
-      child: cvp.CustomVideoPlayer(
+      child: CustomVideoPlayer(
         key: UniqueKey(),
         playerController: mediaData.playerController!,
         skipDuration: 10000, //how many milliseconds you want to skip
         rewindDuration: 10000, //how many milliseconds you want to rewind
-        videoSourceType: cvp.VideoSourceType.network, //the source of the video: assets, file, network,
-        durationEndDisplay: cvp.DurationEndDisplay.totalDuration, //whether to display in total duration or remaining duration
+        videoSourceType: VideoSourceType.network, //the source of the video: assets, file, network,
+        durationEndDisplay: DurationEndDisplay.totalDuration, //whether to display in total duration or remaining duration
         displayMenu: false, //whether to display menu
         thumbColor: Colors.red, //color of the slider's thumb
         activeTrackColor: Colors.pink, //color of active tracks
@@ -433,3 +435,5 @@ Widget shimmerSkeletonWidget(Widget child){
     child: child
   );
 }
+
+bool shouldCallSkeleton(LoadingState loadingState) => loadingState == LoadingState.loading;

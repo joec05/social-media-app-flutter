@@ -1,13 +1,5 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/class/tagging/hashtag_class.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/extenstions/string_ellipsis.dart';
-import 'package:social_media_app/screens/search/Searched.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-import 'package:social_media_app/transition/navigation.dart';
-var dio = Dio();
+import 'package:social_media_app/global_files.dart';
 
 class CustomHashtagDataWidget extends StatefulWidget{
   final HashtagClass hashtagData;

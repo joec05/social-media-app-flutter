@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/mixin/lifecycle_listener.dart';
-import 'package:social_media_app/screens/main-page/Explore.dart';
-import 'package:social_media_app/screens/main-page/Notifications.dart';
-import 'package:social_media_app/screens/main-page/drawer_navigator.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-import 'feed.dart';
+import 'package:social_media_app/global_files.dart';
 
 class MainPageWidget extends StatelessWidget {
   const MainPageWidget({super.key});

@@ -1,10 +1,5 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/mixin/lifecycle_listener.dart';
-import 'package:social_media_app/screens/search/searched_comments.dart';
-import 'package:social_media_app/screens/search/searched_posts.dart';
-import 'package:social_media_app/screens/search/searched_users.dart';
-import 'package:social_media_app/styles/app_styles.dart';
+import 'package:social_media_app/global_files.dart';
 
 class SearchedWidget extends StatelessWidget {
   final String searchedText;
@@ -23,8 +18,6 @@ class _SearchedWidgetStateful extends StatefulWidget {
   @override
   State<_SearchedWidgetStateful> createState() => _SearchedWidgetStatefulState();
 }
-
-var dio = Dio();
 
 class _SearchedWidgetStatefulState extends State<_SearchedWidgetStateful> with SingleTickerProviderStateMixin, LifecycleListenerMixin{
   late TabController _tabController;

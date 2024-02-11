@@ -1,24 +1,5 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
-import 'package:dio/dio.dart' as d;
 import 'package:flutter/material.dart';
-import 'package:social_media_app/caching/sqlite_configuration.dart';
-import 'package:social_media_app/class/attachment/media_data_class.dart';
-import 'package:social_media_app/class/comment/comment_class.dart';
-import 'package:social_media_app/class/display/display_comment_data_class.dart';
-import 'package:social_media_app/class/user/user_data_class.dart';
-import 'package:social_media_app/class/user/user_social_class.dart';
-import 'package:social_media_app/constants/app_state_actions.dart';
-import 'package:social_media_app/constants/global_enums.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/custom/basic-widget/custom_pagination.dart';
-import 'package:social_media_app/custom/uploaded-content/custom_comment_widget.dart';
-import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-
-var dio = d.Dio();
+import 'package:social_media_app/global_files.dart';
 
 class SearchedCommentsWidget extends StatelessWidget {
   final String searchedText;
@@ -41,139 +22,21 @@ class _SearchedCommentsWidgetStateful extends StatefulWidget {
 }
 
 class _SearchedCommentsWidgetStatefulState extends State<_SearchedCommentsWidgetStateful> with AutomaticKeepAliveClientMixin{
-  late String searchedText;
-  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
-  ValueNotifier<List<DisplayCommentDataClass>> comments = ValueNotifier([]);
-  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
-  ValueNotifier<int> totalCommentsLength = ValueNotifier(postsServerFetchLimit);
-  ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
-  final ScrollController _scrollController = ScrollController();
+  late SearchedCommentsController controller;
 
   @override
   void initState(){
     super.initState();
-    searchedText = widget.searchedText;
-    runDelay(() async => fetchSearchedComments(comments.value.length, false, false), actionDelayTime);
-    _scrollController.addListener(() {
-      if(mounted){
-        if(_scrollController.position.pixels > animateToTopMinHeight){
-          if(!displayFloatingBtn.value){
-            displayFloatingBtn.value = true;
-          }
-        }else{
-          if(displayFloatingBtn.value){
-            displayFloatingBtn.value = false;
-          }
-        }
-      }
-    });
+    controller = SearchedCommentsController(
+      context, 
+      widget.searchedText
+    );
+    controller.initializeController();
   }
 
   @override void dispose(){
     super.dispose();
-    loadingState.dispose();
-    comments.dispose();
-    paginationStatus.dispose();
-    totalCommentsLength.dispose();
-    displayFloatingBtn.dispose();
-    _scrollController.dispose();
-  }
-
-  Future<void> fetchSearchedComments(int currentCommentsLength, bool isRefreshing, bool isPaginating) async{
-    try {
-      if(mounted){
-        String stringified = '';
-        d.Response res;
-        if(!isPaginating){
-          stringified = jsonEncode({
-            'searchedText': widget.searchedText,
-            'currentID': appStateClass.currentID,
-            'currentLength': currentCommentsLength,
-            'paginationLimit': postsPaginationLimit,
-            'maxFetchLimit': postsServerFetchLimit
-          });
-          res = await dio.get('$serverDomainAddress/users/fetchSearchedComments', data: stringified);
-        }else{
-          List paginatedSearchedComments = await DatabaseHelper().fetchPaginatedSearchedComments(currentCommentsLength, postsPaginationLimit);
-          stringified = jsonEncode({
-            'searchedText': widget.searchedText,
-            'searchedCommentsEncoded': jsonEncode(paginatedSearchedComments),
-            'currentID': appStateClass.currentID,
-            'currentLength': currentCommentsLength,
-            'paginationLimit': postsPaginationLimit,
-            'maxFetchLimit': postsServerFetchLimit
-          });
-          res = await dio.get('$serverDomainAddress/users/fetchSearchedCommentsPagination', data: stringified);
-        }
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data'){
-            if(!isPaginating){
-              List searchedComments = res.data['searchedComments'];
-              await DatabaseHelper().replaceAllSearchedComments(searchedComments);
-            }
-            List modifiedSearchedCommentsData = res.data['modifiedSearchedComments'];
-            List userProfileDataList = res.data['usersProfileData'];
-            List usersSocialsDatasList = res.data['usersSocialsData'];
-            if(isRefreshing && mounted){
-              comments.value = [];
-            }
-            if(!isPaginating && mounted){
-              totalCommentsLength.value = min(res.data['totalCommentsLength'], postsServerFetchLimit);
-            }
-            for(int i = 0; i < userProfileDataList.length; i++){
-              Map userProfileData = userProfileDataList[i];
-              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-              UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
-              if(mounted){
-                updateUserData(userDataClass);
-                updateUserSocials(userDataClass, userSocialClass);
-              }
-            }
-            for(int i = 0; i < modifiedSearchedCommentsData.length; i++){
-              Map commentData = modifiedSearchedCommentsData[i];
-              List<dynamic> mediasDatasFromServer = jsonDecode(commentData['medias_datas']);            
-              List<MediaDatasClass> newMediasDatas = [];
-              newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
-              CommentClass commentDataClass = CommentClass.fromMap(commentData, newMediasDatas);
-              if(mounted){ 
-                updateCommentData(commentDataClass);
-                if(comments.value.length < totalCommentsLength.value){
-                  comments.value = [...comments.value, DisplayCommentDataClass(commentData['sender'], commentData['comment_id'])];
-                }
-              }
-            }
-          }
-          if(mounted){
-            loadingState.value = LoadingState.loaded;
-          }
-        }
-      }
-    } on Exception catch (e) {
-      doSomethingWithException(e);
-    }
-  }
-
-  Future<void> loadMoreComments() async{
-    try {
-      if(mounted){
-        loadingState.value = LoadingState.paginating;
-        paginationStatus.value = PaginationStatus.loading;
-        Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
-          timer.cancel();
-          await fetchSearchedComments(comments.value.length, false, true);
-          if(mounted){
-            paginationStatus.value = PaginationStatus.loaded;
-          }
-        });
-      }
-    } on Exception catch (e) {
-      doSomethingWithException(e);
-    }
-  }
-
-  Future<void> refresh() async{
-    loadingState.value = LoadingState.refreshing;
-    await fetchSearchedComments(0, true, false);
+    controller.dispose();
   }
 
   @override
@@ -181,12 +44,12 @@ class _SearchedCommentsWidgetStatefulState extends State<_SearchedCommentsWidget
     super.build(context);
     return Scaffold(
       body: ValueListenableBuilder(
-        valueListenable: loadingState,
+        valueListenable: controller.loadingState,
         builder: ((context, loadingStateValue, child) {
           if(shouldCallSkeleton(loadingStateValue)){
             return shimmerSkeletonWidget(
               CustomScrollView(
-                controller: _scrollController,
+                controller: controller.scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: <Widget>[
                   SliverOverlapInjector(
@@ -209,89 +72,86 @@ class _SearchedCommentsWidgetStatefulState extends State<_SearchedCommentsWidget
               )
             );
           }
-          return ValueListenableBuilder(
-            valueListenable: paginationStatus,
-            builder: (context, loadingStatusValue, child){
-              return ValueListenableBuilder(
-                valueListenable: totalCommentsLength,
-                builder: (context, totalCommentsLengthValue, child){
-                  return ValueListenableBuilder(
-                    valueListenable: comments,
-                    builder: ((context, comments, child) {
-                      return LoadMoreBottom(
-                        addBottomSpace: comments.length < totalCommentsLengthValue,
-                        loadMore: () async{
-                          if(comments.length < totalCommentsLengthValue){
-                            await loadMoreComments();
-                          }
-                        },
-                        status: loadingStatusValue,
-                        refresh: refresh,
-                        child: CustomScrollView(
-                          controller: _scrollController,
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          slivers: <Widget>[
-                            SliverOverlapInjector(
-                              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
-                            ),
-                            SliverList(delegate: SliverChildBuilderDelegate(
-                              childCount: comments.length, 
-                              (context, index) {
-                                if(appStateClass.commentsNotifiers.value[comments[index].sender] == null){
-                                  return Container();
-                                }
-                                if(appStateClass.commentsNotifiers.value[comments[index].sender]![comments[index].commentID] == null){
-                                  return Container();
-                                }
-                                return ValueListenableBuilder<CommentClass>(
-                                  valueListenable: appStateClass.commentsNotifiers.value[comments[index].sender]![comments[index].commentID]!.notifier,
-                                  builder: ((context, commentData, child) {
-                                    return ValueListenableBuilder(
-                                      valueListenable: appStateClass.usersDataNotifiers.value[comments[index].sender]!.notifier, 
-                                      builder: ((context, userData, child) {
-                                        if(!commentData.deleted){
-                                          return ValueListenableBuilder(
-                                            valueListenable: appStateClass.usersSocialsNotifiers.value[comments[index].sender]!.notifier, 
-                                            builder: ((context, userSocials, child) {
-                                              return CustomCommentWidget(
-                                                commentData: commentData, 
-                                                senderData: userData,
-                                                senderSocials: userSocials,
-                                                pageDisplayType: CommentDisplayType.searchedComment,
-                                                key: UniqueKey(),
-                                                skeletonMode: false,
-                                              );
-                                            })
-                                          );
-                                        }
-                                        return Container();
-                                      })
-                                    );
-                                  }),
-                                );
-                                
-                              }
-                            ))                                    
-                          ]
-                        )
-                      );
-                    })
-                  );
-                }
+
+          return ListenableBuilder(
+            listenable: Listenable.merge([
+              controller.paginationStatus,
+              controller.totalCommentsLength,
+              controller.comments
+            ]),
+            builder: (context, child){
+              PaginationStatus loadingStatusValue = controller.paginationStatus.value;
+              int totalCommentsLengthValue = controller.totalCommentsLength.value;
+              List<DisplayCommentDataClass> commentsList = controller.comments.value;
+              return LoadMoreBottom(
+                addBottomSpace: commentsList.length < totalCommentsLengthValue,
+                loadMore: () async{
+                  if(commentsList.length < totalCommentsLengthValue){
+                    await controller.loadMoreComments();
+                  }
+                },
+                status: loadingStatusValue,
+                refresh: controller.refresh,
+                child: CustomScrollView(
+                  controller: controller.scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: <Widget>[
+                    SliverOverlapInjector(
+                      handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
+                    ),
+                    SliverList(delegate: SliverChildBuilderDelegate(
+                      childCount: commentsList.length, 
+                      (context, index) {
+                        if(appStateClass.commentsNotifiers.value[commentsList[index].sender] == null){
+                          return Container();
+                        }
+                        if(appStateClass.commentsNotifiers.value[commentsList[index].sender]![commentsList[index].commentID] == null){
+                          return Container();
+                        }
+                        return ListenableBuilder(
+                          listenable: Listenable.merge([
+                            appStateClass.commentsNotifiers.value[commentsList[index].sender]![commentsList[index].commentID]!.notifier,
+                            appStateClass.usersDataNotifiers.value[commentsList[index].sender]!.notifier, 
+                          ]),
+                          builder: (context, child){
+                            CommentClass commentData = appStateClass.commentsNotifiers.value[commentsList[index].sender]![commentsList[index].commentID]!.notifier.value;
+                            UserDataClass userData = appStateClass.usersDataNotifiers.value[commentsList[index].sender]!.notifier.value;
+                            if(!commentData.deleted){
+                              return ValueListenableBuilder(
+                                valueListenable: appStateClass.usersSocialsNotifiers.value[commentsList[index].sender]!.notifier, 
+                                builder: ((context, userSocials, child) {
+                                  return CustomCommentWidget(
+                                    commentData: commentData, 
+                                    senderData: userData,
+                                    senderSocials: userSocials,
+                                    pageDisplayType: CommentDisplayType.searchedComment,
+                                    key: UniqueKey(),
+                                    skeletonMode: false,
+                                  );
+                                })
+                              );
+                            }
+                            return Container();
+                          },
+                        );
+                      }
+                    ))                                    
+                  ]
+                )
               );
             }
-          ); 
+          );
         })
       ),
       floatingActionButton: ValueListenableBuilder<bool>(
-        valueListenable: displayFloatingBtn,
+        valueListenable: controller.displayFloatingBtn,
         builder: (BuildContext context, bool visible, Widget? child) {
           return Visibility(
             visible: visible,
             child: FloatingActionButton( 
               heroTag: UniqueKey(),
               onPressed: () {  
-                _scrollController.animateTo(
+                controller.scrollController.animateTo(
                   0,
                   duration: const Duration(milliseconds: 10),
                   curve:Curves.fastOutSlowIn

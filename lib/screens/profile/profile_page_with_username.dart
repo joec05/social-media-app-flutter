@@ -1,19 +1,5 @@
-import 'dart:async';
-import 'dart:convert';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/class/user/user_data_class.dart';
-import 'package:social_media_app/class/user/user_social_class.dart';
-import 'package:social_media_app/constants/app_state_actions.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/constants/server_actions.dart';
-import 'package:social_media_app/custom/profile/custom_profile_header.dart';
-import 'package:social_media_app/mixin/lifecycle_listener.dart';
-import 'package:social_media_app/screens/profile/profile_posts_page.dart';
-import 'package:social_media_app/screens/profile/profile_replies_page.dart';
-import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/app_styles.dart';
+import 'package:social_media_app/global_files.dart';
 
 class ProfilePageWithUsernameWidget extends StatelessWidget {
   final String username;
@@ -33,90 +19,29 @@ class _ProfilePageWithUsernameWidgetStateful extends StatefulWidget {
   State<_ProfilePageWithUsernameWidgetStateful> createState() => _ProfilePageWithUsernameWidgetStatefulState();
 }
 
-var dio = Dio();
-
 class _ProfilePageWithUsernameWidgetStatefulState extends State<_ProfilePageWithUsernameWidgetStateful> with SingleTickerProviderStateMixin, LifecycleListenerMixin{
-  late TabController _tabController;
-  ValueNotifier<String> userID = ValueNotifier('');
-  late String username;
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
-  ValueNotifier<UniqueKey?> profilePostsWidgetUniqueKey = ValueNotifier(null);
-  ValueNotifier<UniqueKey?> profileRepliesWidgetUniqueKey = ValueNotifier(null);
-  ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
-  final ScrollController _scrollController = ScrollController();
+  late ProfileWithUsernameController controller;
 
   @override
   void initState(){
     super.initState();
-    username = widget.username;
-    runDelay(() async => fetchProfileDataWithUsername(), actionDelayTime);
-    _tabController = TabController(length: 2, vsync: this);
-    _scrollController.addListener(() {
-      if(mounted){
-        if(_scrollController.position.pixels > animateToTopMinHeight){
-          if(!displayFloatingBtn.value){
-            displayFloatingBtn.value = true;
-          }
-        }else{
-          if(displayFloatingBtn.value){
-            displayFloatingBtn.value = false;
-          }
-        }
-      }
-    });
+    controller = ProfileWithUsernameController(
+      context, 
+      widget.username,
+      TabController(length: 2, vsync: this)
+    );
+    controller.initializeController();
   }
 
   @override void dispose(){
     super.dispose();
-    _tabController.dispose();
-    isLoading.dispose();
-    userID.dispose();
-    profilePostsWidgetUniqueKey.dispose();
-    profileRepliesWidgetUniqueKey.dispose();
-    displayFloatingBtn.dispose();
-    _scrollController.dispose();
-  }
-
-  Future<void> fetchProfileDataWithUsername() async{
-    try {
-      if(mounted){
-        isLoading.value = true;
-        profilePostsWidgetUniqueKey.value = UniqueKey();
-        profileRepliesWidgetUniqueKey.value = UniqueKey();
-        String stringified = jsonEncode({
-          'username': username,
-          'currentID': appStateClass.currentID,
-        });
-        var res = await dio.get('$serverDomainAddress/users/fetchUserProfileSocialsWithUsername', data: stringified);
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data'){
-            Map userProfileData = res.data['userProfileData'];
-            if(userProfileData['code'] == 0){
-            }else{
-              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-              Map userSocialsData = res.data['userSocialsData'];
-              UserSocialClass userSocialClass = UserSocialClass.fromMap(userSocialsData);
-              if(mounted){
-                updateUserData(userDataClass);
-                updateUserSocials(userDataClass, userSocialClass);
-                userID.value = userProfileData['user_id'];
-              }
-            }
-          }
-          if(mounted){
-            isLoading.value = false;
-          }
-        }
-      }
-    } on Exception catch (e) {
-      doSomethingWithException(e);
-    }
+    controller.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: userID,
+      valueListenable: controller.userID,
       builder: (context, userID, child) {
         if(userID.isNotEmpty){
           return Scaffold(
@@ -193,16 +118,16 @@ class _ProfilePageWithUsernameWidgetStatefulState extends State<_ProfilePageWith
                     return true;
                   },
                   onRefresh: () async{
-                    fetchProfileDataWithUsername();
+                    controller.fetchProfileDataWithUsername();
                   },
                   child: NestedScrollView(
-                    controller: _scrollController,
+                    controller: controller.scrollController,
                     headerSliverBuilder: (context, bool f) {
                       return <Widget>[
                         SliverToBoxAdapter(
                           child: Center(
                             child: ValueListenableBuilder(
-                              valueListenable: isLoading,
+                              valueListenable: controller.isLoading,
                               builder: (context, isLoadingValue, child) {
                                 if(!isLoadingValue){
                                   if(userID.isNotEmpty){
@@ -249,7 +174,7 @@ class _ProfilePageWithUsernameWidgetStatefulState extends State<_ProfilePageWith
                               onTap: (selectedIndex) {
                               },
                               isScrollable: false,
-                              controller: _tabController,
+                              controller: controller.tabController,
                               labelColor: Colors.white,
                               indicatorColor: Colors.orange,
                               indicatorSize: TabBarIndicatorSize.tab,
@@ -265,22 +190,30 @@ class _ProfilePageWithUsernameWidgetStatefulState extends State<_ProfilePageWith
                       ];
                     },
                     body: TabBarView(
-                      controller: _tabController,
+                      controller: controller.tabController,
                       children: [
                         ValueListenableBuilder(
-                          valueListenable: profilePostsWidgetUniqueKey, 
+                          valueListenable: controller.profilePostsWidgetUniqueKey, 
                           builder: (context, uniqueKey, child){
                             if(uniqueKey != null){
-                              return ProfilePagePostsWidget(userID: userID, key: uniqueKey, absorberContext: context);
+                              return ProfilePagePostsWidget(
+                                userID: userID, 
+                                key: uniqueKey, 
+                                absorberContext: context
+                              );
                             }
                             return Container();
                           }
                         ),
                         ValueListenableBuilder(
-                          valueListenable: profileRepliesWidgetUniqueKey, 
+                          valueListenable: controller.profileRepliesWidgetUniqueKey, 
                           builder: (context, uniqueKey, child){
                             if(uniqueKey != null){
-                              return ProfilePageRepliesWidget(userID: userID, key: uniqueKey, absorberContext: context);
+                              return ProfilePageRepliesWidget(
+                                userID: userID, 
+                                key: uniqueKey, 
+                                absorberContext: context
+                              );
                             }
                             return Container();
                           }
@@ -292,17 +225,17 @@ class _ProfilePageWithUsernameWidgetStatefulState extends State<_ProfilePageWith
               ]
             ),
             floatingActionButton: ValueListenableBuilder<bool>(
-              valueListenable: displayFloatingBtn,
+              valueListenable: controller.displayFloatingBtn,
               builder: (BuildContext context, bool visible, Widget? child) {
                 return Visibility(
                   visible: visible,
                   child: FloatingActionButton( 
                     heroTag: UniqueKey(),
                     onPressed: () {  
-                      _scrollController.animateTo(
+                      controller.scrollController.animateTo(
                         0,
                         duration: const Duration(milliseconds: 10),
-                        curve:Curves.fastOutSlowIn
+                        curve: Curves.fastOutSlowIn
                       );
                     },
                     child: const Icon(Icons.arrow_upward),

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/constants/global_enums.dart';
+import 'package:social_media_app/global_files.dart';
 
 class LoadMoreBottom extends StatefulWidget {
   final VoidCallback loadMore;

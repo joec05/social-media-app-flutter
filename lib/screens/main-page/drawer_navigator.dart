@@ -1,19 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:social_media_app/class/user/user_data_class.dart';
-import 'package:social_media_app/constants/app_state_actions.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/constants/server_actions.dart';
-import 'package:social_media_app/extenstions/string_ellipsis.dart';
-import 'package:social_media_app/mixin/lifecycle_listener.dart';
-import 'package:social_media_app/screens/follow-requests/follow_requests.dart';
-import 'package:social_media_app/screens/profile/profile_bookmarks_page.dart';
-import 'package:social_media_app/screens/profile/profile_page.dart';
-import 'package:social_media_app/screens/upload/post/write_post.dart';
-import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-import 'package:social_media_app/transition/navigation.dart';
+import 'package:social_media_app/global_files.dart';
 
 class DrawerNavigator extends StatelessWidget {
   final BuildContext parentContext;

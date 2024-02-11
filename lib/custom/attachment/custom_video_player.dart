@@ -2,21 +2,9 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:social_media_app/global_files.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:math';
-
-enum AudioState{
-  mute, unmute
-}
-
-enum VideoSourceType{
-  file, network, asset
-}
-
-enum DurationEndDisplay{
-  remainingDuration, 
-  totalDuration
-}
 
 class CustomVideoPlayer extends StatefulWidget {
   final VideoPlayerController playerController;
@@ -655,12 +643,4 @@ class CustomVideoPlayerState extends State<CustomVideoPlayer> {
       videoPlayerComponent(playerController.value, context)
     : const Center(child: CircularProgressIndicator());
   }
-}
-
-double getScreenHeight(){
-  return PlatformDispatcher.instance.views.first.physicalSize.height / PlatformDispatcher.instance.views.first.devicePixelRatio;
-}
-
-double getScreenWidth(){
-  return PlatformDispatcher.instance.views.first.physicalSize.width / PlatformDispatcher.instance.views.first.devicePixelRatio;
 }

@@ -1,11 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/class/attachment/website_card_class.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/custom/web/custom_web_page_viewer.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-import 'package:social_media_app/transition/navigation.dart';
+import 'package:social_media_app/global_files.dart';
 
 class CustomWebsiteCardComponent extends StatefulWidget {
   final WebsiteCardClass websiteCardData;

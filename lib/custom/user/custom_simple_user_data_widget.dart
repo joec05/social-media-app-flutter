@@ -1,12 +1,6 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:social_media_app/class/user/user_data_class.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/extenstions/string_ellipsis.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-
-var dio = Dio();
+import 'package:social_media_app/global_files.dart';
 
 class CustomSimpleUserDataWidget extends StatefulWidget{
   final UserDataClass userData;

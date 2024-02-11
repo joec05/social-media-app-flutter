@@ -1,9 +1,0 @@
-import 'package:flutter/material.dart';
-import 'package:social_media_app/class/user/user_data_class.dart';
-
-class UserDataNotifier{
-  final String userID;
-  final ValueNotifier<UserDataClass> notifier;
-
-  UserDataNotifier(this.userID, this.notifier);
-}

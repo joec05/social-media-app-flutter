@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:social_media_app/constants/global_library.dart';
-import 'package:social_media_app/styles/app_styles.dart';
+import 'package:social_media_app/global_files.dart';
 
 class CustomButton extends StatefulWidget {
   final double width;

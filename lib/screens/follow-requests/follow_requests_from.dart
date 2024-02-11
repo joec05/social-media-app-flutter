@@ -1,20 +1,5 @@
-import 'dart:async';
-import 'dart:convert';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/class/user/user_data_class.dart';
-import 'package:social_media_app/class/user/user_social_class.dart';
-import 'package:social_media_app/constants/app_state_actions.dart';
-import 'package:social_media_app/constants/global_enums.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/custom/basic-widget/custom_pagination.dart';
-import 'package:social_media_app/custom/follow-request/custom_follow_request_widget.dart';
-import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/streams/requests_from_data_stream_class.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-
-var dio = Dio();
+import 'package:social_media_app/global_files.dart';
 
 class FollowRequestsFromWidget extends StatelessWidget {
   final BuildContext absorberContext;
@@ -34,119 +19,20 @@ class _FollowRequestsFromWidgetStateful extends StatefulWidget {
   State<_FollowRequestsFromWidgetStateful> createState() => _FollowRequestsFromWidgetStatefulState();
 }
 
-
-
 class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWidgetStateful> with AutomaticKeepAliveClientMixin{
-  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
-  ValueNotifier<List<String>> users = ValueNotifier([]);
-  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
-  ValueNotifier<bool> canPaginate = ValueNotifier(false);
-  late StreamSubscription requestsFromDataStreamClassSubscription;
-  ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
-  final ScrollController _scrollController = ScrollController();
+  late FollowRequestFromController controller;
 
   @override
   void initState(){
     super.initState();
-    runDelay(() async => fetchFollowRequestsFrom(users.value.length, false, false), actionDelayTime);
-    requestsFromDataStreamClassSubscription = RequestsFromDataStreamClass().requestsFromDataStream.listen((RequestsFromDataStreamControllerClass data) {
-      if(mounted){
-        if(data.uniqueID == 'send_follow_request_${appStateClass.currentID}'){
-          if(!users.value.contains(data.userID)){
-            users.value = [data.userID, ...users.value];
-          }
-        }
-      }
-    });
-    _scrollController.addListener(() {
-      if(mounted){
-        if(_scrollController.position.pixels > animateToTopMinHeight){
-          if(!displayFloatingBtn.value){
-            displayFloatingBtn.value = true;
-          }
-        }else{
-          if(displayFloatingBtn.value){
-            displayFloatingBtn.value = false;
-          }
-        }
-      }
-    });
+    controller = FollowRequestFromController(context);
+    controller.initializeController();
   }
 
   @override
   void dispose(){
-    requestsFromDataStreamClassSubscription.cancel();
     super.dispose();
-    loadingState.dispose();
-    users.dispose();
-    paginationStatus.dispose();
-    canPaginate.dispose();
-    displayFloatingBtn.dispose();
-    _scrollController.dispose();
-  }
-
-  Future<void> fetchFollowRequestsFrom(int currentPostsLength, bool isRefreshing, bool isPaginating) async{
-    try {
-      if(mounted){
-        String stringified = jsonEncode({
-          'currentID': appStateClass.currentID,
-          'currentLength': currentPostsLength,
-          'paginationLimit': followRequestsPaginationLimit,
-          'maxFetchLimit': usersServerFetchLimit
-        }); 
-        var res = await dio.get('$serverDomainAddress/users/fetchFollowRequestsFromUser', data: stringified);
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data'){
-            List usersProfileDataList = res.data['usersProfileData'];
-            List usersSocialsDataList = res.data['usersSocialsData'];
-            if(isRefreshing && mounted){
-              users.value = [];
-            }
-            for(int i = 0; i < usersProfileDataList.length; i++){
-              Map userProfileData = usersProfileDataList[i];
-              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-              UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDataList[i]);
-              if(mounted){
-                updateUserData(userDataClass);
-                updateUserSocials(userDataClass, userSocialClass);
-                users.value = [...users.value, userProfileData['user_id']];
-              }
-            }
-            if(mounted){
-              canPaginate.value = res.data['canPaginate'];
-            }
-          }
-          if(mounted){
-            loadingState.value = LoadingState.loaded;
-          }
-        }
-      }
-    } on Exception catch (e) {
-      doSomethingWithException(e);
-    }
-  }
-
-  Future<void> loadMoreUsers() async{
-    try {
-      if(mounted){
-        loadingState.value = LoadingState.paginating;
-        paginationStatus.value = PaginationStatus.loading;
-        Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
-          timer.cancel();
-          await fetchFollowRequestsFrom(users.value.length, false, true);
-          if(mounted){
-            paginationStatus.value = PaginationStatus.loaded;
-          }
-        });
-      }
-    } on Exception catch (e) {
-      doSomethingWithException(e);
-    }
-  }
-
-  Future<void> refresh() async{
-    loadingState.value = LoadingState.refreshing;
-    fetchFollowRequestsFrom(0, true, false);
+    controller.dispose();
   }
 
   @override
@@ -154,12 +40,12 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
     super.build(context);
     return Scaffold(
       body: ValueListenableBuilder(
-        valueListenable: loadingState,
+        valueListenable: controller.loadingState,
         builder: ((context, loadingStateValue, child) {
           if(shouldCallSkeleton(loadingStateValue)){
             return shimmerSkeletonWidget(
               CustomScrollView(
-                controller: _scrollController,
+                controller: controller.scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: <Widget>[
                   SliverOverlapInjector(
@@ -181,74 +67,71 @@ class _FollowRequestsFromWidgetStatefulState extends State<_FollowRequestsFromWi
               )
             ); 
           }
-          return ValueListenableBuilder(
-            valueListenable: paginationStatus,
-            builder: (context, loadingStatusValue, child){
-              return ValueListenableBuilder(
-                valueListenable: canPaginate,
-                builder: (context, canPaginateValue, child){
-                  return ValueListenableBuilder(
-                    valueListenable: users, 
-                    builder: ((context, users, child) {
-                      return LoadMoreBottom(
-                        addBottomSpace: canPaginateValue,
-                        loadMore: () async{
-                          if(canPaginateValue){
-                            await loadMoreUsers();
-                          }
-                        },
-                        status: loadingStatusValue,
-                        refresh: refresh,
-                        child: CustomScrollView(
-                          controller: _scrollController,
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          slivers: <Widget>[
-                            SliverOverlapInjector(
-                              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
-                            ),
-                            SliverList(delegate: SliverChildBuilderDelegate(
-                              childCount: users.length, 
-                              (context, index) {
-                                if(appStateClass.usersDataNotifiers.value[users[index]] != null){
-                                  return ValueListenableBuilder(
-                                    valueListenable: appStateClass.usersDataNotifiers.value[users[index]]!.notifier, 
-                                    builder: ((context, UserDataClass userData, child) {
-                                      return ValueListenableBuilder(
-                                        valueListenable: appStateClass.usersSocialsNotifiers.value[users[index]]!.notifier, 
-                                        builder: ((context, UserSocialClass userSocial, child) {
-                                          return CustomFollowRequestWidget(
-                                            userData: userData, userSocials: userSocial,
-                                            key: UniqueKey(), followRequestType: FollowRequestType.from,
-                                            skeletonMode: false,
-                                          );
-                                        })
-                                      );
-                                    })
-                                  );
-                                }
-                                return Container();
-                              }
-                            ))
-                          ]
-                        )
-                      );
-                    })
-                  );
-                }
+          return ListenableBuilder(
+            listenable: Listenable.merge([
+              controller.paginationStatus,
+              controller.canPaginate,
+              controller.users
+            ]),
+            builder: (context, child){
+              PaginationStatus loadingStatusValue = controller.paginationStatus.value;
+              bool canPaginateValue = controller.canPaginate.value;
+              List<String> usersList = controller.users.value;
+              return LoadMoreBottom(
+                addBottomSpace: canPaginateValue,
+                loadMore: () async{
+                  if(canPaginateValue){
+                    await controller.loadMoreUsers();
+                  }
+                },
+                status: loadingStatusValue,
+                refresh: controller.refresh,
+                child: CustomScrollView(
+                  controller: controller.scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: <Widget>[
+                    SliverOverlapInjector(
+                      handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
+                    ),
+                    SliverList(delegate: SliverChildBuilderDelegate(
+                      childCount: usersList.length, 
+                      (context, index) {
+                        if(appStateClass.usersDataNotifiers.value[usersList[index]] != null){
+                          return ListenableBuilder(
+                            listenable: Listenable.merge([
+                              appStateClass.usersDataNotifiers.value[usersList[index]]!.notifier,
+                              appStateClass.usersSocialsNotifiers.value[usersList[index]]!.notifier
+                            ]),
+                            builder: (context, child){
+                              UserDataClass userData = appStateClass.usersDataNotifiers.value[usersList[index]]!.notifier.value;
+                              UserSocialClass userSocial = appStateClass.usersSocialsNotifiers.value[usersList[index]]!.notifier.value;
+                              return CustomFollowRequestWidget(
+                                userData: userData, userSocials: userSocial,
+                                key: UniqueKey(), followRequestType: FollowRequestType.from,
+                                skeletonMode: false,
+                              );
+                            }
+                          );
+                        }
+                        return Container();
+                      }
+                    ))
+                  ]
+                )
               );
             }
           );
         })
       ),
       floatingActionButton: ValueListenableBuilder<bool>(
-        valueListenable: displayFloatingBtn,
+        valueListenable: controller.displayFloatingBtn,
         builder: (BuildContext context, bool visible, Widget? child) {
           return Visibility(
             visible: visible,
             child: FloatingActionButton( 
               heroTag: UniqueKey(),
               onPressed: () {  
-                _scrollController.animateTo(
+                controller.scrollController.animateTo(
                   0,
                   duration: const Duration(milliseconds: 10),
                   curve:Curves.fastOutSlowIn

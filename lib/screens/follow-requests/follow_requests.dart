@@ -1,9 +1,5 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/mixin/lifecycle_listener.dart';
-import 'package:social_media_app/screens/follow-requests/follow_requests_from.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-import 'follow_requests_to.dart';
+import 'package:social_media_app/global_files.dart';
 
 class FollowRequestsWidget extends StatelessWidget {
   const FollowRequestsWidget({super.key});
@@ -20,8 +16,6 @@ class _FollowRequestsWidgetStateful extends StatefulWidget {
   @override
   State<_FollowRequestsWidgetStateful> createState() => _FollowRequestsWidgetStatefulState();
 }
-
-var dio = Dio();
 
 class _FollowRequestsWidgetStatefulState extends State<_FollowRequestsWidgetStateful> with SingleTickerProviderStateMixin, LifecycleListenerMixin{
   late TabController _tabController;

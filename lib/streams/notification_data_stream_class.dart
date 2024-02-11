@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:social_media_app/class/notification/notification_class.dart';
+import 'package:social_media_app/models/notification/notification_class.dart';
 
 class NotificationDataStreamControllerClass{
   final NotificationClass notificationClass;

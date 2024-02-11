@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:social_media_app/class/display/display_post_data_class.dart';
+import 'package:social_media_app/models/display/display_post_data_class.dart';
 
 class PostDataStreamControllerClass{
   final DisplayPostDataClass postClass;

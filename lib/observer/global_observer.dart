@@ -1,9 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/class/local-storage/shared_preferences.dart';
-import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/streams/auto_navigate_lifecycle_stream_class.dart';
-import '../socket/main.dart';
+import 'package:social_media_app/global_files.dart';
 
 class GlobalObserver extends WidgetsBindingObserver{
   @override

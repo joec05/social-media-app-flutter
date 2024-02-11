@@ -1,18 +1,5 @@
-import 'dart:async';
-import 'dart:convert';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/class/user/user_data_class.dart';
-import 'package:social_media_app/constants/app_state_actions.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/custom/basic-widget/custom_button.dart';
-import 'package:social_media_app/custom/user/custom_simple_user_data_widget.dart';
-import 'package:social_media_app/mixin/lifecycle_listener.dart';
-import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-
-var dio = Dio();
+import 'package:social_media_app/global_files.dart';
 
 class SearchTagUsersWidget extends StatelessWidget {
   final Function onUserIsSelected;
@@ -33,86 +20,18 @@ class _SearchTagUsersWidgetStateful extends StatefulWidget {
 }
 
 class __SearchTagUsersWidgetStatefulState extends State<_SearchTagUsersWidgetStateful> with LifecycleListenerMixin{
-  TextEditingController searchedController = TextEditingController();
-  ValueNotifier<bool> isSearching = ValueNotifier(false);
-  ValueNotifier<List<String>> users = ValueNotifier([]);
-  ValueNotifier<List<String>> selectedUsersID = ValueNotifier([]);
-  ValueNotifier<List<String>> selectedUsersUsername = ValueNotifier([]);
-  ValueNotifier<bool> verifySearchedFormat = ValueNotifier(false);
+  late SearchTagUsersController controller;
 
   @override
   void initState(){
     super.initState();
-    searchedController.addListener(() {
-      if(mounted){
-        verifySearchedFormat.value = searchedController.text.isNotEmpty;
-      }
-    });
+    controller = SearchTagUsersController(context);
+    controller.initializeController();
   }
 
   @override void dispose(){
     super.dispose();
-    searchedController.dispose();
-    isSearching.dispose();
-    users.dispose();
-    selectedUsersID.dispose();
-    selectedUsersUsername.dispose();
-    verifySearchedFormat.dispose();
-  }
-
-  Future<void> searchUsers(bool isPaginating) async{
-    try {
-      if(mounted){
-        isSearching.value = true;
-        String stringified = jsonEncode({
-          'searchedText': searchedController.text,
-          'currentID': appStateClass.currentID,
-          'currentLength': isPaginating ? users.value.length : 0,
-          'paginationLimit': searchTagUsersFetchLimit
-        });
-        var res = await dio.get('$serverDomainAddress/users/fetchSearchedTagUsers', data: stringified);
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data'){
-            List userProfileDataList = res.data['usersProfileData'];
-            if(mounted){
-              users.value = [];
-            }
-            for(int i = 0; i < userProfileDataList.length; i++){
-              Map userProfileData = userProfileDataList[i];
-              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-              if(mounted){
-                updateUserData(userDataClass);
-                users.value = [...users.value, userProfileData['user_id']];
-              }
-            }
-          }
-          if(mounted){
-            isSearching.value = false;
-          }
-        }
-      }
-    } on Exception catch (e) {
-      doSomethingWithException(e);
-    }
-  }
-
-  void toggleSelectUser(userID, username){
-    List<String> selectedUsersIDList = [...selectedUsersID.value];
-    if(selectedUsersIDList.contains(userID)){
-      selectedUsersIDList.remove(userID);
-      selectedUsersUsername.value.remove(username);
-    }else{
-      selectedUsersIDList.add(userID);
-      selectedUsersUsername.value.add(username);
-    }
-    if(mounted){
-      selectedUsersID.value = [...selectedUsersIDList];
-    }
-  }
-
-  void continueTag(){
-    Navigator.pop(context);
-    widget.onUserIsSelected(selectedUsersUsername.value, selectedUsersID.value);
+    controller.dispose();
   }
 
   @override
@@ -141,73 +60,80 @@ class __SearchTagUsersWidgetStatefulState extends State<_SearchTagUsersWidgetSta
                 )
               ),
               SizedBox(height: getScreenHeight() * 0.015),
-              ValueListenableBuilder<bool>(
-                valueListenable: isSearching,
-                builder: (context, bool isSearchingValue, child){
-                  return ValueListenableBuilder<bool>(
-                    valueListenable: verifySearchedFormat,
-                    builder: (context, bool searchedVerified, child){
-                      return SizedBox(
-                        width: getScreenWidth(),
-                        height: getScreenHeight() * 0.075,
-                        child: TextField(
-                          controller: searchedController,
-                          decoration: generateSearchTextFieldDecoration('user', Icons.search, !isSearchingValue && searchedVerified ? () => searchUsers(false) : null),
-                        )
-                      );
-                    }
+              ListenableBuilder(
+                listenable: Listenable.merge([
+                  controller.isSearching,
+                  controller.verifySearchedFormat
+                ]),
+                builder: (context, child){
+                  bool isSearchingValue = controller.isSearching.value;
+                  bool searchedVerified = controller.verifySearchedFormat.value;
+                  return SizedBox(
+                    width: getScreenWidth(),
+                    height: getScreenHeight() * 0.075,
+                    child: TextField(
+                      controller: controller.searchedController,
+                      decoration: generateSearchTextFieldDecoration('user', Icons.search, !isSearchingValue && searchedVerified ?
+                        () => controller.searchUsers(false) : null),
+                    )
                   );
-                }
-              ),
+                },
+              )
             ]
           ),
           Flexible(
             child: SingleChildScrollView(
-              child: ValueListenableBuilder(
-                valueListenable: users, 
-                builder: (context, users, child){
-                  return ValueListenableBuilder(
-                    valueListenable: selectedUsersID, 
-                    builder: (context2, selectedUsersID, child2){
-                      return Column(
-                        children: [
-                          for(int i = 0; i < users.length; i++)
-                          InkWell(
-                            splashFactory: InkRipple.splashFactory,
-                            onTap: (){
-                            },
-                            child: GestureDetector(
-                              onTap: (){
-                                toggleSelectUser(users[i], appStateClass.usersDataNotifiers.value[users[i]]!.notifier.value.username);
-                              },
-                              child: Container(
-                                color: selectedUsersID.contains(users[i]) ? Colors.grey.withOpacity(0.5) : Colors.transparent,
-                                child: CustomSimpleUserDataWidget(
-                                  userData: appStateClass.usersDataNotifiers.value[users[i]]!.notifier.value,
-                                  key: UniqueKey()
-                                )
-                              )
+              child: ListenableBuilder(
+                listenable: Listenable.merge([
+                  controller.users,
+                  controller.selectedUsersID
+                ]),
+                builder: (context, child){
+                  List<String> usersList = controller.users.value;
+                  List<String> selectedUsersID = controller.selectedUsersID.value;
+                  return Column(
+                    children: [
+                      for(int i = 0; i < usersList.length; i++)
+                      InkWell(
+                        splashFactory: InkRipple.splashFactory,
+                        onTap: (){
+                        },
+                        child: GestureDetector(
+                          onTap: () => controller.toggleSelectUser(
+                            usersList[i], 
+                            appStateClass.usersDataNotifiers.value[usersList[i]]!.notifier.value.username
+                          ),
+                          child: Container(
+                            color: selectedUsersID.contains(usersList[i]) ? Colors.grey.withOpacity(0.5) : Colors.transparent,
+                            child: CustomSimpleUserDataWidget(
+                              userData: appStateClass.usersDataNotifiers.value[usersList[i]]!.notifier.value,
+                              key: UniqueKey()
                             )
                           )
-                        ],
-                      );
-                    }
+                        )
+                      )
+                    ],
                   );
-                }
-              ),
+                },
+              )
             ),
           ),
           Column(
             children: [
               ValueListenableBuilder(
-                valueListenable: selectedUsersID,
+                valueListenable: controller.selectedUsersID,
                 builder: (context, selectedUsersID, child){
                   return Padding(
                     padding: EdgeInsets.symmetric(vertical: getScreenHeight() * 0.025, horizontal: getScreenWidth() * 0.025),
                     child: CustomButton(
                       width: double.infinity, height: getScreenHeight() * 0.08,
                       buttonColor: Colors.red, buttonText: 'Continue',
-                      onTapped: selectedUsersID.isNotEmpty ? () => continueTag() : null,
+                      onTapped: selectedUsersID.isNotEmpty ? () => controller.continueTag(
+                        widget.onUserIsSelected(
+                          controller.selectedUsersUsername.value, 
+                          controller.selectedUsersID.value
+                        )
+                      ) : null,
                       setBorderRadius: true
                     ),
                   );

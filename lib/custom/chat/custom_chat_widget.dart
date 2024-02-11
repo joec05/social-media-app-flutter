@@ -1,19 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:social_media_app/class/chat/chat_data_class.dart';
-import 'package:social_media_app/class/user/user_data_class.dart';
-import 'package:social_media_app/class/user/user_social_class.dart';
-import 'package:social_media_app/constants/global_enums.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/constants/navigation_actions.dart';
-import 'package:social_media_app/extenstions/string_ellipsis.dart';
-import 'package:social_media_app/screens/chat/group-chat/group_chat_room.dart';
-import 'package:social_media_app/screens/chat/group-chat/group_profile_page.dart';
-import 'package:social_media_app/screens/chat/private-chat/private_chat_room.dart';
-import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-import 'package:social_media_app/transition/navigation.dart';
+import 'package:social_media_app/global_files.dart';
 
 class CustomChatWidget extends StatefulWidget {
   final ChatDataClass chatData;
@@ -62,7 +49,7 @@ class CustomChatWidgetState extends State<CustomChatWidget> {
         }
       },  navigatorDelayTime);
     } on Exception catch (e) {
-      doSomethingWithException(e);
+      
     }
   }
 
@@ -80,7 +67,7 @@ class CustomChatWidgetState extends State<CustomChatWidget> {
         }
       }, navigatorDelayTime);
     } on Exception catch (e) {
-      doSomethingWithException(e);
+      
     }
   }
 

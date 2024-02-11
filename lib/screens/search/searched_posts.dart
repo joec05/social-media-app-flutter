@@ -1,24 +1,5 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
-import 'package:dio/dio.dart' as d;
 import 'package:flutter/material.dart';
-import 'package:social_media_app/caching/sqlite_configuration.dart';
-import 'package:social_media_app/class/attachment/media_data_class.dart';
-import 'package:social_media_app/class/display/display_post_data_class.dart';
-import 'package:social_media_app/class/post/post_class.dart';
-import 'package:social_media_app/class/user/user_data_class.dart';
-import 'package:social_media_app/class/user/user_social_class.dart';
-import 'package:social_media_app/constants/app_state_actions.dart';
-import 'package:social_media_app/constants/global_enums.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/custom/basic-widget/custom_pagination.dart';
-import 'package:social_media_app/custom/uploaded-content/custom_post_widget.dart';
-import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-
-var dio = d.Dio();
+import 'package:social_media_app/global_files.dart';
 
 class SearchedPostsWidget extends StatelessWidget {
   final String searchedText;
@@ -41,139 +22,21 @@ class _SearchedPostsWidgetStateful extends StatefulWidget {
 }
 
 class _SearchedPostsWidgetStatefulState extends State<_SearchedPostsWidgetStateful> with AutomaticKeepAliveClientMixin{
-  late String searchedText;
-  ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
-  ValueNotifier<List<DisplayPostDataClass>> posts = ValueNotifier([]);
-  ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
-  ValueNotifier<int> totalPostsLength = ValueNotifier(postsServerFetchLimit);
-  ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
-  final ScrollController _scrollController = ScrollController();
+  late SearchedPostsController controller;
 
   @override
   void initState(){
     super.initState();
-    searchedText = widget.searchedText;
-    runDelay(() async => fetchSearchedPosts(posts.value.length, false, false), actionDelayTime);
-    _scrollController.addListener(() {
-      if(mounted){
-        if(_scrollController.position.pixels > animateToTopMinHeight){
-          if(!displayFloatingBtn.value){
-            displayFloatingBtn.value = true;
-          }
-        }else{
-          if(displayFloatingBtn.value){
-            displayFloatingBtn.value = false;
-          }
-        }
-      }
-    });
+    controller = SearchedPostsController(
+      context,
+      widget.searchedText
+    );
+    controller.initializeController();
   }
 
   @override void dispose(){
     super.dispose();
-    loadingState.dispose();
-    posts.dispose();
-    paginationStatus.dispose();
-    totalPostsLength.dispose();
-    displayFloatingBtn.dispose();
-    _scrollController.dispose();
-  }
-
-  Future<void> fetchSearchedPosts(int currentPostsLength, bool isRefreshing, bool isPaginating) async{
-    try {
-      if(mounted){
-        String stringified = '';
-        d.Response res;
-        if(!isPaginating){
-          stringified = jsonEncode({
-            'searchedText': widget.searchedText,
-            'currentID': appStateClass.currentID,
-            'currentLength': currentPostsLength,
-            'paginationLimit': postsPaginationLimit,
-            'maxFetchLimit': postsServerFetchLimit
-          });
-          res = await dio.get('$serverDomainAddress/users/fetchSearchedPosts', data: stringified);
-        }else{
-          List paginatedSearchedPosts = await DatabaseHelper().fetchPaginatedSearchedPosts(currentPostsLength, postsPaginationLimit);
-          stringified = jsonEncode({
-            'searchedText': widget.searchedText,
-            'searchedPostsEncoded': jsonEncode(paginatedSearchedPosts),
-            'currentID': appStateClass.currentID,
-            'currentLength': currentPostsLength,
-            'paginationLimit': postsPaginationLimit,
-            'maxFetchLimit': postsServerFetchLimit
-          });
-          res = await dio.get('$serverDomainAddress/users/fetchSearchedPostsPagination', data: stringified);
-        }
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data' && mounted){
-            if(!isPaginating){
-              List searchedPosts = res.data['searchedPosts'];
-              await DatabaseHelper().replaceAllSearchedPosts(searchedPosts);
-            }
-            List modifiedSearchedPostsData = res.data['modifiedSearchedPosts'];
-            List userProfileDataList = res.data['usersProfileData'];
-            List usersSocialsDatasList = res.data['usersSocialsData'];
-            if(isRefreshing && mounted){
-              posts.value = [];
-            }
-            if(!isPaginating && mounted){
-              totalPostsLength.value = min(res.data['totalPostsLength'], postsServerFetchLimit);
-            }
-            for(int i = 0; i < userProfileDataList.length; i++){
-              Map userProfileData = userProfileDataList[i];
-              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-              UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
-              if(mounted){
-                updateUserData(userDataClass);
-                updateUserSocials(userDataClass, userSocialClass);
-              }
-            }
-            for(int i = 0; i < modifiedSearchedPostsData.length; i++){
-              Map postData = modifiedSearchedPostsData[i];
-              List<dynamic> mediasDatasFromServer = jsonDecode(postData['medias_datas']);            
-              List<MediaDatasClass> newMediasDatas = [];
-              newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
-              PostClass postDataClass = PostClass.fromMap(postData, newMediasDatas);
-              if(mounted){
-                updatePostData(postDataClass);
-                if(posts.value.length < totalPostsLength.value){
-                  posts.value = [...posts.value, DisplayPostDataClass(postData['sender'], postData['post_id'])];
-                }
-              }
-            }
-          }
-          if(mounted){
-            loadingState.value = LoadingState.loaded;
-          }
-        }
-      }
-    } on Exception catch (e) {
-      doSomethingWithException(e);
-    }
-  }
-
-  Future<void> loadMorePosts() async{
-    try {
-      if(mounted){
-        loadingState.value = LoadingState.paginating;
-        paginationStatus.value = PaginationStatus.loading;
-        Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
-          timer.cancel();
-          await fetchSearchedPosts(posts.value.length, false, true);
-          if(mounted){
-            paginationStatus.value = PaginationStatus.loaded;
-          }
-        });
-      }
-    } on Exception catch (e) {
-      doSomethingWithException(e);
-    }
-  }
-
-  Future<void> refresh() async{
-    loadingState.value = LoadingState.refreshing;
-    fetchSearchedPosts(0, true, false);
+    controller.dispose();
   }
 
   @override
@@ -181,12 +44,12 @@ class _SearchedPostsWidgetStatefulState extends State<_SearchedPostsWidgetStatef
     super.build(context);
     return Scaffold(
       body: ValueListenableBuilder(
-        valueListenable: loadingState,
+        valueListenable: controller.loadingState,
         builder: ((context, loadingStateValue, child) {
           if(shouldCallSkeleton(loadingStateValue)){
             return shimmerSkeletonWidget(
               CustomScrollView(
-                controller: _scrollController,
+                controller: controller.scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: <Widget>[
                   SliverOverlapInjector(
@@ -208,89 +71,85 @@ class _SearchedPostsWidgetStatefulState extends State<_SearchedPostsWidgetStatef
               )
             );
           }
-          return ValueListenableBuilder(
-           valueListenable: paginationStatus,
-           builder: (context, loadingStatusValue, child){
-             return ValueListenableBuilder(
-               valueListenable: totalPostsLength,
-               builder: (context, totalPostsLengthValue, child){
-                 return ValueListenableBuilder(
-                   valueListenable: posts,
-                   builder: ((context, posts, child) {
-                     return LoadMoreBottom(
-                       addBottomSpace: posts.length < totalPostsLengthValue,
-                       loadMore: () async{
-                         if(posts.length < totalPostsLengthValue){
-                           await loadMorePosts();
-                         }
-                       },
-                       status: loadingStatusValue,
-                       refresh: refresh,
-                       child: CustomScrollView(
-                         controller: _scrollController,
-                         physics: const AlwaysScrollableScrollPhysics(),
-                         slivers: <Widget>[
-                           SliverOverlapInjector(
-                             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
-                           ),
-                           SliverList(delegate: SliverChildBuilderDelegate(
-                             childCount: posts.length, 
-                             (context, index) {
-                               if(appStateClass.postsNotifiers.value[posts[index].sender] == null){
-                                 return Container();
-                               }
-                               if(appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID] == null){
-                                 return Container();
-                               }
-                               return ValueListenableBuilder<PostClass>(
-                                 valueListenable: appStateClass.postsNotifiers.value[posts[index].sender]![posts[index].postID]!.notifier,
-                                 builder: ((context, postData, child) {
-                                   return ValueListenableBuilder(
-                                     valueListenable: appStateClass.usersDataNotifiers.value[posts[index].sender]!.notifier, 
-                                     builder: ((context, userData, child) {
-                                       if(!postData.deleted){
-                                         return ValueListenableBuilder(
-                                           valueListenable: appStateClass.usersSocialsNotifiers.value[posts[index].sender]!.notifier, 
-                                           builder: ((context, userSocials, child) {
-                                             return CustomPostWidget(
-                                               postData: postData, 
-                                               senderData: userData,
-                                               senderSocials: userSocials,
-                                               pageDisplayType: PostDisplayType.searchedPost,
-                                               key: UniqueKey(),
-                                               skeletonMode: false,
-                                             );
-                                           })
-                                         );
-                                       }
-                                       return Container();
-                                     })
-                                   );
-                                 }),
-                               );
-                               
-                             }
-                           ))                                    
-                         ]
-                       )
-                     );
-                   })
-                 );
-               }
-             );
-           }
+          return ListenableBuilder(
+            listenable: Listenable.merge([
+              controller.paginationStatus,
+              controller.totalPostsLength,
+              controller.posts
+            ]),
+            builder: (context, child){
+              PaginationStatus loadingStatusValue = controller.paginationStatus.value;
+              int totalPostsLengthValue = controller.totalPostsLength.value;
+              List<DisplayPostDataClass> postsList = controller.posts.value;
+              return LoadMoreBottom(
+                addBottomSpace: postsList.length < totalPostsLengthValue,
+                loadMore: () async{
+                  if(postsList.length < totalPostsLengthValue){
+                    await controller.loadMorePosts();
+                  }
+                },
+                status: loadingStatusValue,
+                refresh: controller.refresh,
+                child: CustomScrollView(
+                  controller: controller.scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: <Widget>[
+                    SliverOverlapInjector(
+                      handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)
+                    ),
+                    SliverList(delegate: SliverChildBuilderDelegate(
+                      childCount: postsList.length, 
+                      (context, index) {
+                        if(appStateClass.postsNotifiers.value[postsList[index].sender] == null){
+                          return Container();
+                        }
+                        if(appStateClass.postsNotifiers.value[postsList[index].sender]![postsList[index].postID] == null){
+                          return Container();
+                        }
+                        return ListenableBuilder(
+                          listenable: Listenable.merge([
+                            appStateClass.postsNotifiers.value[postsList[index].sender]![postsList[index].postID]!.notifier,
+                            appStateClass.usersDataNotifiers.value[postsList[index].sender]!.notifier,
+                          ]),
+                          builder: (context, child){
+                            PostClass postData = appStateClass.postsNotifiers.value[postsList[index].sender]![postsList[index].postID]!.notifier.value;
+                            UserDataClass userData = appStateClass.usersDataNotifiers.value[postsList[index].sender]!.notifier.value;
+                            if(!postData.deleted){
+                              return ValueListenableBuilder(
+                                valueListenable: appStateClass.usersSocialsNotifiers.value[postsList[index].sender]!.notifier, 
+                                builder: ((context, userSocials, child) {
+                                    return CustomPostWidget(
+                                      postData: postData, 
+                                      senderData: userData,
+                                      senderSocials: userSocials,
+                                      pageDisplayType: PostDisplayType.searchedPost,
+                                      key: UniqueKey(),
+                                      skeletonMode: false,
+                                    );
+                                  })
+                                );
+                            }
+                            return Container();
+                          }
+                        );
+                      }
+                    ))                                    
+                  ]
+                )
+              );
+            }
           );
         })
       ),
       floatingActionButton: ValueListenableBuilder<bool>(
-        valueListenable: displayFloatingBtn,
+        valueListenable: controller.displayFloatingBtn,
         builder: (BuildContext context, bool visible, Widget? child) {
           return Visibility(
             visible: visible,
             child: FloatingActionButton( 
               heroTag: UniqueKey(),
               onPressed: () {  
-                _scrollController.animateTo(
+                controller.scrollController.animateTo(
                   0,
                   duration: const Duration(milliseconds: 10),
                   curve:Curves.fastOutSlowIn

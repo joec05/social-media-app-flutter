@@ -1,11 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/custom/web/custom_web_page_viewer.dart';
-import 'package:social_media_app/screens/profile/profile_page_with_username.dart';
-import 'package:social_media_app/screens/search/Searched.dart';
-import 'package:social_media_app/transition/navigation.dart';
+import 'package:social_media_app/global_files.dart';
 
 RegExp textDisplayUserTagRegex = RegExp(r"\B@[a-zA-Z0-9_]{1," + profileInputMaxLimit['username'].toString()+ r"}(?<=\w)");
 
@@ -23,7 +18,6 @@ Map<RegExp, TextStyle> textDisplayRegexStyle = {
   textDisplayHashtagRegex: const TextStyle(color: Color.fromARGB(255, 40, 81, 117), fontWeight: FontWeight.w600),
   isLinkRegexTyped: const TextStyle(color: Color.fromARGB(255, 40, 81, 117), fontWeight: FontWeight.w600)
 };
-
 
 List<TextSpan> generateTextSpanTag(text, tagsPressable, context){
   List<TextSpan> children = [];

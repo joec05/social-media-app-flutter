@@ -1,0 +1,1 @@
+String lifecycleDataKey = 'lifecycle_data_state';

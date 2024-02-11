@@ -1,22 +1,6 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:appwrite/appwrite.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:social_media_app/class/chat/group-chat/group_profile_class.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/custom/basic-widget/custom_button.dart';
-import 'package:social_media_app/mixin/lifecycle_listener.dart';
-import 'package:social_media_app/socket/main.dart';
-import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-import 'package:uuid/uuid.dart';
-import 'package:permission_handler/permission_handler.dart' as ph;
-import 'package:device_info_plus/device_info_plus.dart';
-
-var dio = Dio();
+import 'package:social_media_app/global_files.dart';
 
 class EditGroupProfileWidget extends StatelessWidget {
   final String chatID;
@@ -39,155 +23,22 @@ class EditGroupProfileStateful extends StatefulWidget {
 }
 
 class _EditGroupProfileStatefulState extends State<EditGroupProfileStateful> with LifecycleListenerMixin{
-  ValueNotifier<bool> isLoading = ValueNotifier(false);
-  TextEditingController nameController = TextEditingController();
-  TextEditingController descriptionController = TextEditingController();
-  ValueNotifier<String> imageFilePath = ValueNotifier('');
-  ValueNotifier<String> imageNetworkPath = ValueNotifier('');
-  ValueNotifier<bool> verifyNameFormat = ValueNotifier(false);
-  final int nameCharacterMaxLimit = groupProfileInputMaxLimit['name'];
-  final int descriptionCharacterMaxLimit = groupProfileInputMaxLimit['description'];
-  late ValueNotifier<GroupProfileClass> groupProfile;
-  late String chatID;
+  late EditGroupProfileController controller;
 
   @override
   void initState(){
     super.initState();
-    chatID = widget.chatID;
-    groupProfile = ValueNotifier(widget.groupProfileData);
-    runDelay(() async => fetchUserProfileData(), actionDelayTime);
-    nameController.addListener(() {
-      if(mounted){
-        String nameText = nameController.text;
-        verifyNameFormat.value = nameText.isNotEmpty && nameText.length <= nameCharacterMaxLimit;
-      }
-    });
-    socket.on("send-leave-group-announcement-$chatID", ( data ) async{
-      if(mounted && data != null){
-        groupProfile.value = GroupProfileClass(
-          groupProfile.value.name, groupProfile.value.profilePicLink, 
-          groupProfile.value.description, List<String>.of(data['recipients'])
-        );
-      }
-    });
-    socket.on("send-add-users-to-group-announcement-$chatID", ( data ) async{
-      if(mounted && data != null){
-        groupProfile.value = GroupProfileClass(
-          groupProfile.value.name, groupProfile.value.profilePicLink, 
-          groupProfile.value.description, List<String>.of([...data['recipients'], ...data['addedUsersID']])
-        );
-      }
-    });
+    controller = EditGroupProfileController(
+      context, 
+      widget.chatID, 
+      ValueNotifier(widget.groupProfileData)
+    );
+    controller.initializeController();
   }
 
   @override void dispose(){
     super.dispose();
-    isLoading.dispose();
-    nameController.dispose();
-    descriptionController.dispose();
-    imageFilePath.dispose();
-    imageNetworkPath.dispose();
-    verifyNameFormat.dispose();
-    groupProfile.dispose();
-    socket.disconnect();
-  }
-
-  void fetchUserProfileData(){
-    if(mounted){
-      nameController.text = groupProfile.value.name;
-      imageNetworkPath.value = groupProfile.value.profilePicLink;
-    }
-  }
-  
-  Future<void> pickImage() async {
-    bool permissionIsGranted = false;
-    ph.Permission? permission;
-    if(Platform.isAndroid){
-      final androidInfo = await DeviceInfoPlugin().androidInfo;
-      if(androidInfo.version.sdkInt <= 32){
-        permission = ph.Permission.storage;
-      }else{
-        permission = ph.Permission.photos;
-      }
-    }
-    permissionIsGranted = await permission!.isGranted;
-    if(!permissionIsGranted){
-      await permission.request();
-      permissionIsGranted = await permission.isGranted;
-    }
-
-    if(permissionIsGranted){
-      try {
-        final XFile? pickedFile = await ImagePicker().pickImage(
-          source: ImageSource.gallery,
-          imageQuality: 100,
-          maxWidth: 1000,
-          maxHeight: 1000,
-        );
-        if(pickedFile != null && mounted){
-          imageFilePath.value = pickedFile.path;
-          imageNetworkPath.value = '';
-        }
-      } catch (e) {
-        debugPrint(e.toString());
-      }
-    }
-  }
-
-  Future<String> uploadMediaToAppWrite(String uniqueID, String bucketID, String uri) async{
-    String loadedUri = '';
-    final appWriteStorage = Storage(updateAppWriteClient());
-    await appWriteStorage.createFile(
-      bucketId: bucketID,
-      fileId: uniqueID,
-      file: fileToInputFile(uri, uniqueID)
-    ).then((response){
-      loadedUri = 'https://cloud.appwrite.io/v1/storage/buckets/$bucketID/files/$uniqueID/view?project=$appWriteUserID&mode=admin';
-    })
-    .catchError((error) {
-      debugPrint(error.toString());
-    });
-    return loadedUri;
-  }
-
-  void editGroupProfile() async{
-    try {
-      String messageID = const Uuid().v4();
-      String senderName = appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.name;
-      String content = '$senderName has edited the group profile';
-      
-      socket.emit("edit-group-profile-to-server", {
-        'chatID': chatID,
-        'messageID': messageID,
-        'content': content,
-        'type': 'edit_group_profile',
-        'sender': appStateClass.currentID,
-        'recipients': groupProfile.value.recipients,
-        'mediasDatas': [],
-        'newData': {
-          'name': nameController.text.trim(),
-          'profilePicLink': imageFilePath.value.isEmpty ? imageNetworkPath.value : imageFilePath.value,
-          'description': descriptionController.text.trim()
-        }
-      });
-      Navigator.pop(context);
-      String stringified = jsonEncode({
-        'chatID': chatID,
-        'messageID': messageID,
-        'sender': appStateClass.currentID,
-        'recipients': groupProfile.value.recipients,
-        'newData': {
-          'name': nameController.text.trim(),
-          'profilePicLink': imageFilePath.value.isEmpty ? imageNetworkPath.value : imageFilePath.value,
-          'description': descriptionController.text.trim()
-        }
-      });
-      var res = await dio.patch('$serverDomainAddress/users/editGroupProfileData', data: stringified);
-      if(res.data.isNotEmpty){
-      }
-    } on Exception catch (e) {
-      doSomethingWithException(e);
-    }
+    controller.dispose();
   }
 
   @override
@@ -214,114 +65,114 @@ class _EditGroupProfileStatefulState extends State<EditGroupProfileStateful> wit
                   SizedBox(
                     height: titleToContentMargin,
                   ),
-                  ValueListenableBuilder(
-                    valueListenable: imageFilePath,
-                    builder: (context, filePath, child){
-                      return ValueListenableBuilder(
-                        valueListenable: imageNetworkPath,
-                        builder: (context, networkPath, child){
-                          if(filePath.isNotEmpty){
-                            return Column(
-                              children: [
-                                containerMargin(
-                                  Container(
-                                    width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(width: 2, color: Colors.white),
-                                      borderRadius: BorderRadius.circular(100),
-                                      image: DecorationImage(
-                                        image: FileImage(
-                                          File(filePath)
-                                        ), fit: BoxFit.fill
-                                      )
-                                    ),
-                                    child: Center(
-                                      child: GestureDetector(
-                                        onTap: (){
-                                          if(mounted) imageFilePath.value = '';
-                                        },
-                                        child: const Icon(Icons.delete, size: 30)
-                                      ),
-                                    )
-                                  ),
-                                  EdgeInsets.only(top: getScreenHeight() * 0.0075, bottom: defaultPickedImageVerticalMargin)
-                                )
-                              ]
-                            );
-                          }else if(networkPath.isNotEmpty){
-                            return Column(
-                              children: [
-                                containerMargin(
-                                  Container(
-                                    width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(width: 2, color: Colors.white),
-                                      borderRadius: BorderRadius.circular(100),
-                                      image: DecorationImage(
-                                        image: NetworkImage(
-                                          networkPath
-                                        ), fit: BoxFit.fill
-                                      )
-                                    ),
-                                    child: Center(
-                                      child: GestureDetector(
-                                        onTap: (){
-                                          if(mounted) imageNetworkPath.value = '';
-                                        },
-                                        child: const Icon(Icons.delete, size: 30)
-                                      ),
-                                    )
-                                  ),
-                                  EdgeInsets.only(top: getScreenHeight() * 0.0075, bottom: defaultPickedImageVerticalMargin)
-                                )
-                              ]
-                            );
-                          }else{
-                            return containerMargin(
-                              Column(
-                                children: [
-                                  Container(
-                                    width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(width: 2, color: Colors.white),
-                                      borderRadius: BorderRadius.circular(100),
-                                    ),
-                                    child: Center(
-                                      child: GestureDetector(
-                                        onTap: () => pickImage(),
-                                        child: const Icon(Icons.add, size: 30)
-                                      ),
-                                    )
+                  ListenableBuilder(
+                    listenable: Listenable.merge([
+                      controller.imageFilePath,
+                      controller.imageNetworkPath
+                    ]),
+                    builder: (context, child){
+                      String filePath = controller.imageFilePath.value;
+                      String networkPath = controller.imageNetworkPath.value;
+                      if(filePath.isNotEmpty){
+                        return Column(
+                          children: [
+                            containerMargin(
+                              Container(
+                                width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
+                                decoration: BoxDecoration(
+                                  border: Border.all(width: 2, color: Colors.white),
+                                  borderRadius: BorderRadius.circular(100),
+                                  image: DecorationImage(
+                                    image: FileImage(
+                                      File(filePath)
+                                    ), fit: BoxFit.fill
                                   )
-                                ]
+                                ),
+                                child: Center(
+                                  child: GestureDetector(
+                                    onTap: (){
+                                      if(mounted) controller.imageFilePath.value = '';
+                                    },
+                                    child: const Icon(Icons.delete, size: 30)
+                                  ),
+                                )
                               ),
                               EdgeInsets.only(top: getScreenHeight() * 0.0075, bottom: defaultPickedImageVerticalMargin)
-                            );
-                          }
-                        }
-                      );
-                    }
+                            )
+                          ]
+                        );
+                      }else if(networkPath.isNotEmpty){
+                        return Column(
+                          children: [
+                            containerMargin(
+                              Container(
+                                width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
+                                decoration: BoxDecoration(
+                                  border: Border.all(width: 2, color: Colors.white),
+                                  borderRadius: BorderRadius.circular(100),
+                                  image: DecorationImage(
+                                    image: NetworkImage(
+                                      networkPath
+                                    ), fit: BoxFit.fill
+                                  )
+                                ),
+                                child: Center(
+                                  child: GestureDetector(
+                                    onTap: (){
+                                      if(mounted) controller.imageNetworkPath.value = '';
+                                    },
+                                    child: const Icon(Icons.delete, size: 30)
+                                  ),
+                                )
+                              ),
+                              EdgeInsets.only(top: getScreenHeight() * 0.0075, bottom: defaultPickedImageVerticalMargin)
+                            )
+                          ]
+                        );
+                      }else{
+                        return containerMargin(
+                          Column(
+                            children: [
+                              Container(
+                                width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
+                                decoration: BoxDecoration(
+                                  border: Border.all(width: 2, color: Colors.white),
+                                  borderRadius: BorderRadius.circular(100),
+                                ),
+                                child: Center(
+                                  child: GestureDetector(
+                                    onTap: () => controller.pickImage(),
+                                    child: const Icon(Icons.add, size: 30)
+                                  ),
+                                )
+                              )
+                            ]
+                          ),
+                          EdgeInsets.only(top: getScreenHeight() * 0.0075, bottom: defaultPickedImageVerticalMargin)
+                        );
+                      }
+                    },
                   ),
                   containerMargin(
                     textFieldWithDescription(
                       TextField(
-                        controller: nameController,
+                        controller: controller.nameController,
                         decoration: generateProfileTextFieldDecoration('group name', Icons.person),
-                        maxLength: nameCharacterMaxLimit,
+                        maxLength: controller.nameCharacterMaxLimit,
                       ),
                       'Name',
-                      "Your name should be between 1 and $nameCharacterMaxLimit characters",
+                      "Your name should be between 1 and ${controller.nameCharacterMaxLimit} characters",
                     ), EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
                   ),
                   containerMargin(
                     textFieldWithDescription(
                       TextField(
-                        controller: descriptionController,
+                        controller: controller.descriptionController,
                         decoration: generateProfileTextFieldDecoration('group description', Icons.description),
-                        maxLength: descriptionCharacterMaxLimit,
+                        maxLength: controller.descriptionCharacterMaxLimit,
                       ),
                       'Description',
-                      "Your name should be between 1 and $nameCharacterMaxLimit characters",
+                      "Your name should be between 1 and ${controller.nameCharacterMaxLimit} characters",
                     ), EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
                   ),
                   SizedBox(
@@ -330,31 +181,26 @@ class _EditGroupProfileStatefulState extends State<EditGroupProfileStateful> wit
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      ValueListenableBuilder(
-                        valueListenable: verifyNameFormat,
-                        builder: (context, nameVerified, child) {
-                          return ValueListenableBuilder(
-                            valueListenable: isLoading,
-                            builder: (context, isLoadingValue, child) {
-                              return ValueListenableBuilder(
-                                valueListenable: imageFilePath,
-                                builder: (context, filePath, child) {
-                                  return ValueListenableBuilder(
-                                    valueListenable: imageNetworkPath,
-                                    builder: (context, networkPath, child) {
-                                      return CustomButton(
-                                        width: defaultTextFieldButtonSize.width, height: defaultTextFieldButtonSize.height,
-                                        buttonColor: Colors.red, buttonText: 'Continue', 
-                                        onTapped: nameVerified && (filePath.isNotEmpty || networkPath.isNotEmpty) && !isLoadingValue ? editGroupProfile : null,
-                                        setBorderRadius: true,
-                                      );
-                                    }
-                                  );
-                                }
-                              );
-                            }
+                      ListenableBuilder(
+                        listenable: Listenable.merge([
+                          controller.verifyNameFormat,
+                          controller.isLoading,
+                          controller.imageFilePath,
+                          controller.imageNetworkPath
+                        ]),
+                        builder: (context, child){
+                          bool nameVerified = controller.verifyNameFormat.value;
+                          bool isLoadingValue = controller.isLoading.value;
+                          String filePath = controller.imageFilePath.value;
+                          String networkPath = controller.imageNetworkPath.value;
+                          return CustomButton(
+                            width: defaultTextFieldButtonSize.width, height: defaultTextFieldButtonSize.height,
+                            buttonColor: Colors.red, buttonText: 'Continue', 
+                            onTapped: nameVerified && (filePath.isNotEmpty || networkPath.isNotEmpty) && !isLoadingValue ?
+                              controller.editGroupProfile : null,
+                            setBorderRadius: true,
                           );
-                        }
+                        },
                       )
                     ]
                   ),
@@ -365,7 +211,7 @@ class _EditGroupProfileStatefulState extends State<EditGroupProfileStateful> wit
               ),
             ),
             ValueListenableBuilder(
-              valueListenable: isLoading,
+              valueListenable: controller.isLoading,
               builder: (context, isLoadingValue, child) {
                 return isLoadingValue ?
                   loadingSignWidget()

@@ -1,31 +1,6 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:social_media_app/class/attachment/media_data_class.dart';
-import 'package:social_media_app/class/comment/comment_class.dart';
-import 'package:social_media_app/class/user/user_data_class.dart';
-import 'package:social_media_app/class/user/user_social_class.dart';
-import 'package:social_media_app/constants/global_functions.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/constants/server_actions.dart';
-import 'package:social_media_app/custom/basic-widget/custom_button.dart';
-import 'package:social_media_app/custom/tagging/custom_text_span.dart';
-import 'package:social_media_app/extenstions/string_ellipsis.dart';
-import 'package:social_media_app/screens/profile/profile_page.dart';
-import 'package:social_media_app/screens/upload/comment/edit_comment.dart';
-import 'package:social_media_app/screens/upload/comment/write_comment.dart';
-import 'package:social_media_app/screens/view-bookmarks/comment_bookmarks_list.dart';
-import 'package:social_media_app/screens/view-comments/view_comment_comments.dart';
-import 'package:social_media_app/screens/view-likes/comment_likes_list.dart';
-import 'package:social_media_app/state/main.dart';
-import 'package:social_media_app/styles/app_styles.dart';
-import 'package:social_media_app/transition/navigation.dart';
-
-var dio = Dio();
-
-enum CommentDisplayType{
-  feed, profileComment, viewComment, searchedComment, bookmark
-}
+import 'package:social_media_app/global_files.dart';
 
 class CustomCommentWidget extends StatefulWidget{
   final CommentClass commentData;

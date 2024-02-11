@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:social_media_app/constants/global_variables.dart';
-import 'package:social_media_app/streams/auto_navigate_lifecycle_stream_class.dart';
-import '../constants/app_state_actions.dart';
+import 'package:social_media_app/global_files.dart';
 
 mixin LifecycleListenerMixin<T extends StatefulWidget> on State<T>{
   Function? _changeBottomNavIndex;
