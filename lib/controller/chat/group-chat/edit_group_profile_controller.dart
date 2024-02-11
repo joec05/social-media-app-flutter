@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
@@ -125,47 +124,49 @@ class EditGroupProfileController {
   }
 
   void editGroupProfile() async{
-    try {
-      String messageID = const Uuid().v4();
-      String senderName = appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.name;
-      String content = '$senderName has edited the group profile';
-      
-      socket.emit("edit-group-profile-to-server", {
-        'chatID': chatID,
-        'messageID': messageID,
-        'content': content,
-        'type': 'edit_group_profile',
-        'sender': appStateClass.currentID,
-        'recipients': groupProfile.value.recipients,
-        'mediasDatas': [],
-        'newData': {
-          'name': nameController.text.trim(),
-          'profilePicLink': imageFilePath.value.isEmpty ? imageNetworkPath.value : imageFilePath.value,
-          'description': descriptionController.text.trim()
-        }
-      });
-      Navigator.pop(context);
-      String stringified = jsonEncode({
-        'chatID': chatID,
-        'messageID': messageID,
-        'sender': appStateClass.currentID,
-        'recipients': groupProfile.value.recipients,
-        'newData': {
-          'name': nameController.text.trim(),
-          'profilePicLink': imageFilePath.value.isEmpty ? imageNetworkPath.value : imageFilePath.value,
-          'description': descriptionController.text.trim()
-        }
-      });
-      var res = await dio.patch('$serverDomainAddress/users/editGroupProfileData', data: stringified);
-      if(res.data.isNotEmpty){
-      }
-    } catch (_) {
-      if(mounted){
-        handler.displaySnackbar(
+    if(mounted) {
+      try {
+        Navigator.pop(context);
+        String messageID = const Uuid().v4();
+        String senderName = appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.name;
+        String content = '$senderName has edited the group profile';
+        socket.emit("edit-group-profile-to-server", {
+          'chatID': chatID,
+          'messageID': messageID,
+          'content': content,
+          'type': 'edit_group_profile',
+          'sender': appStateClass.currentID,
+          'recipients': groupProfile.value.recipients,
+          'mediasDatas': [],
+          'newData': {
+            'name': nameController.text.trim(),
+            'profilePicLink': imageFilePath.value.isEmpty ? imageNetworkPath.value : imageFilePath.value,
+            'description': descriptionController.text.trim()
+          }
+        });
+        await apiCallRepo.runAPICall(
           context, 
-          SnackbarType.error, 
-          tErr.api
+          APIPatch.editGroupProfileData, 
+          {
+            'chatID': chatID,
+            'messageID': messageID,
+            'sender': appStateClass.currentID,
+            'recipients': groupProfile.value.recipients,
+            'newData': {
+              'name': nameController.text.trim(),
+              'profilePicLink': imageFilePath.value.isEmpty ? imageNetworkPath.value : imageFilePath.value,
+              'description': descriptionController.text.trim()
+            }
+          }
         );
+      } catch (_) {
+        if(mounted) {
+          handler.displaySnackbar(
+            context, 
+            SnackbarType.error, 
+            tErr.api
+          );
+        }
       }
     }
   }

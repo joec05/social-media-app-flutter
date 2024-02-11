@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
@@ -56,202 +55,99 @@ class LoginController {
   }
   
   void loginWithEmail() async{
-    try {
+    if(mounted){
       if(!isLoading.value){
         if(checkEmailValid(emailController.text.trim()) == false){
-          showDialog(
-            context: context,
-            barrierDismissible: true,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Alert!!!', style: TextStyle(fontSize: defaultTextFontSize)),
-                content: SingleChildScrollView(
-                  child: ListBody(
-                    children: [
-                      Text('Email format is invalid.', style: TextStyle(fontSize: defaultTextFontSize)),
-                    ],
-                  ),
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: Text('Ok', style: TextStyle(fontSize: defaultTextFontSize)),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
+          handler.displaySnackbar(
+            context,
+            SnackbarType.error,
+            'Email format is invalid'
           );
         }else{  
-          String stringified = jsonEncode({
-            'email': emailController.text.trim(),
-            'password': passwordController.text.trim(),
-          });
           if(mounted){
             isLoading.value = true;
-            var res = await dio.post('$serverDomainAddress/users/loginWithEmail', data: stringified);
-            if(res.data.isNotEmpty){
-              if(res.data['message'] == 'Login successful'){
-                appStateClass.currentID = res.data['userID'];
-                Map userProfileData = (res.data['userProfileData']);
-                UserDataClass userProfileDataClass = UserDataClass(
-                  userProfileData['user_id'], userProfileData['name'], userProfileData['username'], userProfileData['profile_picture_link'], 
-                  userProfileData['date_joined'], userProfileData['birth_date'], userProfileData['bio'], 
-                  false, false, false, userProfileData['private'], false, false, userProfileData['verified'], false, false
-                );
-                UserSocialClass userSocialClass = UserSocialClass(
-                  0, 0, false, false
-                );
-                if(mounted){
-                  updateUserData(userProfileDataClass);
-                  updateUserSocials(userProfileDataClass, userSocialClass);
-                }
-                SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
-                runDelay(() => Navigator.pushAndRemoveUntil(
-                  context,
-                  SliderRightToLeftRoute(
-                    page: const MainPageWidget()),
-                  (Route<dynamic> route) => false
-                ), navigatorDelayTime);
-              }else{
-                if(mounted){
-                  showDialog(
-                    context: context,
-                    barrierDismissible: true,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Alert!!!', style: TextStyle(fontSize: defaultTextFontSize)),
-                        content: SingleChildScrollView(
-                          child: ListBody(
-                            children: [
-                              Text(res.data['message'], style: TextStyle(fontSize: defaultTextFontSize)),
-                            ],
-                          ),
-                        ),
-                        actions: <Widget>[
-                          TextButton(
-                            child: Text('Continue', style: TextStyle(fontSize: defaultTextFontSize)),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                }
+            dynamic res = await apiCallRepo.runAPICall(
+              context, 
+              APIPost.loginWithEmail, 
+              {
+                'email': emailController.text.trim(),
+                'password': passwordController.text.trim(),
               }
-              if(mounted){
-                isLoading.value = false;
-              }
+            );
+            if(res != null && mounted) {
+              isLoading.value = false;
+              appStateClass.currentID = res.data['userID'];
+              Map userProfileData = (res.data['userProfileData']);
+              UserDataClass userProfileDataClass = UserDataClass(
+                userProfileData['user_id'], userProfileData['name'], userProfileData['username'], userProfileData['profile_picture_link'], 
+                userProfileData['date_joined'], userProfileData['birth_date'], userProfileData['bio'], 
+                false, false, false, userProfileData['private'], false, false, userProfileData['verified'], false, false
+              );
+              UserSocialClass userSocialClass = UserSocialClass(
+                0, 0, false, false
+              );
+              updateUserData(userProfileDataClass);
+              updateUserSocials(userProfileDataClass, userSocialClass);
+              SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
+              runDelay(() => Navigator.pushAndRemoveUntil(
+                context,
+                SliderRightToLeftRoute(
+                  page: const MainPageWidget()),
+                (Route<dynamic> route) => false
+              ), navigatorDelayTime);
             }
           }
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
 
   void loginWithUsername() async{
-    try {
+    if(mounted){
       if(!isLoading.value){
         if(checkUsernameValid(usernameController.text.trim()) == false){
-          showDialog(
-            context: context,
-            barrierDismissible: true,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Alert!!!', style: TextStyle(fontSize: defaultTextFontSize)),
-                content: SingleChildScrollView(
-                  child: ListBody(
-                    children: [
-                      Text('Username format is invalid.', style: TextStyle(fontSize: defaultTextFontSize)),
-                    ],
-                  ),
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: Text('Ok', style: TextStyle(fontSize: defaultTextFontSize)),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
+          handler.displaySnackbar(
+            context,
+            SnackbarType.error,
+            'Username format is invalid'
           );
-        }else{  
-          String stringified = jsonEncode({
-            'username': usernameController.text.trim(),
-            'password': passwordController.text.trim(),
-          });
+        }else{
           if(mounted){
             isLoading.value = true;
-            var res = await dio.post('$serverDomainAddress/users/loginWithUsername', data: stringified);
-            if(res.data.isNotEmpty){
-              if(res.data['message'] == 'Login successful'){
-                appStateClass.currentID = res.data['userID'];
-                Map userProfileData = (res.data['userProfileData']);
-                UserDataClass userProfileDataClass = UserDataClass(
-                  userProfileData['user_id'], userProfileData['name'], userProfileData['username'], userProfileData['profile_picture_link'], 
-                  userProfileData['date_joined'], userProfileData['birth_date'], userProfileData['bio'], 
-                  false, false, false, userProfileData['private'], false, false, userProfileData['verified'],
-                  false, false
-                );
-                UserSocialClass userSocialClass = UserSocialClass(
-                  0, 0, false, false
-                );
-                if(mounted){
-                  updateUserData(userProfileDataClass);
-                  updateUserSocials(userProfileDataClass, userSocialClass);
-                }
-                SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
-                runDelay(() => Navigator.pushAndRemoveUntil(
-                  context,
-                  SliderRightToLeftRoute(
-                    page: const MainPageWidget()),
-                  (Route<dynamic> route) => false
-                ), navigatorDelayTime);
-              }else{
-                if(mounted){
-                  showDialog(
-                    context: context,
-                    barrierDismissible: true,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Alert!!!', style: TextStyle(fontSize: defaultTextFontSize)),
-                        content: SingleChildScrollView(
-                          child: ListBody(
-                            children: [
-                              Text(res.data['message'], style: TextStyle(fontSize: defaultTextFontSize)),
-                            ],
-                          ),
-                        ),
-                        actions: <Widget>[
-                          TextButton(
-                            child: Text('Continue', style: TextStyle(fontSize: defaultTextFontSize)),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                }
+            dynamic res = await apiCallRepo.runAPICall(
+              context, 
+              APIPost.loginWithUsername, 
+              {
+                'username': usernameController.text.trim(),
+                'password': passwordController.text.trim(),
               }
-              if(mounted){
-                isLoading.value = false;
-              }
+            );
+            if(res != null && mounted){
+              isLoading.value = false;
+              appStateClass.currentID = res.data['userID'];
+              Map userProfileData = (res.data['userProfileData']);
+              UserDataClass userProfileDataClass = UserDataClass(
+                userProfileData['user_id'], userProfileData['name'], userProfileData['username'], userProfileData['profile_picture_link'], 
+                userProfileData['date_joined'], userProfileData['birth_date'], userProfileData['bio'], 
+                false, false, false, userProfileData['private'], false, false, userProfileData['verified'],
+                false, false
+              );
+              UserSocialClass userSocialClass = UserSocialClass(
+                0, 0, false, false
+              );
+              updateUserData(userProfileDataClass);
+              updateUserSocials(userProfileDataClass, userSocialClass);
+              SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
+              runDelay(() => Navigator.pushAndRemoveUntil(
+                context,
+                SliderRightToLeftRoute(
+                  page: const MainPageWidget()),
+                (Route<dynamic> route) => false
+              ), navigatorDelayTime); 
             }
           }
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
-
 }

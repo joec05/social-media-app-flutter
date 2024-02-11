@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
 import 'package:appwrite/appwrite.dart';
@@ -56,69 +55,32 @@ class CompleteSignUpController {
   }
   
   void completeSignUpProfile() async{
-    try {
-      if(mounted){
-        if(!isLoading.value){
-          isLoading.value = true;
-          String uploadProfilePic = await uploadMediaToAppWrite(appStateClass.currentID, storageBucketIDs['image'], imageFilePath.value);
-          String stringified = jsonEncode({
-            'userId': appStateClass.currentID,
-            'profilePicLink': uploadProfilePic,
-            'bio': bioController.text.trim(),
-          });
-          var res = await dio.post('$serverDomainAddress/users/completeSignUpProfile', data: stringified);
-          if(res.data.isNotEmpty){
-            if(res.data['message'] == 'Successfully updated your account'){
-              appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.profilePicLink = uploadProfilePic;
-              runDelay(() => Navigator.pushAndRemoveUntil(
-                context,
-                SliderRightToLeftRoute(
-                  page: const MainPageWidget()
-                ),
-                (Route<dynamic> route) => false
-              ), navigatorDelayTime);
-            }else{
-              if(mounted){
-                showDialog(
-                  context: context,
-                  barrierDismissible: true,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text('Alert!!!', style: TextStyle(fontSize: defaultTextFontSize)),
-                      content: SingleChildScrollView(
-                        child: ListBody(
-                          children: [
-                            Text(res.data['message'], style: TextStyle(fontSize: defaultTextFontSize)),
-                          ],
-                        ),
-                      ),
-                      actions: <Widget>[
-                        TextButton(
-                          child: Text('Continue', style: TextStyle(fontSize: defaultTextFontSize)),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ],
-                    );
-                  },
-                );
-              }
+    if(mounted){
+      if(!isLoading.value){
+        isLoading.value = true;
+        String uploadProfilePic = await uploadMediaToAppWrite(appStateClass.currentID, storageBucketIDs['image'], imageFilePath.value);
+        if(mounted){
+          dynamic res = await apiCallRepo.runAPICall(
+            context, 
+            APIPost.completeSignUpProfile, 
+            {
+              'userId': appStateClass.currentID,
+              'profilePicLink': uploadProfilePic,
+              'bio': bioController.text.trim(),
             }
-            if(mounted){
-              isLoading.value = false;
-            }
+          );
+          if(res != null && mounted) {
+            isLoading.value = false;
+            appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.profilePicLink = uploadProfilePic;
+            runDelay(() => Navigator.pushAndRemoveUntil(
+              context,
+              SliderRightToLeftRoute(
+                page: const MainPageWidget()
+              ),
+              (Route<dynamic> route) => false
+            ), navigatorDelayTime);
           }
         }
-      }
-    } catch (_) {
-      isLoading.value = false;
-      if(mounted){
-        handler.displaySnackbar(
-          context, 
-          SnackbarType.error,
-          tErr.unknown, 
-        );
       }
     }
   }

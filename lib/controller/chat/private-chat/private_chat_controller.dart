@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:dio/dio.dart' as d;
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
@@ -121,83 +120,76 @@ class PrivateChatController {
   }
 
   Future<void> fetchPrivateChatData(int currentPostsLength, bool isRefreshing, bool isPaginating) async{
-    try {
-      if(mounted){
+    if(mounted){
+      try {
         isLoading.value = true;
-        String stringified = jsonEncode({
-          'chatID': chatID.value,
-          'currentID': appStateClass.currentID,
-          'recipient': recipient.value,
-          'currentLength': currentPostsLength,
-          'paginationLimit': messagesPaginationLimit,
-          'maxFetchLimit': messagesServerFetchLimit
-        }); 
-        d.Response res;
-        d.Dio dio = d.Dio();
-        if(isPaginating){
-          res = await dio.get('$serverDomainAddress/users/fetchPrivateChatPagination', data: stringified);
-        }else{
-          res = await dio.get('$serverDomainAddress/users/fetchPrivateChat', data: stringified);
+        APIGet call = isPaginating ? APIGet.fetchPrivateChatPagination : APIGet.fetchPrivateChat;
+        dynamic res = await apiCallRepo.runAPICall(
+          context, 
+          call, 
+          {
+            'chatID': chatID.value,
+            'currentID': appStateClass.currentID,
+            'recipient': recipient.value,
+            'currentLength': currentPostsLength,
+            'paginationLimit': messagesPaginationLimit,
+            'maxFetchLimit': messagesServerFetchLimit
+          }
+        );
+        if(mounted){
+          isLoading.value = false;
         }
-        if(res.data.isNotEmpty){
+        if(res != null && mounted){
           if(res.data['message'] != 'blacklisted'){
-            if(mounted){
-              chatID.value = res.data['chatID'];
-            }
+            chatID.value = res.data['chatID'];
             List messagesData = res.data['messagesData'];
             List usersProfileDatasList = res.data['membersProfileData'];
             List usersSocialsDatasList = res.data['membersSocialsData'];
-            if(isRefreshing && mounted){
+            if(isRefreshing){
               messages.value = [];
             }
-            if(mounted){
-              canPaginate.value = res.data['canPaginate'];
-            }
+            canPaginate.value = res.data['canPaginate'];
             for(int i = 0; i < usersProfileDatasList.length; i++){
               Map userProfileData = usersProfileDatasList[i];
               UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
               UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
-              if(mounted){
-                updateUserData(userDataClass);
-                updateUserSocials(userDataClass, userSocialClass);
-              }
+              updateUserData(userDataClass);
+              updateUserSocials(userDataClass, userSocialClass);
             }
             for(int i = 0; i < messagesData.length; i++){
               Map messageData = messagesData[i];
               List<MediaDatasClass> newMediasDatas = await loadMediasDatas(jsonDecode(messageData['medias_datas']));
-              if(mounted){
-                messages.value = [...messages.value, PrivateMessageNotifier(
-                  messageData['message_id'], ValueNotifier(
-                    PrivateMessageClass.fromMap(messageData, newMediasDatas)
-                  )
-                )];
-              }
+              messages.value = [...messages.value, PrivateMessageNotifier(
+                messageData['message_id'], ValueNotifier(
+                  PrivateMessageClass.fromMap(messageData, newMediasDatas)
+                )
+              )];
             }
           }
-          if(mounted){
-            isLoading.value = false;
-          }
+        }
+      } catch (_) {
+        if(mounted){
+          isLoading.value = false;
+          handler.displaySnackbar(
+            context, 
+            SnackbarType.error,
+            tErr.unknown
+          );
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
 
   Future<void> loadMoreChats() async{
-    try {
-      if(mounted){
-        paginationStatus.value = PaginationStatus.loading;
-        Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
-          timer.cancel();
-          await fetchPrivateChatData(messages.value.length, false, true);
-          if(mounted){
-            paginationStatus.value = PaginationStatus.loaded;
-          }
-        });
-      }
-    } on Exception catch (e) {
-      
+    if(mounted){
+      paginationStatus.value = PaginationStatus.loading;
+      Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
+        timer.cancel();
+        await fetchPrivateChatData(messages.value.length, false, true);
+        if(mounted){
+          paginationStatus.value = PaginationStatus.loaded;
+        }
+      });
     }
   }
 }

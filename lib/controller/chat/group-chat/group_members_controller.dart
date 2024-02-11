@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
-
 
 class GroupMembersController {
   BuildContext context;
@@ -51,46 +49,46 @@ class GroupMembersController {
   }
 
   Future<void> fetchGroupMembersData(int currentUsersLength, bool isRefreshing) async{
-    try {
-      if(mounted){
-        String stringified = jsonEncode({
-          'usersID': usersID,
-          'currentID': appStateClass.currentID,
-          'currentLength': currentUsersLength,
-          'paginationLimit': usersPaginationLimit,
-          'maxFetchLimit': usersServerFetchLimit
-        });
-        var res = await dio.get('$serverDomainAddress/users/fetchGroupMembersData', data: stringified);
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data'){
-            List followersProfileDatasList = res.data['usersProfileData'];
-            List followersSocialsDatasList = res.data['usersSocialsData'];
-            if(isRefreshing && mounted){
-              users.value = [];
-            }
-            for(int i = 0; i < followersProfileDatasList.length; i++){
-              Map userProfileData = followersProfileDatasList[i];
-              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-              UserSocialClass userSocialClass = UserSocialClass.fromMap(followersSocialsDatasList[i]);
-              if(mounted){
-                updateUserData(userDataClass);
-                updateUserSocials(userDataClass, userSocialClass);
-                users.value = [userProfileData['user_id'], ...users.value];
-              }
-            }
+    if(mounted){
+      try {
+        dynamic res = await apiCallRepo.runAPICall(
+          context, 
+          APIGet.fetchGroupMembersData, 
+          {
+            'usersID': usersID,
+            'currentID': appStateClass.currentID,
+            'currentLength': currentUsersLength,
+            'paginationLimit': usersPaginationLimit,
+            'maxFetchLimit': usersServerFetchLimit
           }
-          if(mounted){
-            loadingState.value = LoadingState.loaded;
+        );
+        if(mounted){
+          loadingState.value = LoadingState.loaded;
+        }
+        if(res != null && mounted){
+          List followersProfileDatasList = res.data['usersProfileData'];
+          List followersSocialsDatasList = res.data['usersSocialsData'];
+          if(isRefreshing){
+            users.value = [];
+          }
+          for(int i = 0; i < followersProfileDatasList.length; i++){
+            Map userProfileData = followersProfileDatasList[i];
+            UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
+            UserSocialClass userSocialClass = UserSocialClass.fromMap(followersSocialsDatasList[i]);
+            updateUserData(userDataClass);
+            updateUserSocials(userDataClass, userSocialClass);
+            users.value = [userProfileData['user_id'], ...users.value];
           }
         }
-      }
-    } catch (_) {
-      if(mounted){
-        handler.displaySnackbar(
-          context, 
-          SnackbarType.error, 
-          tErr.api
-        );
+      } catch (_) {
+        if(mounted){
+          loadingState.value = LoadingState.loaded;
+          handler.displaySnackbar(
+            context, 
+            SnackbarType.error, 
+            tErr.api
+          );
+        }
       }
     }
   }

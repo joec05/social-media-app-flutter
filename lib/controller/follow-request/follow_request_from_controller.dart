@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
@@ -62,61 +61,61 @@ class FollowRequestFromController {
   }
 
   Future<void> fetchFollowRequestsFrom(int currentPostsLength, bool isRefreshing, bool isPaginating) async{
-    try {
-      if(mounted){
-        String stringified = jsonEncode({
-          'currentID': appStateClass.currentID,
-          'currentLength': currentPostsLength,
-          'paginationLimit': followRequestsPaginationLimit,
-          'maxFetchLimit': usersServerFetchLimit
-        }); 
-        var res = await dio.get('$serverDomainAddress/users/fetchFollowRequestsFromUser', data: stringified);
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data'){
-            List usersProfileDataList = res.data['usersProfileData'];
-            List usersSocialsDataList = res.data['usersSocialsData'];
-            if(isRefreshing && mounted){
-              users.value = [];
-            }
-            for(int i = 0; i < usersProfileDataList.length; i++){
-              Map userProfileData = usersProfileDataList[i];
-              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-              UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDataList[i]);
-              if(mounted){
-                updateUserData(userDataClass);
-                updateUserSocials(userDataClass, userSocialClass);
-                users.value = [...users.value, userProfileData['user_id']];
-              }
-            }
-            if(mounted){
-              canPaginate.value = res.data['canPaginate'];
-            }
+    if(mounted) {
+      try {
+        dynamic res = await apiCallRepo.runAPICall(
+          context, 
+          APIGet.fetchFollowRequestsFromUser, 
+          {
+            'currentID': appStateClass.currentID,
+            'currentLength': currentPostsLength,
+            'paginationLimit': followRequestsPaginationLimit,
+            'maxFetchLimit': usersServerFetchLimit
           }
-          if(mounted){
-            loadingState.value = LoadingState.loaded;
+        );
+        if(mounted){
+          loadingState.value = LoadingState.loaded;
+        }
+        if(res != null && mounted){
+          List usersProfileDataList = res.data['usersProfileData'];
+          List usersSocialsDataList = res.data['usersSocialsData'];
+          if(isRefreshing){
+            users.value = [];
           }
+          for(int i = 0; i < usersProfileDataList.length; i++){
+            Map userProfileData = usersProfileDataList[i];
+            UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
+            UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDataList[i]);
+            updateUserData(userDataClass);
+            updateUserSocials(userDataClass, userSocialClass);
+            users.value = [...users.value, userProfileData['user_id']];
+          }
+          canPaginate.value = res.data['canPaginate'];
+        }
+      } catch (_) {
+        if(mounted){
+          loadingState.value = LoadingState.loaded;
+          handler.displaySnackbar(
+            context, 
+            SnackbarType.error,
+            tErr.unknown
+          );
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
 
   Future<void> loadMoreUsers() async{
-    try {
-      if(mounted){
-        loadingState.value = LoadingState.paginating;
-        paginationStatus.value = PaginationStatus.loading;
-        Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
-          timer.cancel();
-          await fetchFollowRequestsFrom(users.value.length, false, true);
-          if(mounted){
-            paginationStatus.value = PaginationStatus.loaded;
-          }
-        });
-      }
-    } on Exception catch (e) {
-      
+    if(mounted){
+      loadingState.value = LoadingState.paginating;
+      paginationStatus.value = PaginationStatus.loading;
+      Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
+        timer.cancel();
+        await fetchFollowRequestsFrom(users.value.length, false, true);
+        if(mounted){
+          paginationStatus.value = PaginationStatus.loaded;
+        }
+      });
     }
   }
 

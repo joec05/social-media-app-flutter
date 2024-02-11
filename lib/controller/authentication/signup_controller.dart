@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
@@ -79,73 +78,52 @@ class SignUpController {
   }
   
   Future<void> selectBirthDate(BuildContext context) async {
-    try {
-      final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: selectedBirthDate,
-        firstDate: DateTime(1945, 1, 1),
-        lastDate: DateTime.now(),
-      );
-      if (picked! != selectedBirthDate){
-        selectedBirthDate = picked;
-        int day = picked.day;
-        int month = picked.month;
-        int year = picked.year;
-        birthDateController.text = '$day/$month/$year';
-      }
-    } on Exception catch (e) {
-      
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedBirthDate,
+      firstDate: DateTime(1945, 1, 1),
+      lastDate: DateTime.now(),
+    );
+    if (picked! != selectedBirthDate){
+      selectedBirthDate = picked;
+      int day = picked.day;
+      int month = picked.month;
+      int year = picked.year;
+      birthDateController.text = '$day/$month/$year';
     }
   }
 
-  void displayAlertDialog(String title, List<String> actionText){
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Alert!!!', style: TextStyle(fontSize: defaultTextFontSize)),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: [
-                Text(title, style: TextStyle(fontSize: defaultTextFontSize)),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            for(int i = 0; i < actionText.length; i++)
-            TextButton(
-              child: Text(actionText[i], style: TextStyle(fontSize: defaultTextFontSize)),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Future<dynamic> checkAccountExistsSignUp() async{
-    String stringified = jsonEncode({
-      'email': emailController.text.trim(),
-      'username': usernameController.text.trim(),
-    });
-    var res = await dio.get('$serverDomainAddress/users/checkAccountExistsSignUp', data: stringified);
-    return res.data;
+    dynamic res = await apiCallRepo.runAPICall(
+      context, 
+      APIGet.checkAccountExistsSignUp, 
+      {
+        'email': emailController.text.trim(),
+        'username': usernameController.text.trim(),
+      }
+    );
+    return res;
   }
 
   void signUp() async{
-    try {
+    if(mounted){
       if(!isLoading.value){
         if(checkUsernameValid(usernameController.text.trim()) == false){
-          displayAlertDialog('The username is invalid', ['Ok']);
+          handler.displaySnackbar(
+            context,
+            SnackbarType.error,
+            'The username is invalid'
+          );
         }else{  
           try {
             var verifyAccountExistence = await checkAccountExistsSignUp();
-            if(verifyAccountExistence['message'] == 'Successfully checked account existence'){
+            if(verifyAccountExistence != null && mounted){
               if(verifyAccountExistence['exists']){
-                displayAlertDialog('Email or username has already been used', ['Ok']);
+                handler.displaySnackbar(
+                  context,
+                  SnackbarType.error,
+                  'Email or username has already been used'
+                );
               }else{
                 await auth.createUserWithEmailAndPassword(
                   email: emailController.text, password: passwordController.text
@@ -156,59 +134,67 @@ class SignUpController {
                       page: const EmailVerificationPage()
                     )
                   );
-                  if(verified == true){
-                    String stringified = jsonEncode({
-                      'name': nameController.text.trim(),
-                      'username': usernameController.text.trim(),
-                      'profilePicLink': defaultUserProfilePicLink,
-                      'email': emailController.text.trim(),
-                      'password': passwordController.text.trim(),
-                      'birthDate': selectedBirthDate.toString()
-                    });
-                    if(mounted){
-                      isLoading.value = true;
-                    }
-                    var res = await dio.post('$serverDomainAddress/users/signUp', data: stringified);
-                    if(res.data.isNotEmpty){
-                      if(res.data['message'] == 'Successfully signed up'){
-                        appStateClass.currentID = res.data['userID'];
-                        UserDataClass userDataClass = UserDataClass(
-                          res.data['userID'], nameController.text.trim(), usernameController.text.trim(), defaultUserProfilePicLink,
-                          DateTime.now().toString(), selectedBirthDate.toString(), '',  false, false, false, false,
-                          false, false, false, false, false
-                        );
-                        UserSocialClass userSocialClass = UserSocialClass(
-                          0, 0, false, false
-                        );
-                        if(mounted){
-                          updateUserData(userDataClass);
-                          updateUserSocials(userDataClass, userSocialClass);
-                        }
-                        SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
-                        runDelay(() => Navigator.push(
-                          context,
-                          SliderRightToLeftRoute(
-                            page: const CompleteSignUpProfileStateless()
-                          )
-                        ), navigatorDelayTime);
-                      }else{
-                        displayAlertDialog(res.data['message'], ['Ok']);
+                  if(verified == true && mounted){
+                    isLoading.value = true;
+                    dynamic res = await apiCallRepo.runAPICall(
+                      context, 
+                      APIPost.signUp, 
+                      {
+                        'name': nameController.text.trim(),
+                        'username': usernameController.text.trim(),
+                        'profilePicLink': defaultUserProfilePicLink,
+                        'email': emailController.text.trim(),
+                        'password': passwordController.text.trim(),
+                        'birthDate': selectedBirthDate.toString()
                       }
-                      if(mounted){
-                        isLoading.value = false;
-                      }
+                    );
+                    if(res != null && mounted) {
+                      isLoading.value = false;
+                      appStateClass.currentID = res.data['userID'];
+                      UserDataClass userDataClass = UserDataClass(
+                        res.data['userID'], nameController.text.trim(), usernameController.text.trim(), defaultUserProfilePicLink,
+                        DateTime.now().toString(), selectedBirthDate.toString(), '',  false, false, false, false,
+                        false, false, false, false, false
+                      );
+                      UserSocialClass userSocialClass = UserSocialClass(
+                        0, 0, false, false
+                      );
+                      updateUserData(userDataClass);
+                      updateUserSocials(userDataClass, userSocialClass);
+                      SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
+                      runDelay(() => Navigator.push(
+                        context,
+                        SliderRightToLeftRoute(
+                          page: const CompleteSignUpProfileStateless()
+                        )
+                      ), navigatorDelayTime);
                     }
                   }
                 });
               }
             }
           } on FirebaseAuthException catch (e) {
-            if (e.code == 'weak-password') {
-              displayAlertDialog('The password is too weak', ['Ok']);
-            } else if (e.code == 'email-already-in-use') {
-              displayAlertDialog('The email has already been used', ['Ok']);
-            }else if (e.code == 'invalid-email') {
-              displayAlertDialog('Invalid email format', ['Ok']);
+            if(mounted){
+              isLoading.value = false;
+              if (e.code == 'weak-password') {
+                handler.displaySnackbar(
+                  context, 
+                  SnackbarType.error, 
+                  'The password is too weak'
+                );
+              } else if (e.code == 'email-already-in-use') {
+                handler.displaySnackbar(
+                  context, 
+                  SnackbarType.error, 
+                  'The email has already been used'
+                );
+              }else if (e.code == 'invalid-email') {
+                handler.displaySnackbar(
+                  context, 
+                  SnackbarType.error, 
+                  'Invalid email format'
+                );
+              }
             }
             return null;
           } catch (e) {
@@ -217,8 +203,6 @@ class SignUpController {
           }
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
 

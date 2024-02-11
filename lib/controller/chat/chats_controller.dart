@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
@@ -303,71 +302,55 @@ class ChatsController {
   }
 
   Future<void> fetchChatsData(int currentPostsLength, bool isRefreshing, bool isPaginating) async{
-    try {
-      if(mounted){
-        String stringified = jsonEncode({
+    if(mounted){
+      dynamic res = await apiCallRepo.runAPICall(
+        context, 
+        APIGet.fetchUserChats, 
+        {
           'userID': appStateClass.currentID,
           'currentLength': currentPostsLength,
           'paginationLimit': postsPaginationLimit,
           'maxFetchLimit': chatsServerFetchLimit
-        }); 
-        var res = await dio.get('$serverDomainAddress/users/fetchUserChats', data: stringified);
-        if(res.data.isNotEmpty && mounted){
-          if(res.data['message'] == 'Successfully fetched data'){
-            List userChatsData = res.data['userChatsData'];
-            List usersProfileDatasList = res.data['recipientsProfileData'];
-            List usersSocialsDatasList = res.data['recipientsSocialsData'];
-            
-            if(isRefreshing && mounted){
-              chats.value = [];
-            }
-            if(mounted){
-              canPaginate.value = res.data['canPaginate'];
-            }
-            for(int i = 0; i < usersProfileDatasList.length; i++){
-              Map userProfileData = usersProfileDatasList[i];
-              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-              UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
-              if(mounted){
-                updateUserData(userDataClass);
-                updateUserSocials(userDataClass, userSocialClass);
-              }
-            }
-            for(int i = 0; i < userChatsData.length; i++){
-              Map chatData = userChatsData[i];
-              if(chatData['type'] == 'group' && chatData['latest_message_type'] != 'message'){
-                String senderName = usersProfileDatasList.where((e) => e['user_id'] == chatData['latest_message_sender']).toList()[0]['name'];
-                if(chatData['latest_message_type'] == 'edit_group_profile'){
-                  chatData['latest_message_content'] = '$senderName has edited the group profile';
-                }else if(chatData['latest_message_type'] == 'leave_group'){
-                  chatData['latest_message_content'] = '$senderName has left the group';
-                }else if(chatData['latest_message_type'].contains('add_users_to_group')){
-                  String addedUserID = chatData['latest_message_type'].replaceAll('add_users_to_group_', '');
-                  String addedUserName = usersProfileDatasList.where((e) => e['user_id'] == addedUserID).toList()[0]['name'];
-                  chatData['latest_message_content'] = '$senderName has added $addedUserName to the group';
-                }
-              } 
-              if(mounted){
-                chats.value = [...chats.value, ChatDataNotifier(
-                  chatData['chat_id'], ValueNotifier(
-                    ChatDataClass.fromMap(chatData)
-                  )
-                )];
-              }
-            }
-          }
-          if(mounted){
-            loadingState.value = LoadingState.loaded;
-          }
         }
+      );
+      if(mounted) {
+        loadingState.value = LoadingState.loaded;
       }
-    } catch (_) {
-      if(mounted){
-        handler.displaySnackbar(
-          context, 
-          SnackbarType.error, 
-          tErr.api
-        );
+      if(res != null && mounted) {
+        List userChatsData = res.data['userChatsData'];
+        List usersProfileDatasList = res.data['recipientsProfileData'];
+        List usersSocialsDatasList = res.data['recipientsSocialsData'];
+        if(isRefreshing){
+          chats.value = [];
+        }
+        canPaginate.value = res.data['canPaginate'];
+        for(int i = 0; i < usersProfileDatasList.length; i++){
+          Map userProfileData = usersProfileDatasList[i];
+          UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
+          UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
+          updateUserData(userDataClass);
+          updateUserSocials(userDataClass, userSocialClass);
+        }
+        for(int i = 0; i < userChatsData.length; i++){
+          Map chatData = userChatsData[i];
+          if(chatData['type'] == 'group' && chatData['latest_message_type'] != 'message'){
+            String senderName = usersProfileDatasList.where((e) => e['user_id'] == chatData['latest_message_sender']).toList()[0]['name'];
+            if(chatData['latest_message_type'] == 'edit_group_profile'){
+              chatData['latest_message_content'] = '$senderName has edited the group profile';
+            }else if(chatData['latest_message_type'] == 'leave_group'){
+              chatData['latest_message_content'] = '$senderName has left the group';
+            }else if(chatData['latest_message_type'].contains('add_users_to_group')){
+              String addedUserID = chatData['latest_message_type'].replaceAll('add_users_to_group_', '');
+              String addedUserName = usersProfileDatasList.where((e) => e['user_id'] == addedUserID).toList()[0]['name'];
+              chatData['latest_message_content'] = '$senderName has added $addedUserName to the group';
+            }
+          } 
+          chats.value = [...chats.value, ChatDataNotifier(
+            chatData['chat_id'], ValueNotifier(
+              ChatDataClass.fromMap(chatData)
+            )
+          )];
+        }          
       }
     }
   }
@@ -392,56 +375,44 @@ class ChatsController {
   }
 
   void deletePrivateChat(String chatID) async{
-    try {
-      for(int i = 0; i < chats.value.length; i++){
-        ChatDataClass chatData = chats.value[i].notifier.value;
-        if(chatData.chatID == chatID && mounted){
-          chats.value[i].notifier.value = ChatDataClass(
-            chatData.chatID, chatData.type, chatData.recipient, ChatDataLatestMessageClass(
-              '', '', '', '', ''
-            ), null, true
-          );
-        }
-      }
-      String stringified = jsonEncode({
-        'chatID': chatID,
-        'currentID': appStateClass.currentID,
-      });
-      var res = await dio.patch('$serverDomainAddress/users/deletePrivateChat', data: stringified);
-      if(res.data.isNotEmpty){
-      }
-    } catch (_) {
-      if(mounted){
-        handler.displaySnackbar(
-          context, 
-          SnackbarType.error, 
-          tErr.api
+    for(int i = 0; i < chats.value.length; i++){
+      ChatDataClass chatData = chats.value[i].notifier.value;
+      if(chatData.chatID == chatID && mounted){
+        chats.value[i].notifier.value = ChatDataClass(
+          chatData.chatID, chatData.type, chatData.recipient, ChatDataLatestMessageClass(
+            '', '', '', '', ''
+          ), null, true
         );
       }
     }
+    await apiCallRepo.runAPICall(
+      context, 
+      APIPatch.deletePrivateChat, 
+      {
+        'chatID': chatID,
+        'currentID': appStateClass.currentID,
+      }
+    );
   }
 
   void deleteGroupChat(String chatID) async{
-    try {
-      for(int i = 0; i < chats.value.length; i++){
-        ChatDataClass chatData = chats.value[i].notifier.value;
-        if(chatData.chatID == chatID && mounted){
-          chats.value[i].notifier.value = ChatDataClass(
-            chatData.chatID, chatData.type, chatData.recipient, ChatDataLatestMessageClass(
-              '', '', '', '', ''
-            ), chatData.groupProfileData, true
-          );
-        }
+    for(int i = 0; i < chats.value.length; i++){
+      ChatDataClass chatData = chats.value[i].notifier.value;
+      if(chatData.chatID == chatID && mounted){
+        chats.value[i].notifier.value = ChatDataClass(
+          chatData.chatID, chatData.type, chatData.recipient, ChatDataLatestMessageClass(
+            '', '', '', '', ''
+          ), chatData.groupProfileData, true
+        );
       }
-      String stringified = jsonEncode({
+    }
+    await apiCallRepo.runAPICall(
+      context, 
+      APIPatch.deleteGroupChat, 
+      {
         'chatID': chatID,
         'currentID': appStateClass.currentID,
-      });
-      var res = await dio.patch('$serverDomainAddress/users/deleteGroupChat', data: stringified);
-      if(res.data.isNotEmpty){
       }
-    } on Exception catch (e) {
-      
-    }
+    );
   }
 }

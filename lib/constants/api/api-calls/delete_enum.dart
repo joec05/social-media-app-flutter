@@ -1,0 +1,3 @@
+enum APIDelete {
+  deleteAccount
+}

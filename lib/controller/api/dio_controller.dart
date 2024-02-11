@@ -1,3 +1,3 @@
 import 'package:dio/dio.dart';
 
-final dio = Dio();
+final dios = Dio();

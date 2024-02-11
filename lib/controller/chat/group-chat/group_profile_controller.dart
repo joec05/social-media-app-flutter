@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 import 'package:uuid/uuid.dart';
@@ -47,42 +46,45 @@ class GroupProfileController {
   }
 
   void leaveGroup() async{
-    try {
-      String messageID = const Uuid().v4();
-      String senderName = appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.name;
-      String content = '$senderName has left the group';
-      groupProfile.value.recipients.remove(appStateClass.currentID);
-      socket.emit("leave-group-to-server", {
-        'chatID': chatID,
-        'messageID': messageID,
-        'content': content,
-        'type': 'leave_group',
-        'sender': appStateClass.currentID,
-        'recipients': groupProfile.value.recipients,
-        'mediasDatas': [],
-      });
-      String stringified = jsonEncode({
-        'chatID': chatID,
-        'messageID': messageID,
-        'sender': appStateClass.currentID,
-        'recipients': groupProfile.value.recipients,
-      });
-      var res = await dio.patch('$serverDomainAddress/users/leaveGroup', data: stringified);
-      if(res.data.isNotEmpty && mounted){
-        Navigator.popUntil(context, (route){
-          return route.settings.name == '/chats-list';
+    if(mounted){
+      try {
+        String messageID = const Uuid().v4();
+        String senderName = appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.name;
+        String content = '$senderName has left the group';
+        groupProfile.value.recipients.remove(appStateClass.currentID);
+        socket.emit("leave-group-to-server", {
+          'chatID': chatID,
+          'messageID': messageID,
+          'content': content,
+          'type': 'leave_group',
+          'sender': appStateClass.currentID,
+          'recipients': groupProfile.value.recipients,
+          'mediasDatas': [],
         });
-      }
-    } catch (_) {
-      if(mounted){
-        handler.displaySnackbar(
+        dynamic res = await apiCallRepo.runAPICall(
           context, 
-          SnackbarType.error, 
-          tErr.api
+          APIPatch.leaveGroup, 
+          {
+            'chatID': chatID,
+            'messageID': messageID,
+            'sender': appStateClass.currentID,
+            'recipients': groupProfile.value.recipients,
+          }
         );
+        if(res != null && mounted) {
+          Navigator.popUntil(context, (route){
+            return route.settings.name == '/chats-list';
+          });
+        }
+      } catch (_) {
+        if(mounted) {
+          handler.displaySnackbar(
+            context, 
+            SnackbarType.error, 
+            tErr.api
+          );
+        }
       }
     }
   }
-
-  
 }
