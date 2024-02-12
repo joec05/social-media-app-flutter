@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -17,9 +15,10 @@ void main() async{
     WidgetsBinding.instance.addObserver(globalObserver);
     await firebaseInitialization;
     await firebaseAppCheckInitialization;
+    authRepo.initializeAuthListener();
     runApp(const MyApp());
-  } on Exception catch (e) {
-    
+  } catch (_) {
+    debugPrint("An error occured when starting the app");
   }
   //WidgetsBinding.instance.removeObserver(globalObserver);
 }
@@ -44,6 +43,7 @@ class MyApp extends StatelessWidget {
         // When navigating to the "/" route, build the FirstScreen widget.
         '/': (context) => const MyHomePage(title: 'Social Media App'),
       },
+      home: const OnboardingPage()
     );
   }
 }
@@ -73,53 +73,61 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void defaultLogin() async{
-    try {
-      Map lifecycleData = await SharedPreferencesClass().fetchCurrentUser();
-      if(lifecycleData['user_id'].isEmpty){
-        if(mounted){
-          isLoginToAccount.value = false;
-        }
-      }else{
-        bool hasPassedLoginLimit =  DateTime.now().difference(DateTime.parse(lifecycleData['last_lifecycle_time']).toLocal()).inMinutes > timeDifferenceToLogOut;
-        if(!hasPassedLoginLimit){
-          var verifyAccountExistence = await checkAccountExists(lifecycleData['user_id']);
-          if(verifyAccountExistence['message'] == 'Successfully checked account existence'){
-            if(verifyAccountExistence['exists'] == true){
-              appStateClass.currentID = lifecycleData['user_id'];
-              runDelay(() => Navigator.pushAndRemoveUntil(
-                context,
-                SliderRightToLeftRoute(
-                  page: const MainPageWidget()
-                ),
-                (Route<dynamic> route) => false
-              ), navigatorDelayTime);
-              if(mounted){
-                isLoginToAccount.value = true;
-              }
-            }
+    if(mounted) {
+      try {
+        Map lifecycleData = await SharedPreferencesClass().fetchCurrentUser();
+        if(mounted) {
+          if(lifecycleData['user_id'].isEmpty){
+            isLoginToAccount.value = false;
           }else{
-            if(mounted){
+            bool hasPassedLoginLimit = DateTime.now().difference(DateTime.parse(lifecycleData['last_lifecycle_time']).toLocal()).inMinutes > timeDifferenceToLogOut;
+            if(!hasPassedLoginLimit) {
+              var verifyAccountExistence = await checkAccountExists(lifecycleData['user_id']);
+              if(verifyAccountExistence != null && mounted) {
+                if(verifyAccountExistence['message'] == 'Successfully checked account existence'){
+                  if(verifyAccountExistence['exists'] == true){
+                    appStateClass.currentID = lifecycleData['user_id'];
+                    runDelay(() => Navigator.pushAndRemoveUntil(
+                      context,
+                      SliderRightToLeftRoute(
+                        page: const MainPageWidget()
+                      ),
+                      (Route<dynamic> route) => false
+                    ), navigatorDelayTime);
+                    isLoginToAccount.value = true;
+                  }
+                }else{
+                  isLoginToAccount.value = false;
+                }
+              }else{
+                isLoginToAccount.value = false;
+              }
+            }else{
               isLoginToAccount.value = false;
             }
           }
-        }else{
-          if(mounted){
-            isLoginToAccount.value = false;
-          }
+        }
+      } catch (_) {
+        if(mounted) {
+          handler.displaySnackbar(
+            context, 
+            SnackbarType.error, 
+            tErr.unknown
+          );
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
 
   Future<dynamic> checkAccountExists(String userID) async{
-    var dio = Dio();
-    String stringified = jsonEncode({
-      'userID': userID
-    });
-    var res = await dio.get('$serverDomainAddress/users/checkAccountExists', data: stringified);
-    return res.data;
+    dynamic res = await fetchDataRepo.fetchData(
+      context, 
+      RequestGet.checkAccountExists, 
+      {
+        'userID': userID
+      }
+    );
+    return res;
   }
 
   @override

@@ -10,6 +10,8 @@ class ErrorLabels {
   final appwrite = 'An AppWrite error occured';
 
   final sqflite = 'A database error occured';
+
+  final websiteCard = 'An error occured while generating the website card';
 }
 
 final tErr = ErrorLabels();

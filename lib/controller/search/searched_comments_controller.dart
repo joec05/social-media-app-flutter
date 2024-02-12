@@ -106,7 +106,7 @@ class SearchedCommentsController {
                 Map commentData = modifiedSearchedCommentsData[i];
                 List<dynamic> mediasDatasFromServer = jsonDecode(commentData['medias_datas']);            
                 List<MediaDatasClass> newMediasDatas = [];
-                newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
+                newMediasDatas = await loadMediasDatas(context, mediasDatasFromServer);
                 CommentClass commentDataClass = CommentClass.fromMap(commentData, newMediasDatas);
                 updateCommentData(commentDataClass);
                 if(comments.value.length < totalCommentsLength.value){

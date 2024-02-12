@@ -67,6 +67,7 @@ dependencies:
   shared_preferences: ^2.2.2
   html: ^0.15.4
   index_generator: ^3.4.1
+  onboarding: ^3.1.0
 
 dependency_overrides:
 

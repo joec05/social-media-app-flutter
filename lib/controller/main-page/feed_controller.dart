@@ -112,7 +112,7 @@ class FeedController {
                   Map postData = modifiedFeedPostsData[i];
                   List<dynamic> mediasDatasFromServer = jsonDecode(postData['medias_datas']);            
                   List<MediaDatasClass> newMediasDatas = [];
-                  newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
+                  newMediasDatas = await loadMediasDatas(context, mediasDatasFromServer);
                   PostClass postDataClass = PostClass.fromMap(postData, newMediasDatas);
                   updatePostData(postDataClass);
                   posts.value = [...posts.value, DisplayPostDataClass(postData['sender'], postData['post_id'])];
@@ -120,7 +120,7 @@ class FeedController {
                   Map commentData = modifiedFeedPostsData[i];
                   List<dynamic> mediasDatasFromServer = jsonDecode(commentData['medias_datas']);            
                   List<MediaDatasClass> newMediasDatas = [];
-                  newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
+                  newMediasDatas = await loadMediasDatas(context, mediasDatasFromServer);
                   CommentClass commentDataClass = CommentClass.fromMap(commentData, newMediasDatas);
                   updateCommentData(commentDataClass);
                   posts.value = [...posts.value, DisplayCommentDataClass(commentData['sender'], commentData['comment_id'])];

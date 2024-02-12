@@ -92,7 +92,7 @@ class ProfileRepliesController {
               Map commentData = userCommentsData[i];
               List<dynamic> mediasDatasFromServer = jsonDecode(commentData['medias_datas']);            
               List<MediaDatasClass> newMediasDatas = [];
-              newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
+              newMediasDatas = await loadMediasDatas(context, mediasDatasFromServer);
               CommentClass commentDataClass = CommentClass.fromMap(commentData, newMediasDatas);
               if(mounted){
                 updateCommentData(commentDataClass);

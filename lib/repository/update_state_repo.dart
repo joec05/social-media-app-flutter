@@ -60,13 +60,9 @@ void updateCommentData(CommentClass commentDataClass){
 }
 
 void logOut(BuildContext context) async{
-  try {
-    if(context.mounted){
-      navigateBackToInitialScreen(context);
-      SharedPreferencesClass().resetCurrentUser();
-    }
-  } on Exception catch (e) {
-    
+  if(context.mounted){
+    navigateBackToInitialScreen(context);
+    SharedPreferencesClass().resetCurrentUser();
   }
 }
 

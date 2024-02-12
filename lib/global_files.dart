@@ -125,6 +125,7 @@ export 'models/user/user_data_notifier.dart';
 export 'models/user/user_social_class.dart';
 export 'models/user/user_social_notifier.dart';
 export 'observer/global_observer.dart';
+export 'onboarding/onboarding.dart';
 export 'repository/api_call_repo.dart';
 export 'repository/app_state_repo.dart';
 export 'repository/authentication_repo.dart';

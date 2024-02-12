@@ -104,7 +104,7 @@ class CommentCommentsController {
                 Map postData = allPostsData[i];
                 List<dynamic> mediasDatasFromServer = jsonDecode(postData['medias_datas']);            
                 List<MediaDatasClass> newMediasDatas = [];
-                newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
+                newMediasDatas = await loadMediasDatas(context, mediasDatasFromServer);
                 PostClass postDataClass = PostClass.fromMap(postData, newMediasDatas);
                 updatePostData(postDataClass);
                 parentPost.value = DisplayPostDataClass(postData['sender'], postData['post_id']);
@@ -112,7 +112,7 @@ class CommentCommentsController {
                 Map commentData = allPostsData[i];
                 List<dynamic> mediasDatasFromServer = jsonDecode(commentData['medias_datas']);            
                 List<MediaDatasClass> newMediasDatas = [];
-                newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
+                newMediasDatas = await loadMediasDatas(context, mediasDatasFromServer);
                 CommentClass commentDataClass = CommentClass.fromMap(commentData, newMediasDatas);
                 updateCommentData(commentDataClass);
                 if(commentData['type'] == 'parent_comment'){

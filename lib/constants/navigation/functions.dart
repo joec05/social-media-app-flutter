@@ -16,28 +16,20 @@ PageRouteBuilder generatePageRouteBuilder(RouteSettings? settings, Widget child)
 }
 
 void navigateToProfilePage(BuildContext context, String userID) async{
-  try {
-    runDelay(()async => await Navigator.push(
-      context,
-      SliderRightToLeftRoute(
-        page: ProfilePageWidget(userID: userID)
-      )
-    ), navigatorDelayTime);
-  } on Exception catch (e) {
-    
-  }
+  runDelay(()async => await Navigator.push(
+    context,
+    SliderRightToLeftRoute(
+      page: ProfilePageWidget(userID: userID)
+    )
+  ), navigatorDelayTime);
 }
 
 void navigateBackToInitialScreen(BuildContext context) async{
-  try {
-    runDelay(()async => await Navigator.pushAndRemoveUntil(
-      context,
-      SliderRightToLeftRoute(
-        page: const MyApp()
-      ),
-      (Route<dynamic> route) => false
-    ), navigatorDelayTime);
-  } on Exception catch (e) {
-    
-  }
+  runDelay(()async => await Navigator.pushAndRemoveUntil(
+    context,
+    SliderRightToLeftRoute(
+      page: const MyApp()
+    ),
+    (Route<dynamic> route) => false
+  ), navigatorDelayTime);
 }

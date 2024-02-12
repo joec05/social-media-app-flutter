@@ -52,7 +52,7 @@ class PrivateChatController {
         messages.value = [PrivateMessageNotifier(data['messageID'], ValueNotifier(
           PrivateMessageClass(
             data['messageID'], 'message', data['content'], data['sender'], DateTime.now().toIso8601String(), 
-            await loadMediasDatas(data['mediasDatas']), []
+            await loadMediasDatas(context, data['mediasDatas']), []
           )
         )), ...messages.value];
       }
@@ -62,7 +62,7 @@ class PrivateChatController {
         messages.value = [PrivateMessageNotifier(data['messageID'], ValueNotifier(
           PrivateMessageClass(
             data['messageID'], 'message', data['content'], data['sender'], DateTime.now().toIso8601String(), 
-            await loadMediasDatas(data['mediasDatas']), []
+            await loadMediasDatas(context, data['mediasDatas']), []
           )
         )), ...messages.value];
       }
@@ -157,7 +157,7 @@ class PrivateChatController {
               }
               for(int i = 0; i < messagesData.length; i++){
                 Map messageData = messagesData[i];
-                List<MediaDatasClass> newMediasDatas = await loadMediasDatas(jsonDecode(messageData['medias_datas']));
+                List<MediaDatasClass> newMediasDatas = await loadMediasDatas(context, jsonDecode(messageData['medias_datas']));
                 messages.value = [...messages.value, PrivateMessageNotifier(
                   messageData['message_id'], ValueNotifier(
                     PrivateMessageClass.fromMap(messageData, newMediasDatas)

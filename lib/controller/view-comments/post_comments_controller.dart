@@ -100,7 +100,7 @@ class PostCommentsController {
                 Map postData = allPostsData[i];
                 List<dynamic> mediasDatasFromServer = jsonDecode(postData['medias_datas']);            
                 List<MediaDatasClass> newMediasDatas = [];
-                newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
+                newMediasDatas = await loadMediasDatas(context, mediasDatasFromServer);
                 PostClass postDataClass = PostClass.fromMap(postData, newMediasDatas);
                 updatePostData(postDataClass);
                 selectedPost.value = DisplayPostDataClass(postData['sender'], postData['post_id']);
@@ -108,7 +108,7 @@ class PostCommentsController {
                 Map commentData = allPostsData[i];
                 List<dynamic> mediasDatasFromServer = jsonDecode(commentData['medias_datas']);            
                 List<MediaDatasClass> newMediasDatas = [];
-                newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
+                newMediasDatas = await loadMediasDatas(context, mediasDatasFromServer);
                 CommentClass commentDataClass = CommentClass.fromMap(commentData, newMediasDatas);
                 updateCommentData(commentDataClass);
                 comments.value = [...comments.value, DisplayCommentDataClass(commentData['sender'], commentData['comment_id'])];

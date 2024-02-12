@@ -176,6 +176,7 @@ class _ProfilePageBookmarksWidgetStatefulState extends State<_ProfilePageBookmar
                                           },
                                         );
                                       }  
+                                      return Container();
                                     }
                                   ))                                    
                                 ]

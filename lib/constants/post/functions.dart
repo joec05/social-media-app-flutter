@@ -7,7 +7,10 @@ import 'package:social_media_app/global_files.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:ui' as ui;
 
-Future<List<MediaDatasClass>> loadMediasDatas(List<dynamic> mediasDatasFromServer) async{
+Future<List<MediaDatasClass>> loadMediasDatas(
+  BuildContext context,
+  List<dynamic> mediasDatasFromServer
+) async{
   List<MediaDatasClass> newMediasDatas = [];
   for(int i = 0; i < mediasDatasFromServer.length; i++){
     String mediaUrl = mediasDatasFromServer[i]['url'];
@@ -27,7 +30,7 @@ Future<List<MediaDatasClass>> loadMediasDatas(List<dynamic> mediasDatasFromServe
         MediaSourceType.network, null, scaledDimension
       ));
     }else if(mediasDatasFromServer[i]['mediaType'] == 'websiteCard'){
-      WebsiteCardClass linkPreview = await fetchLinkPreview(mediaUrl);
+      WebsiteCardClass linkPreview = await fetchLinkPreview(context, mediaUrl);
       newMediasDatas.add(MediaDatasClass(
         MediaType.websiteCard, mediaUrl, null, mediasDatasFromServer[i]['storagePath'], 
         MediaSourceType.network, linkPreview, null

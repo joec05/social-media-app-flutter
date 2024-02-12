@@ -14,7 +14,7 @@ class EmailVerificationController {
   bool get mounted => context.mounted;
 
   void initializeController() {
-    auth.currentUser?.sendEmailVerification();
+    authRepo.sendEmailVerification(context);
     timer = Timer.periodic(const Duration(seconds: 3), (_) => checkEmailVerified());
   }
 

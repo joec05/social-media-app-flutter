@@ -261,7 +261,7 @@ class UploadController {
             List lines = textList[i].split('\n');
             for(int j = 0; j < lines.length; j++){
               if(isLinkRegex.hasMatch(lines[j])){
-                WebsiteCardClass linkPreview = await fetchLinkPreview(lines[j]);
+                WebsiteCardClass linkPreview = await fetchLinkPreview(context, lines[j]);
                 if(mounted){
                   if(linkPreview.title.isNotEmpty && mediasDatas.value.length < maxMediaCount){
                     mediasDatas.value = [...mediasDatas.value, MediaDatasClass(

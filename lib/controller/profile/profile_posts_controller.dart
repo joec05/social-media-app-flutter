@@ -88,7 +88,7 @@ class ProfilePostsController {
               Map postData = userPostsData[i];
               List<dynamic> mediasDatasFromServer = jsonDecode(postData['medias_datas']);            
               List<MediaDatasClass> newMediasDatas = [];
-              newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
+              newMediasDatas = await loadMediasDatas(context, mediasDatasFromServer);
               PostClass postDataClass = PostClass.fromMap(postData, newMediasDatas);
               updatePostData(postDataClass);
               posts.value = [...posts.value, DisplayPostDataClass(postData['sender'], postData['post_id'])];

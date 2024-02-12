@@ -1,4 +1,5 @@
 enum RequestGet {
+  checkAccountExists,
   checkAccountExistsSignUp,
   fetchSearchedAddToGroupUsers,
   fetchGroupChatPagination,

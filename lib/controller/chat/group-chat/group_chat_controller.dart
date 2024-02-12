@@ -55,7 +55,7 @@ class GroupChatController {
         messages.value = [GroupMessageNotifier(data['messageID'], ValueNotifier(
           GroupMessageClass(
             data['messageID'], 'message', data['content'], data['sender'], DateTime.now().toIso8601String(), 
-            await loadMediasDatas(data['mediasDatas']), []
+            await loadMediasDatas(context, data['mediasDatas']), []
           )
         )), ...messages.value];
       }
@@ -91,7 +91,7 @@ class GroupChatController {
         messages.value = [GroupMessageNotifier(data['messageID'], ValueNotifier(
           GroupMessageClass(
             data['messageID'], data['type'], data['content'], data['sender'], DateTime.now().toIso8601String(), 
-            await loadMediasDatas(data['mediasDatas']), []
+            await loadMediasDatas(context, data['mediasDatas']), []
           )
         )), ...messages.value];
         groupProfile.value = GroupProfileClass(
@@ -104,7 +104,7 @@ class GroupChatController {
         messages.value = [GroupMessageNotifier(data['messageID'], ValueNotifier(
           GroupMessageClass(
             data['messageID'], data['type'], data['content'], data['sender'], DateTime.now().toIso8601String(), 
-            await loadMediasDatas(data['mediasDatas']), []
+            await loadMediasDatas(context, data['mediasDatas']), []
           )
         )), ...messages.value];
         groupProfile.value = GroupProfileClass(
@@ -135,7 +135,7 @@ class GroupChatController {
           ], ValueNotifier(
             GroupMessageClass(
               data['messagesID'][i], data['type'], data['contentsList'][i], data['sender'], DateTime.now().toIso8601String(), 
-              await loadMediasDatas(data['mediasDatas']), []
+              await loadMediasDatas(context, data['mediasDatas']), []
             )
           )), ...messages.value];
         }
@@ -217,7 +217,7 @@ class GroupChatController {
                       messageData['content'] = '$senderName has added $addedUserName to the group';
                     }
                   } 
-                  List<MediaDatasClass> newMediasDatas = await loadMediasDatas(jsonDecode(messageData['medias_datas']));
+                  List<MediaDatasClass> newMediasDatas = await loadMediasDatas(context, jsonDecode(messageData['medias_datas']));
                   if(mounted){
                     messages.value = [...messages.value, GroupMessageNotifier(
                       messageData['message_id'], ValueNotifier(

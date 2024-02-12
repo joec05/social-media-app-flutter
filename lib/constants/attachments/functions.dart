@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 import 'package:html/dom.dart' as html;
 import 'package:http/http.dart' as http;
@@ -19,7 +20,7 @@ Size getSizeScale(width, height){
   return Size(resizedWidth, resizedHeight);
 }
 
-Future<WebsiteCardClass> fetchLinkPreview(String url) async {
+Future<WebsiteCardClass> fetchLinkPreview(BuildContext context, String url) async {
   String title = '';
   String imageUrl = defaultWebsiteCardImageLink;
   String domain = '';
@@ -38,10 +39,14 @@ Future<WebsiteCardClass> fetchLinkPreview(String url) async {
     
     title = titleMetaTag?.attributes['content'] ?? '';
     imageUrl = imageMetaTag?.attributes['content'] ?? '';
-
-
-  } on Exception catch (e) {
-    
+  } catch (_) {
+    if(context.mounted) {
+      handler.displaySnackbar(
+        context, 
+        SnackbarType.error, 
+        tErr.websiteCard
+      );
+    }
   }
   return WebsiteCardClass(url, title, imageUrl, domain);
 }

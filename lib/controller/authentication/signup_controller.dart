@@ -125,8 +125,10 @@ class SignUpController {
                   'Email or username has already been used'
                 );
               }else{
-                await auth.createUserWithEmailAndPassword(
-                  email: emailController.text, password: passwordController.text
+                await authRepo.createUserWithEmailAndPassword(
+                  context, 
+                  emailController.text.trim(), 
+                  passwordController.text.trim()
                 ).then((value) async{
                   var verified = await Navigator.push(
                     context,
