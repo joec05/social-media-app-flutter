@@ -94,9 +94,9 @@ class SignUpController {
   }
 
   Future<dynamic> checkAccountExistsSignUp() async{
-    dynamic res = await apiCallRepo.runAPICall(
+    dynamic res = await fetchDataRepo.fetchData(
       context, 
-      APIGet.checkAccountExistsSignUp, 
+      RequestGet.checkAccountExistsSignUp, 
       {
         'email': emailController.text.trim(),
         'username': usernameController.text.trim(),
@@ -136,9 +136,9 @@ class SignUpController {
                   );
                   if(verified == true && mounted){
                     isLoading.value = true;
-                    dynamic res = await apiCallRepo.runAPICall(
+                    dynamic res = await fetchDataRepo.fetchData(
                       context, 
-                      APIPost.signUp, 
+                      RequestPost.signUp, 
                       {
                         'name': nameController.text.trim(),
                         'username': usernameController.text.trim(),
@@ -148,26 +148,28 @@ class SignUpController {
                         'birthDate': selectedBirthDate.toString()
                       }
                     );
-                    if(res != null && mounted) {
+                    if(mounted) {
                       isLoading.value = false;
-                      appStateClass.currentID = res.data['userID'];
-                      UserDataClass userDataClass = UserDataClass(
-                        res.data['userID'], nameController.text.trim(), usernameController.text.trim(), defaultUserProfilePicLink,
-                        DateTime.now().toString(), selectedBirthDate.toString(), '',  false, false, false, false,
-                        false, false, false, false, false
-                      );
-                      UserSocialClass userSocialClass = UserSocialClass(
-                        0, 0, false, false
-                      );
-                      updateUserData(userDataClass);
-                      updateUserSocials(userDataClass, userSocialClass);
-                      SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
-                      runDelay(() => Navigator.push(
-                        context,
-                        SliderRightToLeftRoute(
-                          page: const CompleteSignUpProfileStateless()
-                        )
-                      ), navigatorDelayTime);
+                      if(res != null) {
+                        appStateClass.currentID = res.data['userID'];
+                        UserDataClass userDataClass = UserDataClass(
+                          res.data['userID'], nameController.text.trim(), usernameController.text.trim(), defaultUserProfilePicLink,
+                          DateTime.now().toString(), selectedBirthDate.toString(), '',  false, false, false, false,
+                          false, false, false, false, false
+                        );
+                        UserSocialClass userSocialClass = UserSocialClass(
+                          0, 0, false, false
+                        );
+                        updateUserData(userDataClass);
+                        updateUserSocials(userDataClass, userSocialClass);
+                        SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
+                        runDelay(() => Navigator.push(
+                          context,
+                          SliderRightToLeftRoute(
+                            page: const CompleteSignUpProfileStateless()
+                          )
+                        ), navigatorDelayTime);
+                      }
                     }
                   }
                 });

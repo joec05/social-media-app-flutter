@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
@@ -42,16 +41,23 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
         'currentID': appStateClass.currentID,
         'recipient': widget.chatRecipient
       });
-      String stringified = jsonEncode({
-        'chatID': widget.chatID,
-        'messageID': privateMessageData.messageID,
-        'currentID': appStateClass.currentID,
-      });
-      var res = await dio.patch('$serverDomainAddress/users/deletePrivateMessage', data: stringified);
-      if(res.data.isNotEmpty){
+      await fetchDataRepo.fetchData(
+        context, 
+        RequestPatch.deletePrivateMessage, 
+        {
+          'chatID': widget.chatID,
+          'messageID': privateMessageData.messageID,
+          'currentID': appStateClass.currentID,
+        }
+      );
+    } catch (_) {
+      if(mounted) {
+        handler.displaySnackbar(
+          context, 
+          SnackbarType.error, 
+          tErr.unknown
+        );
       }
-    } on Exception catch (e) {
-      
     }
   }
 
@@ -64,17 +70,24 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
         'recipient': widget.chatRecipient,
         'content': ''
       });
-      String stringified = jsonEncode({
-        'chatID': widget.chatID,
-        'messageID': privateMessageData.messageID,
-        'currentID': appStateClass.currentID,
-        'recipient': widget.chatRecipient
-      });
-      var res = await dio.patch('$serverDomainAddress/users/deletePrivateMessageForAll', data: stringified);
-      if(res.data.isNotEmpty){
-      }
-    } on Exception catch (e) {
-      
+      await fetchDataRepo.fetchData(
+        context, 
+        RequestPatch.deletePrivateMessageForAll, 
+        {
+          'chatID': widget.chatID,
+          'messageID': privateMessageData.messageID,
+          'currentID': appStateClass.currentID,
+          'recipient': widget.chatRecipient
+        }
+      );
+    } catch (e) {
+      if(mounted) {
+        handler.displaySnackbar(
+          context, 
+          SnackbarType.error, 
+          tErr.unknown
+        );
+      } 
     }
   }
 

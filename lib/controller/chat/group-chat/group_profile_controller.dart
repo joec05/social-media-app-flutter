@@ -61,9 +61,9 @@ class GroupProfileController {
           'recipients': groupProfile.value.recipients,
           'mediasDatas': [],
         });
-        dynamic res = await apiCallRepo.runAPICall(
+        dynamic res = await fetchDataRepo.fetchData(
           context, 
-          APIPatch.leaveGroup, 
+          RequestPatch.leaveGroup, 
           {
             'chatID': chatID,
             'messageID': messageID,

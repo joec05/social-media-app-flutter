@@ -167,7 +167,7 @@ class _CustomFollowRequestWidgetState extends State<CustomFollowRequestWidget>{
                       CustomButton(
                         width: double.infinity, height: getScreenHeight() * 0.055, 
                         buttonColor: Colors.red, onTapped: (){
-                          cancelFollowRequest(userData);
+                          cancelFollowRequest(context, userData);
                         },
                         buttonText: 'Cancel Request',
                         setBorderRadius: false,
@@ -178,7 +178,7 @@ class _CustomFollowRequestWidgetState extends State<CustomFollowRequestWidget>{
                           CustomButton(
                             width: getScreenWidth() * 0.4, height: getScreenHeight() * 0.055, 
                             buttonColor: Colors.red, onTapped: (){
-                              rejectFollowRequest(userData);
+                              rejectFollowRequest(context, userData);
                             },
                             buttonText: 'Reject',
                             setBorderRadius: false,
@@ -187,7 +187,7 @@ class _CustomFollowRequestWidgetState extends State<CustomFollowRequestWidget>{
                           CustomButton(
                             width: getScreenWidth() * 0.4, height: getScreenHeight() * 0.055, 
                             buttonColor: Colors.lightBlue, onTapped: (){
-                              acceptFollowRequest(userData.userID);
+                              acceptFollowRequest(context, userData.userID);
                             },
                             buttonText: 'Accept',
                             setBorderRadius: false,

@@ -218,13 +218,13 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
                               ), navigatorDelayTime);
                             }else{
                               if(userData.blockedByCurrentID){
-                                unblockUser(userData);
+                                unblockUser(context, userData);
                               }else if(userSocials.followedByCurrentID){
-                                unfollowUser(userData, userSocials);
+                                unfollowUser(context, userData, userSocials);
                               }else if(userData.requestedByCurrentID){
-                                cancelFollowRequest(userData);
+                                cancelFollowRequest(context, userData);
                               }else{
-                                followUser(userData, userSocials);
+                                followUser(context, userData, userSocials);
                               }
                             }
                           },

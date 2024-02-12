@@ -1,4 +1,4 @@
-enum APIGet {
+enum RequestGet {
   checkAccountExistsSignUp,
   fetchSearchedAddToGroupUsers,
   fetchGroupChatPagination,

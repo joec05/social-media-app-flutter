@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
@@ -58,62 +57,51 @@ class ProfileFollowingController {
   }
 
   Future<void> fetchProfileFollowing(int currentUsersLength, bool isRefreshing) async{
-    try {
-      if(mounted){
-        String stringified = jsonEncode({
+    if(mounted){
+      dynamic res = await fetchDataRepo.fetchData(
+        context, 
+        RequestGet.fetchUserProfileFollowing, 
+        {
           'userID': userID,
           'currentID': appStateClass.currentID,
           'currentLength': currentUsersLength,
           'paginationLimit': usersPaginationLimit,
           'maxFetchLimit': usersServerFetchLimit
-        });
-        var res = await dio.get('$serverDomainAddress/users/fetchUserProfileFollowing', data: stringified);
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data'){
-            List userProfileDataList = res.data['usersProfileData'];
-            List followingSocialsDatasList = res.data['usersSocialsData'];
-            if(isRefreshing && mounted){
-              users.value = [];
-            }
-            if(mounted){
-              canPaginate.value = res.data['canPaginate'];
-            }
-            for(int i = 0; i < userProfileDataList.length; i++){
-              Map userProfileData = userProfileDataList[i];
-              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-              UserSocialClass userSocialClass = UserSocialClass.fromMap(followingSocialsDatasList[i]);
-              if(mounted){
-                updateUserData(userDataClass);
-                updateUserSocials(userDataClass, userSocialClass);
-                users.value = [userProfileData['user_id'], ...users.value];
-              }
-            }
+        }
+      );
+      if(mounted){
+        loadingState.value = LoadingState.loaded;
+        if(res != null){
+          List userProfileDataList = res.data['usersProfileData'];
+          List followingSocialsDatasList = res.data['usersSocialsData'];
+          if(isRefreshing){
+            users.value = [];
           }
-          if(mounted){
-            loadingState.value = LoadingState.loaded;
+          canPaginate.value = res.data['canPaginate'];
+          for(int i = 0; i < userProfileDataList.length; i++){
+            Map userProfileData = userProfileDataList[i];
+            UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
+            UserSocialClass userSocialClass = UserSocialClass.fromMap(followingSocialsDatasList[i]);
+            updateUserData(userDataClass);
+            updateUserSocials(userDataClass, userSocialClass);
+            users.value = [userProfileData['user_id'], ...users.value];
           }
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
 
   Future<void> loadMoreUsers() async{
-    try {
-      if(mounted){
-        loadingState.value = LoadingState.paginating;
-        paginationStatus.value = PaginationStatus.loading;
-        Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
-          timer.cancel();
-          await fetchProfileFollowing(users.value.length, false);
-          if(mounted){
-            paginationStatus.value = PaginationStatus.loaded;
-          }
-        });
-      }
-    } on Exception catch (e) {
-      
+    if(mounted){
+      loadingState.value = LoadingState.paginating;
+      paginationStatus.value = PaginationStatus.loading;
+      Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
+        timer.cancel();
+        await fetchProfileFollowing(users.value.length, false);
+        if(mounted){
+          paginationStatus.value = PaginationStatus.loaded;
+        }
+      });
     }
   }
 }

@@ -51,53 +51,48 @@ class ExploreController {
   }
 
   Future<void> fetchExploreData() async{
-    try {
-      String stringified = jsonEncode({
-        'currentID': appStateClass.currentID,
-        'paginationLimit': exploreDataLimit,
-      });
+    if(mounted){
+      users.value = [];
+      hashtags.value = [];
+      posts.value = [];
+      dynamic res = await fetchDataRepo.fetchData(
+        context, 
+        RequestGet.fetchTopData, 
+        {
+          'currentID': appStateClass.currentID,
+          'paginationLimit': exploreDataLimit,
+        }
+      );
       if(mounted){
-        users.value = [];
-        hashtags.value = [];
-        posts.value = [];
-      }
-      var res = await dio.get('$serverDomainAddress/users/fetchTopData', data: stringified);
-      if(res.data.isNotEmpty){
-        List postsData = res.data['postsData'];
-        List usersProfileDatasList = res.data['usersProfileData'];
-        List usersSocialsDatasList = res.data['usersSocialsData'];
-        List hashtagsData = res.data['hashtagsData'];
-        for(int i = 0; i < postsData.length; i++){
-          Map postData = postsData[i];
-          List<dynamic> mediasDatasFromServer = jsonDecode(postData['medias_datas']);            
-          List<MediaDatasClass> newMediasDatas = [];
-          newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
-          PostClass postDataClass = PostClass.fromMap(postData, newMediasDatas);
-          if(mounted){
+        loadingState.value = LoadingState.loaded;
+        if(res != null){
+          List postsData = res.data['postsData'];
+          List usersProfileDatasList = res.data['usersProfileData'];
+          List usersSocialsDatasList = res.data['usersSocialsData'];
+          List hashtagsData = res.data['hashtagsData'];
+          for(int i = 0; i < postsData.length; i++){
+            Map postData = postsData[i];
+            List<dynamic> mediasDatasFromServer = jsonDecode(postData['medias_datas']);            
+            List<MediaDatasClass> newMediasDatas = [];
+            newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
+            PostClass postDataClass = PostClass.fromMap(postData, newMediasDatas);
             updatePostData(postDataClass);
             posts.value = [...posts.value, DisplayPostDataClass(postData['sender'], postData['post_id'])];
-          } 
-        }
-        for(int i = 0; i < usersProfileDatasList.length; i++){
-          Map userProfileData = usersProfileDatasList[i];
-          UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-          UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
-          if(mounted){
+          }
+          for(int i = 0; i < usersProfileDatasList.length; i++){
+            Map userProfileData = usersProfileDatasList[i];
+            UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
+            UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
             updateUserData(userDataClass);
             updateUserSocials(userDataClass, userSocialClass);
             users.value = [userProfileData['user_id'], ...users.value];
           }
-        }
-        for(int i = 0; i < hashtagsData.length; i++){
-          Map hashtagData = hashtagsData[i];
-          if(mounted){
+          for(int i = 0; i < hashtagsData.length; i++){
+            Map hashtagData = hashtagsData[i];
             hashtags.value = [...hashtags.value, HashtagClass(hashtagData['hashtag'], hashtagData['hashtag_count'])];
           }
         }
-        loadingState.value = LoadingState.loaded;
       }
-    } on Exception catch (e) {
-      
     }
   }
 }

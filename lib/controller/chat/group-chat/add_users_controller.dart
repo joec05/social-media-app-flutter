@@ -60,9 +60,9 @@ class AddUsersToGroupController {
     if(mounted){
       if(!isSearching.value){
         isSearching.value = true;
-        dynamic res = await apiCallRepo.runAPICall(
+        dynamic res = await fetchDataRepo.fetchData(
           context, 
-          APIGet.fetchSearchedAddToGroupUsers, 
+          RequestGet.fetchSearchedAddToGroupUsers, 
           {
             'searchedText': searchedController.text,
             'recipients': groupProfile.value.recipients,
@@ -71,15 +71,17 @@ class AddUsersToGroupController {
             'paginationLimit': searchTagUsersFetchLimit
           }
         );
-        if(res != null && mounted){
+        if(mounted) {
           isSearching.value = false;
-          List userProfileDataList = res.data['usersProfileData'];
-          users.value = [];
-          for(int i = 0; i < userProfileDataList.length; i++){
-            Map userProfileData = userProfileDataList[i];
-            UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-            updateUserData(userDataClass);
-            users.value = [...users.value, userProfileData['user_id']];
+          if(res != null){
+            List userProfileDataList = res.data['usersProfileData'];
+            users.value = [];
+            for(int i = 0; i < userProfileDataList.length; i++){
+              Map userProfileData = userProfileDataList[i];
+              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
+              updateUserData(userDataClass);
+              users.value = [...users.value, userProfileData['user_id']];
+            }
           }
         }
       }
@@ -134,9 +136,9 @@ class AddUsersToGroupController {
             },
             'addedUsersData': addedUsersDataList
           });
-          await apiCallRepo.runAPICall(
+          await fetchDataRepo.fetchData(
             context,
-            APIPatch.addUsersToGroup,
+            RequestPatch.addUsersToGroup,
             {
               'chatID': chatID,
               'messagesID': messagesID,

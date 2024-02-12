@@ -65,13 +65,13 @@ class _ProfilePageWithUsernameWidgetStatefulState extends State<_ProfilePageWith
                               return PopupMenuButton(
                                 onSelected: (result) {
                                   if(result == 'Unmute'){
-                                    runDelay(() => unmuteUser(userData), actionDelayTime);
+                                    runDelay(() => unmuteUser(context, userData), actionDelayTime);
                                   }else if(result == 'Mute'){
-                                    runDelay(() => muteUser(userData), actionDelayTime);
+                                    runDelay(() => muteUser(context, userData), actionDelayTime);
                                   }else if(result == 'Unblock'){
-                                    runDelay(() => unblockUser(userData), actionDelayTime);
+                                    runDelay(() => unblockUser(context, userData), actionDelayTime);
                                   }else if(result == 'Block'){
-                                    runDelay(() => blockUser(userData, userSocials), actionDelayTime);
+                                    runDelay(() => blockUser(context, userData, userSocials), actionDelayTime);
                                   }
                                 },
                                 itemBuilder: (context) => <PopupMenuEntry>[
@@ -91,9 +91,9 @@ class _ProfilePageWithUsernameWidgetStatefulState extends State<_ProfilePageWith
                         return PopupMenuButton(
                           onSelected: (result) {
                             if(result == 'Lock Account'){
-                              runDelay(() => lockAccount(userData), actionDelayTime);
+                              runDelay(() => lockAccount(context, userData), actionDelayTime);
                             }else if(result == 'Unlock Account'){
-                              runDelay(() => unlockAccount(userData), actionDelayTime);
+                              runDelay(() => unlockAccount(context, userData), actionDelayTime);
                             }
                           },
                           itemBuilder: (context) => <PopupMenuEntry>[

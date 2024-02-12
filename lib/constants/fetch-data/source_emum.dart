@@ -1,0 +1,4 @@
+enum FetchDataSource {
+  api,
+  dummy
+}

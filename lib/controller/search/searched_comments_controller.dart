@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
@@ -49,62 +48,66 @@ class SearchedCommentsController {
   }
 
   Future<void> fetchSearchedComments(int currentCommentsLength, bool isRefreshing, bool isPaginating) async{
-    try {
-      if(mounted){
-        String stringified = '';
-        Response res;
+    if(mounted) {
+      try {
+        Map data;
+        RequestGet call;
         if(!isPaginating){
-          stringified = jsonEncode({
+          data = {
             'searchedText': searchedText,
             'currentID': appStateClass.currentID,
             'currentLength': currentCommentsLength,
             'paginationLimit': postsPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
-          });
-          res = await dio.get('$serverDomainAddress/users/fetchSearchedComments', data: stringified);
+          };
+          call = RequestGet.fetchSearchedComments;
         }else{
           List paginatedSearchedComments = await DatabaseHelper().fetchPaginatedSearchedComments(currentCommentsLength, postsPaginationLimit);
-          stringified = jsonEncode({
+          data = {
             'searchedText': searchedText,
             'searchedCommentsEncoded': jsonEncode(paginatedSearchedComments),
             'currentID': appStateClass.currentID,
             'currentLength': currentCommentsLength,
             'paginationLimit': postsPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
-          });
-          res = await dio.get('$serverDomainAddress/users/fetchSearchedCommentsPagination', data: stringified);
+          };
+          call = RequestGet.fetchSearchedCommentsPagination;
         }
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data'){
-            if(!isPaginating){
-              List searchedComments = res.data['searchedComments'];
-              await DatabaseHelper().replaceAllSearchedComments(searchedComments);
-            }
-            List modifiedSearchedCommentsData = res.data['modifiedSearchedComments'];
-            List userProfileDataList = res.data['usersProfileData'];
-            List usersSocialsDatasList = res.data['usersSocialsData'];
-            if(isRefreshing && mounted){
-              comments.value = [];
-            }
-            if(!isPaginating && mounted){
-              totalCommentsLength.value = min(res.data['totalCommentsLength'], postsServerFetchLimit);
-            }
-            for(int i = 0; i < userProfileDataList.length; i++){
-              Map userProfileData = userProfileDataList[i];
-              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-              UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
-              if(mounted){
+        if(mounted) {
+          dynamic res = await fetchDataRepo.fetchData(
+            context, 
+            call, 
+            data
+          );
+          if(mounted){
+            loadingState.value = LoadingState.loaded;
+            if(res != null){
+              if(!isPaginating){
+                List searchedComments = res.data['searchedComments'];
+                await DatabaseHelper().replaceAllSearchedComments(searchedComments);
+              }
+              List modifiedSearchedCommentsData = res.data['modifiedSearchedComments'];
+              List userProfileDataList = res.data['usersProfileData'];
+              List usersSocialsDatasList = res.data['usersSocialsData'];
+              if(isRefreshing){
+                comments.value = [];
+              }
+              if(!isPaginating){
+                totalCommentsLength.value = min(res.data['totalCommentsLength'], postsServerFetchLimit);
+              }
+              for(int i = 0; i < userProfileDataList.length; i++){
+                Map userProfileData = userProfileDataList[i];
+                UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
+                UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
                 updateUserData(userDataClass);
                 updateUserSocials(userDataClass, userSocialClass);
               }
-            }
-            for(int i = 0; i < modifiedSearchedCommentsData.length; i++){
-              Map commentData = modifiedSearchedCommentsData[i];
-              List<dynamic> mediasDatasFromServer = jsonDecode(commentData['medias_datas']);            
-              List<MediaDatasClass> newMediasDatas = [];
-              newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
-              CommentClass commentDataClass = CommentClass.fromMap(commentData, newMediasDatas);
-              if(mounted){ 
+              for(int i = 0; i < modifiedSearchedCommentsData.length; i++){
+                Map commentData = modifiedSearchedCommentsData[i];
+                List<dynamic> mediasDatasFromServer = jsonDecode(commentData['medias_datas']);            
+                List<MediaDatasClass> newMediasDatas = [];
+                newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
+                CommentClass commentDataClass = CommentClass.fromMap(commentData, newMediasDatas);
                 updateCommentData(commentDataClass);
                 if(comments.value.length < totalCommentsLength.value){
                   comments.value = [...comments.value, DisplayCommentDataClass(commentData['sender'], commentData['comment_id'])];
@@ -112,31 +115,31 @@ class SearchedCommentsController {
               }
             }
           }
-          if(mounted){
-            loadingState.value = LoadingState.loaded;
-          }
+        }
+      } catch (_) {
+        if(mounted) {
+          loadingState.value = LoadingState.loaded;
+          handler.displaySnackbar(
+            context, 
+            SnackbarType.error, 
+            tErr.unknown
+          );
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
 
   Future<void> loadMoreComments() async{
-    try {
-      if(mounted){
-        loadingState.value = LoadingState.paginating;
-        paginationStatus.value = PaginationStatus.loading;
-        Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
-          timer.cancel();
-          await fetchSearchedComments(comments.value.length, false, true);
-          if(mounted){
-            paginationStatus.value = PaginationStatus.loaded;
-          }
-        });
-      }
-    } on Exception catch (e) {
-      
+    if(mounted){
+      loadingState.value = LoadingState.paginating;
+      paginationStatus.value = PaginationStatus.loading;
+      Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
+        timer.cancel();
+        await fetchSearchedComments(comments.value.length, false, true);
+        if(mounted){
+          paginationStatus.value = PaginationStatus.loaded;
+        }
+      });
     }
   }
 

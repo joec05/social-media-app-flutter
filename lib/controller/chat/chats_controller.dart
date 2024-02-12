@@ -303,9 +303,9 @@ class ChatsController {
 
   Future<void> fetchChatsData(int currentPostsLength, bool isRefreshing, bool isPaginating) async{
     if(mounted){
-      dynamic res = await apiCallRepo.runAPICall(
+      dynamic res = await fetchDataRepo.fetchData(
         context, 
-        APIGet.fetchUserChats, 
+        RequestGet.fetchUserChats, 
         {
           'userID': appStateClass.currentID,
           'currentLength': currentPostsLength,
@@ -315,42 +315,42 @@ class ChatsController {
       );
       if(mounted) {
         loadingState.value = LoadingState.loaded;
-      }
-      if(res != null && mounted) {
-        List userChatsData = res.data['userChatsData'];
-        List usersProfileDatasList = res.data['recipientsProfileData'];
-        List usersSocialsDatasList = res.data['recipientsSocialsData'];
-        if(isRefreshing){
-          chats.value = [];
+        if(res != null) {
+          List userChatsData = res.data['userChatsData'];
+          List usersProfileDatasList = res.data['recipientsProfileData'];
+          List usersSocialsDatasList = res.data['recipientsSocialsData'];
+          if(isRefreshing){
+            chats.value = [];
+          }
+          canPaginate.value = res.data['canPaginate'];
+          for(int i = 0; i < usersProfileDatasList.length; i++){
+            Map userProfileData = usersProfileDatasList[i];
+            UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
+            UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
+            updateUserData(userDataClass);
+            updateUserSocials(userDataClass, userSocialClass);
+          }
+          for(int i = 0; i < userChatsData.length; i++){
+            Map chatData = userChatsData[i];
+            if(chatData['type'] == 'group' && chatData['latest_message_type'] != 'message'){
+              String senderName = usersProfileDatasList.where((e) => e['user_id'] == chatData['latest_message_sender']).toList()[0]['name'];
+              if(chatData['latest_message_type'] == 'edit_group_profile'){
+                chatData['latest_message_content'] = '$senderName has edited the group profile';
+              }else if(chatData['latest_message_type'] == 'leave_group'){
+                chatData['latest_message_content'] = '$senderName has left the group';
+              }else if(chatData['latest_message_type'].contains('add_users_to_group')){
+                String addedUserID = chatData['latest_message_type'].replaceAll('add_users_to_group_', '');
+                String addedUserName = usersProfileDatasList.where((e) => e['user_id'] == addedUserID).toList()[0]['name'];
+                chatData['latest_message_content'] = '$senderName has added $addedUserName to the group';
+              }
+            } 
+            chats.value = [...chats.value, ChatDataNotifier(
+              chatData['chat_id'], ValueNotifier(
+                ChatDataClass.fromMap(chatData)
+              )
+            )];
+          }          
         }
-        canPaginate.value = res.data['canPaginate'];
-        for(int i = 0; i < usersProfileDatasList.length; i++){
-          Map userProfileData = usersProfileDatasList[i];
-          UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-          UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
-          updateUserData(userDataClass);
-          updateUserSocials(userDataClass, userSocialClass);
-        }
-        for(int i = 0; i < userChatsData.length; i++){
-          Map chatData = userChatsData[i];
-          if(chatData['type'] == 'group' && chatData['latest_message_type'] != 'message'){
-            String senderName = usersProfileDatasList.where((e) => e['user_id'] == chatData['latest_message_sender']).toList()[0]['name'];
-            if(chatData['latest_message_type'] == 'edit_group_profile'){
-              chatData['latest_message_content'] = '$senderName has edited the group profile';
-            }else if(chatData['latest_message_type'] == 'leave_group'){
-              chatData['latest_message_content'] = '$senderName has left the group';
-            }else if(chatData['latest_message_type'].contains('add_users_to_group')){
-              String addedUserID = chatData['latest_message_type'].replaceAll('add_users_to_group_', '');
-              String addedUserName = usersProfileDatasList.where((e) => e['user_id'] == addedUserID).toList()[0]['name'];
-              chatData['latest_message_content'] = '$senderName has added $addedUserName to the group';
-            }
-          } 
-          chats.value = [...chats.value, ChatDataNotifier(
-            chatData['chat_id'], ValueNotifier(
-              ChatDataClass.fromMap(chatData)
-            )
-          )];
-        }          
       }
     }
   }
@@ -385,9 +385,9 @@ class ChatsController {
         );
       }
     }
-    await apiCallRepo.runAPICall(
+    await fetchDataRepo.fetchData(
       context, 
-      APIPatch.deletePrivateChat, 
+      RequestPatch.deletePrivateChat, 
       {
         'chatID': chatID,
         'currentID': appStateClass.currentID,
@@ -406,9 +406,9 @@ class ChatsController {
         );
       }
     }
-    await apiCallRepo.runAPICall(
+    await fetchDataRepo.fetchData(
       context, 
-      APIPatch.deleteGroupChat, 
+      RequestPatch.deleteGroupChat, 
       {
         'chatID': chatID,
         'currentID': appStateClass.currentID,

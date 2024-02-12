@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
@@ -45,16 +44,23 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
         'messageID': groupMessageData.messageID,
         'currentID': appStateClass.currentID,
       });
-      String stringified = jsonEncode({
-        'chatID': widget.chatID,
-        'messageID': groupMessageData.messageID,
-        'currentID': appStateClass.currentID,
-      });
-      var res = await dio.patch('$serverDomainAddress/users/deleteGroupMessage', data: stringified);
-      if(res.data.isNotEmpty){
+      await fetchDataRepo.fetchData(
+        context, 
+        RequestPatch.deleteGroupMessage,
+        {
+          'chatID': widget.chatID,
+          'messageID': groupMessageData.messageID,
+          'currentID': appStateClass.currentID,
+        }
+      );
+    } catch (e) {
+      if(mounted) {
+        handler.displaySnackbar(
+          context, 
+          SnackbarType.error, 
+          tErr.api
+        );  
       }
-    } on Exception catch (e) {
-      
     }
   }
 
@@ -67,17 +73,24 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
         'content': '',
         'recipients': widget.recipients
       });
-      String stringified = jsonEncode({
-        'chatID': widget.chatID,
-        'messageID': groupMessageData.messageID,
-        'currentID': appStateClass.currentID,
-        'recipients': widget.recipients
-      });
-      var res = await dio.patch('$serverDomainAddress/users/deleteGroupMessageForAll', data: stringified);
-      if(res.data.isNotEmpty){
+      await fetchDataRepo.fetchData(
+        context, 
+        RequestPatch.deleteGroupMessageForAll, 
+        {
+          'chatID': widget.chatID,
+          'messageID': groupMessageData.messageID,
+          'currentID': appStateClass.currentID,
+          'recipients': widget.recipients
+        }
+      );
+    } catch (_) {
+      if(mounted) {
+        handler.displaySnackbar(
+          context, 
+          SnackbarType.error, 
+          tErr.unknown
+        );
       }
-    } on Exception catch (e) {
-      
     }
   }
 

@@ -1,4 +1,4 @@
-enum APIPatch {
+enum RequestPatch {
   followUser,
   unfollowUser,
   likePost,

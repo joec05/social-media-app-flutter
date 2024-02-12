@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
@@ -59,42 +58,42 @@ class PostCommentsController {
   }
 
   Future<void> fetchPostData(int currentCommentsLength, bool isRefreshing, bool isPaginating) async{
-    try {
-      if(mounted){
-        String stringified = jsonEncode({
-          'sender': selectedPostData.sender,
-          'postID': selectedPostData.postID,
-          'currentID': appStateClass.currentID,
-          'currentLength': currentCommentsLength,
-          'paginationLimit': usersPaginationLimit,
-          'maxFetchLimit': postsServerFetchLimit
-        });
-        Response res;
+    if(mounted){
+      try {
+        RequestGet call;
         if(!isPaginating){
-          res = await dio.get('$serverDomainAddress/users/fetchSelectedPostComments', data: stringified);
+          call = RequestGet.fetchSelectedPostComments;
         }else{
-          res = await dio.get('$serverDomainAddress/users/fetchSelectedPostCommentsPagination', data: stringified);
+          call = RequestGet.fetchSelectedPostCommentsPagination;
         }
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data'){
+        dynamic res = fetchDataRepo.fetchData(
+          context, 
+          call, 
+          {
+            'sender': selectedPostData.sender,
+            'postID': selectedPostData.postID,
+            'currentID': appStateClass.currentID,
+            'currentLength': currentCommentsLength,
+            'paginationLimit': usersPaginationLimit,
+            'maxFetchLimit': postsServerFetchLimit
+          }
+        );
+        if(mounted){
+          loadingState.value = LoadingState.loaded;
+          if(res != null){
             List allPostsData = [...res.data['commentsData']];
             if(!isPaginating){
               allPostsData.insert(0, res.data['selectedPostData']);
             }
-            if(mounted){
-              canPaginate.value = res.data['canPaginate'];
-            }
+            canPaginate.value = res.data['canPaginate'];
             List userProfileDataList = res.data['usersProfileData'];
             List usersSocialsDatasList = res.data['usersSocialsData'];
-            
             for(int i = 0; i < userProfileDataList.length; i++){
               Map userProfileData = userProfileDataList[i];
               UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
               UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
-              if(mounted){
-                updateUserData(userDataClass);
-                updateUserSocials(userDataClass, userSocialClass);
-              }
+              updateUserData(userDataClass);
+              updateUserSocials(userDataClass, userSocialClass);
             }
             for(int i = 0; i < allPostsData.length; i++){
               if(allPostsData[i]['type'] == 'post'){
@@ -103,48 +102,44 @@ class PostCommentsController {
                 List<MediaDatasClass> newMediasDatas = [];
                 newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
                 PostClass postDataClass = PostClass.fromMap(postData, newMediasDatas);
-                if(mounted){
-                  updatePostData(postDataClass);
-                  selectedPost.value = DisplayPostDataClass(postData['sender'], postData['post_id']);
-                }
+                updatePostData(postDataClass);
+                selectedPost.value = DisplayPostDataClass(postData['sender'], postData['post_id']);
               }else{
                 Map commentData = allPostsData[i];
                 List<dynamic> mediasDatasFromServer = jsonDecode(commentData['medias_datas']);            
                 List<MediaDatasClass> newMediasDatas = [];
                 newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
                 CommentClass commentDataClass = CommentClass.fromMap(commentData, newMediasDatas);
-                if(mounted){
-                  updateCommentData(commentDataClass);
-                  comments.value = [...comments.value, DisplayCommentDataClass(commentData['sender'], commentData['comment_id'])];
-                }
+                updateCommentData(commentDataClass);
+                comments.value = [...comments.value, DisplayCommentDataClass(commentData['sender'], commentData['comment_id'])];
               }
             }
           }
-          if(mounted){
-            loadingState.value = LoadingState.loaded;
-          }
+        }
+      } catch (_) {
+        if(mounted) {
+          loadingState.value = LoadingState.loaded;
+          handler.displaySnackbar(
+            context, 
+            SnackbarType.error, 
+            tErr.unknown
+          );
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
 
   Future<void> loadMoreComments() async{
-    try {
-      if(mounted){
-        loadingState.value = LoadingState.paginating;
-        paginationStatus.value = PaginationStatus.loading;
-        Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
-          timer.cancel();
-          await fetchPostData(comments.value.length, false, true);
-          if(mounted){
-            paginationStatus.value = PaginationStatus.loaded;
-          }
-        });
-      }
-    } on Exception catch (e) {
-      
+    if(mounted){
+      loadingState.value = LoadingState.paginating;
+      paginationStatus.value = PaginationStatus.loading;
+      Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
+        timer.cancel();
+        await fetchPostData(comments.value.length, false, true);
+        if(mounted){
+          paginationStatus.value = PaginationStatus.loaded;
+        }
+      });
     }
   }
 }

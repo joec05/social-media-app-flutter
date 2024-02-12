@@ -59,35 +59,35 @@ class ProfileBookmarksController {
   }
 
   Future<void> fetchProfileBookmarks(int currentBookmarksLength, bool isRefreshing) async{
-    try {
-      if(mounted){
-        String stringified = jsonEncode({
-          'userID': userID,
-          'currentID': appStateClass.currentID,
-          'currentLength': currentBookmarksLength,
-          'paginationLimit': postsPaginationLimit,
-          'maxFetchLimit': postsServerFetchLimit
-        });
-        var res = await dio.get('$serverDomainAddress/users/fetchUserBookmarks', data: stringified);
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data'){
+    if(mounted){ 
+      try {
+        dynamic res = await fetchDataRepo.fetchData(
+          context, 
+          RequestGet.fetchUserBookmarks, 
+          {
+            'userID': userID,
+            'currentID': appStateClass.currentID,
+            'currentLength': currentBookmarksLength,
+            'paginationLimit': postsPaginationLimit,
+            'maxFetchLimit': postsServerFetchLimit
+          }
+        );
+        if(mounted){
+          loadingState.value = LoadingState.loaded;
+          if(res != null){
             List userBookmarksData = res.data['userBookmarksData'];
             List userProfileDataList = res.data['usersProfileData'];
             List usersSocialsDatasList = res.data['usersSocialsData'];
-            if(isRefreshing && mounted){
+            if(isRefreshing){
               posts.value = [];
             }
-            if(mounted){
-              canPaginate.value = res.data['canPaginate'];
-            }
+            canPaginate.value = res.data['canPaginate'];
             for(int i = 0; i < userProfileDataList.length; i++){
               Map userProfileData = userProfileDataList[i];
               UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
               UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
-              if(mounted){
-                updateUserData(userDataClass);
-                updateUserSocials(userDataClass, userSocialClass);
-              }
+              updateUserData(userDataClass);
+              updateUserSocials(userDataClass, userSocialClass);
             }
             for(int i = 0; i < userBookmarksData.length; i++){
               if(userBookmarksData[i]['type'] == 'post'){
@@ -96,48 +96,44 @@ class ProfileBookmarksController {
                 List<MediaDatasClass> newMediasDatas = [];
                 newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
                 PostClass postDataClass = PostClass.fromMap(postData, newMediasDatas);
-                if(mounted){
-                  updatePostData(postDataClass);
-                  posts.value = [...posts.value, DisplayPostDataClass(postData['sender'], postData['post_id'])];
-                }
+                updatePostData(postDataClass);
+                posts.value = [...posts.value, DisplayPostDataClass(postData['sender'], postData['post_id'])];
               }else{
                 Map commentData = userBookmarksData[i];
                 List<dynamic> mediasDatasFromServer = jsonDecode(commentData['medias_datas']);            
                 List<MediaDatasClass> newMediasDatas = [];
                 newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
                 CommentClass commentDataClass = CommentClass.fromMap(commentData, newMediasDatas);
-                if(mounted){
-                  updateCommentData(commentDataClass);
-                  posts.value = [...posts.value, DisplayCommentDataClass(commentData['sender'], commentData['comment_id'])];
-                }
+                updateCommentData(commentDataClass);
+                posts.value = [...posts.value, DisplayCommentDataClass(commentData['sender'], commentData['comment_id'])];
               }
             }
           }
-          if(mounted){
-            loadingState.value = LoadingState.loaded;
-          }
+        }
+      } catch (_) {
+        if(mounted) {
+          loadingState.value = LoadingState.loaded;
+          handler.displaySnackbar(
+            context, 
+            SnackbarType.error, 
+            tErr.unknown
+          ); 
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
 
   Future<void> loadMoreBookmarks() async{
-    try {
-      if(mounted){
-        loadingState.value = LoadingState.paginating;
-        paginationStatus.value = PaginationStatus.loading;
-        Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
-          timer.cancel();
-          await fetchProfileBookmarks(posts.value.length, false);
-          if(mounted){
-            paginationStatus.value = PaginationStatus.loaded;
-          }
-        });
-      }
-    } on Exception catch (e) {
-      
+    if(mounted){
+      loadingState.value = LoadingState.paginating;
+      paginationStatus.value = PaginationStatus.loading;
+      Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
+        timer.cancel();
+        await fetchProfileBookmarks(posts.value.length, false);
+        if(mounted){
+          paginationStatus.value = PaginationStatus.loaded;
+        }
+      });
     }
   }
 }

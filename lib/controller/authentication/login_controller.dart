@@ -66,35 +66,37 @@ class LoginController {
         }else{  
           if(mounted){
             isLoading.value = true;
-            dynamic res = await apiCallRepo.runAPICall(
+            dynamic res = await fetchDataRepo.fetchData(
               context, 
-              APIPost.loginWithEmail, 
+              RequestPost.loginWithEmail, 
               {
                 'email': emailController.text.trim(),
                 'password': passwordController.text.trim(),
               }
             );
-            if(res != null && mounted) {
+            if(mounted){
               isLoading.value = false;
-              appStateClass.currentID = res.data['userID'];
-              Map userProfileData = (res.data['userProfileData']);
-              UserDataClass userProfileDataClass = UserDataClass(
-                userProfileData['user_id'], userProfileData['name'], userProfileData['username'], userProfileData['profile_picture_link'], 
-                userProfileData['date_joined'], userProfileData['birth_date'], userProfileData['bio'], 
-                false, false, false, userProfileData['private'], false, false, userProfileData['verified'], false, false
-              );
-              UserSocialClass userSocialClass = UserSocialClass(
-                0, 0, false, false
-              );
-              updateUserData(userProfileDataClass);
-              updateUserSocials(userProfileDataClass, userSocialClass);
-              SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
-              runDelay(() => Navigator.pushAndRemoveUntil(
-                context,
-                SliderRightToLeftRoute(
-                  page: const MainPageWidget()),
-                (Route<dynamic> route) => false
-              ), navigatorDelayTime);
+              if(res != null) {
+                appStateClass.currentID = res.data['userID'];
+                Map userProfileData = (res.data['userProfileData']);
+                UserDataClass userProfileDataClass = UserDataClass(
+                  userProfileData['user_id'], userProfileData['name'], userProfileData['username'], userProfileData['profile_picture_link'], 
+                  userProfileData['date_joined'], userProfileData['birth_date'], userProfileData['bio'], 
+                  false, false, false, userProfileData['private'], false, false, userProfileData['verified'], false, false
+                );
+                UserSocialClass userSocialClass = UserSocialClass(
+                  0, 0, false, false
+                );
+                updateUserData(userProfileDataClass);
+                updateUserSocials(userProfileDataClass, userSocialClass);
+                SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
+                runDelay(() => Navigator.pushAndRemoveUntil(
+                  context,
+                  SliderRightToLeftRoute(
+                    page: const MainPageWidget()),
+                  (Route<dynamic> route) => false
+                ), navigatorDelayTime);
+              }
             }
           }
         }
@@ -114,36 +116,38 @@ class LoginController {
         }else{
           if(mounted){
             isLoading.value = true;
-            dynamic res = await apiCallRepo.runAPICall(
+            dynamic res = await fetchDataRepo.fetchData(
               context, 
-              APIPost.loginWithUsername, 
+              RequestPost.loginWithUsername, 
               {
                 'username': usernameController.text.trim(),
                 'password': passwordController.text.trim(),
               }
             );
-            if(res != null && mounted){
+            if(mounted) {
               isLoading.value = false;
-              appStateClass.currentID = res.data['userID'];
-              Map userProfileData = (res.data['userProfileData']);
-              UserDataClass userProfileDataClass = UserDataClass(
-                userProfileData['user_id'], userProfileData['name'], userProfileData['username'], userProfileData['profile_picture_link'], 
-                userProfileData['date_joined'], userProfileData['birth_date'], userProfileData['bio'], 
-                false, false, false, userProfileData['private'], false, false, userProfileData['verified'],
-                false, false
-              );
-              UserSocialClass userSocialClass = UserSocialClass(
-                0, 0, false, false
-              );
-              updateUserData(userProfileDataClass);
-              updateUserSocials(userProfileDataClass, userSocialClass);
-              SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
-              runDelay(() => Navigator.pushAndRemoveUntil(
-                context,
-                SliderRightToLeftRoute(
-                  page: const MainPageWidget()),
-                (Route<dynamic> route) => false
-              ), navigatorDelayTime); 
+              if(res != null) {
+                appStateClass.currentID = res.data['userID'];
+                Map userProfileData = (res.data['userProfileData']);
+                UserDataClass userProfileDataClass = UserDataClass(
+                  userProfileData['user_id'], userProfileData['name'], userProfileData['username'], userProfileData['profile_picture_link'], 
+                  userProfileData['date_joined'], userProfileData['birth_date'], userProfileData['bio'], 
+                  false, false, false, userProfileData['private'], false, false, userProfileData['verified'],
+                  false, false
+                );
+                UserSocialClass userSocialClass = UserSocialClass(
+                  0, 0, false, false
+                );
+                updateUserData(userProfileDataClass);
+                updateUserSocials(userProfileDataClass, userSocialClass);
+                SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
+                runDelay(() => Navigator.pushAndRemoveUntil(
+                  context,
+                  SliderRightToLeftRoute(
+                    page: const MainPageWidget()),
+                  (Route<dynamic> route) => false
+                ), navigatorDelayTime); 
+              }
             }
           }
         }

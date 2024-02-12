@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
@@ -36,38 +35,31 @@ class SearchChatUsersController {
   }
 
   Future<void> searchUsers(bool isPaginating) async{
-    try {
-      if(mounted){
-        isSearching.value = true;
-        String stringified = jsonEncode({
+    if(mounted){
+      isSearching.value = true;
+      dynamic res = await fetchDataRepo.fetchData(
+        context, 
+        RequestGet.fetchSearchedChatUsers, 
+        {
           'searchedText': searchedController.text,
           'currentID': appStateClass.currentID,
           'currentLength': isPaginating ? users.value.length : 0,
           'paginationLimit': searchChatUsersFetchLimit
-        });
-        var res = await dio.get('$serverDomainAddress/users/fetchSearchedChatUsers', data: stringified);
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data'){
-            List userProfileDataList = res.data['usersProfileData'];
-            if(mounted){
-              users.value = [];
-            }
-            for(int i = 0; i < userProfileDataList.length; i++){
-              Map userProfileData = userProfileDataList[i];
-              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-              if(mounted){
-                updateUserData(userDataClass);
-                users.value = [...users.value, userProfileData['user_id']];
-              }
-            }
-          }
-          if(mounted){
-            isSearching.value = false;
+        }
+      );
+      if(mounted) {
+        isSearching.value = false;
+        if(res != null) {
+          List userProfileDataList = res.data['usersProfileData'];
+          users.value = [];
+          for(int i = 0; i < userProfileDataList.length; i++) {
+            Map userProfileData = userProfileDataList[i];
+            UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
+            updateUserData(userDataClass);
+            users.value = [...users.value, userProfileData['user_id']];
           }
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
 

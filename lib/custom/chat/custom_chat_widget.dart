@@ -36,39 +36,31 @@ class CustomChatWidgetState extends State<CustomChatWidget> {
   }
 
   void navigateToGroupChat() async{
-    try {
-      runDelay(()async {
-        var action = await Navigator.push(
-          context,
-          SliderRightToLeftRoute(
-            page: GroupChatRoomWidget(chatID: chatData.chatID, recipients: null)
-          )
-        );
-        if(action != null && action == GroupMessageActions.deleteChat){
-          widget.deleteChat(chatData.chatID);
-        }
-      },  navigatorDelayTime);
-    } on Exception catch (e) {
-      
-    }
+    runDelay(()async {
+      var action = await Navigator.push(
+        context,
+        SliderRightToLeftRoute(
+          page: GroupChatRoomWidget(chatID: chatData.chatID, recipients: null)
+        )
+      );
+      if(action != null && action == GroupMessageActions.deleteChat){
+        widget.deleteChat(chatData.chatID);
+      }
+    }, navigatorDelayTime);
   }
 
   void navigateToPrivateChat() async{
-    try {
-      runDelay(()async {
-        var action = await Navigator.push(
-          context,
-          SliderRightToLeftRoute(
-            page: PrivateChatRoomWidget(chatID: chatData.chatID, recipient: chatData.recipient)
-          )
-        );
-        if(action != null && action == PrivateMessageActions.deleteChat){
-          widget.deleteChat(chatData.chatID);
-        }
-      }, navigatorDelayTime);
-    } on Exception catch (e) {
-      
-    }
+    runDelay(()async {
+      var action = await Navigator.push(
+        context,
+        SliderRightToLeftRoute(
+          page: PrivateChatRoomWidget(chatID: chatData.chatID, recipient: chatData.recipient)
+        )
+      );
+      if(action != null && action == PrivateMessageActions.deleteChat){
+        widget.deleteChat(chatData.chatID);
+      }
+    }, navigatorDelayTime);
   }
 
   @override

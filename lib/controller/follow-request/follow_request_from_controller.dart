@@ -63,9 +63,9 @@ class FollowRequestFromController {
   Future<void> fetchFollowRequestsFrom(int currentPostsLength, bool isRefreshing, bool isPaginating) async{
     if(mounted) {
       try {
-        dynamic res = await apiCallRepo.runAPICall(
+        dynamic res = await fetchDataRepo.fetchData(
           context, 
-          APIGet.fetchFollowRequestsFromUser, 
+          RequestGet.fetchFollowRequestsFromUser, 
           {
             'currentID': appStateClass.currentID,
             'currentLength': currentPostsLength,
@@ -75,22 +75,22 @@ class FollowRequestFromController {
         );
         if(mounted){
           loadingState.value = LoadingState.loaded;
-        }
-        if(res != null && mounted){
-          List usersProfileDataList = res.data['usersProfileData'];
-          List usersSocialsDataList = res.data['usersSocialsData'];
-          if(isRefreshing){
-            users.value = [];
+          if(res != null){
+            List usersProfileDataList = res.data['usersProfileData'];
+            List usersSocialsDataList = res.data['usersSocialsData'];
+            if(isRefreshing){
+              users.value = [];
+            }
+            for(int i = 0; i < usersProfileDataList.length; i++){
+              Map userProfileData = usersProfileDataList[i];
+              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
+              UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDataList[i]);
+              updateUserData(userDataClass);
+              updateUserSocials(userDataClass, userSocialClass);
+              users.value = [...users.value, userProfileData['user_id']];
+            }
+            canPaginate.value = res.data['canPaginate'];
           }
-          for(int i = 0; i < usersProfileDataList.length; i++){
-            Map userProfileData = usersProfileDataList[i];
-            UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-            UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDataList[i]);
-            updateUserData(userDataClass);
-            updateUserSocials(userDataClass, userSocialClass);
-            users.value = [...users.value, userProfileData['user_id']];
-          }
-          canPaginate.value = res.data['canPaginate'];
         }
       } catch (_) {
         if(mounted){

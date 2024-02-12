@@ -144,9 +144,9 @@ class EditGroupProfileController {
             'description': descriptionController.text.trim()
           }
         });
-        await apiCallRepo.runAPICall(
+        await fetchDataRepo.fetchData(
           context, 
-          APIPatch.editGroupProfileData, 
+          RequestPatch.editGroupProfileData, 
           {
             'chatID': chatID,
             'messageID': messageID,

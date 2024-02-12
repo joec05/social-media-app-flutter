@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:social_media_app/global_files.dart';
@@ -78,80 +76,44 @@ class EditUserProfileController {
   }
 
   void fetchUserProfileData() async{
-    try {
-      if(mounted){
-        isLoading.value = true;
-        String stringified = jsonEncode({
+    if(mounted){
+      isLoading.value = true;
+      dynamic res = await fetchDataRepo.fetchData(
+        context, 
+        RequestGet.fetchCurrentUserProfile, 
+        {
           'currentID': appStateClass.currentID
-        });
-        var res = await dio.get('$serverDomainAddress/users/fetchCurrentUserProfile', data: stringified);
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data'){
-            if(mounted){
-              Map userProfileData = res.data['userProfileData'];
-              nameController.text = userProfileData['name'];
-              usernameController.text = userProfileData['username'];
-              bioController.text = userProfileData['bio'];
-              imageNetworkPath.value = userProfileData['profile_picture_link'];
-              DateTime parsedBirthDate = DateTime.parse(userProfileData['birth_date']);
-              selectedBirthDate = parsedBirthDate;
-              birthDateController.text = '${parsedBirthDate.day}/${parsedBirthDate.month}/${parsedBirthDate.year}';
-            }
-          }else{
-            if(mounted){
-              showDialog(
-                context: context,
-                barrierDismissible: true,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text('Alert!!!', style: TextStyle(fontSize: defaultTextFontSize)),
-                    content: SingleChildScrollView(
-                      child: ListBody(
-                        children: [
-                          Text(res.data['message'], style: TextStyle(fontSize: defaultTextFontSize)),
-                        ],
-                      ),
-                    ),
-                    actions: <Widget>[
-                      TextButton(
-                        child: Text('Continue', style: TextStyle(fontSize: defaultTextFontSize)),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  );
-                },
-              );
-            }
-          }
-          if(mounted){
-            isLoading.value = false;
-          }
+        }
+      );
+      if(mounted){
+        isLoading.value = false;
+        if(res != null){
+          Map userProfileData = res.data['userProfileData'];
+          nameController.text = userProfileData['name'];
+          usernameController.text = userProfileData['username'];
+          bioController.text = userProfileData['bio'];
+          imageNetworkPath.value = userProfileData['profile_picture_link'];
+          DateTime parsedBirthDate = DateTime.parse(userProfileData['birth_date']);
+          selectedBirthDate = parsedBirthDate;
+          birthDateController.text = '${parsedBirthDate.day}/${parsedBirthDate.month}/${parsedBirthDate.year}';
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
   
   Future<void> selectBirthDate(BuildContext context) async {
-    try {
-      final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: selectedBirthDate,
-        firstDate: DateTime(1945, 1, 1),
-        lastDate: DateTime.now(),
-      );
-      if (picked != null && picked != selectedBirthDate){
-        selectedBirthDate = picked;
-        int day = picked.day;
-        int month = picked.month;
-        int year = picked.year;
-        birthDateController.text = '$day/$month/$year';
-      }
-    } on Exception catch (e) {
-      
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedBirthDate,
+      firstDate: DateTime(1945, 1, 1),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != selectedBirthDate){
+      selectedBirthDate = picked;
+      int day = picked.day;
+      int month = picked.month;
+      int year = picked.year;
+      birthDateController.text = '$day/$month/$year';
     }
   }
 
@@ -185,49 +147,14 @@ class EditUserProfileController {
     }
   }
 
-  Future<String> uploadMediaToAppWrite(String uniqueID, String bucketID, String uri) async{
-    String loadedUri = '';
-    final appWriteStorage = Storage(updateAppWriteClient());
-    await appWriteStorage.createFile(
-      bucketId: bucketID,
-      fileId: uniqueID,
-      file: fileToInputFile(uri, uniqueID)
-    ).then((response){
-      loadedUri = 'https://cloud.appwrite.io/v1/storage/buckets/$bucketID/files/$uniqueID/view?project=$appWriteUserID&mode=admin';
-    })
-    .catchError((error) {
-      debugPrint(error.toString());
-    });
-    return loadedUri;
-  }
-
   void editProfile() async{
-    try {
+    if(mounted) {
       if(!isLoading.value){
         if(checkUsernameValid(usernameController.text.trim()) == false){
-          showDialog(
-            context: context,
-            barrierDismissible: true,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Alert!!!', style: TextStyle(fontSize: defaultTextFontSize)),
-                content: SingleChildScrollView(
-                  child: ListBody(
-                    children: [
-                      Text('Username format is invalid.', style: TextStyle(fontSize: defaultTextFontSize)),
-                    ],
-                  ),
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: Text('Ok', style: TextStyle(fontSize: defaultTextFontSize)),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
+          handler.displaySnackbar(
+            context, 
+            SnackbarType.error, 
+            'Username format is invalid.'
           );
         }else{  
           String currentID = appStateClass.currentID;
@@ -235,67 +162,44 @@ class EditUserProfileController {
           String usernameText = usernameController.text.trim();
           String imagePath = '';
           if(imageFilePath.value.isNotEmpty){
-            imagePath = await uploadMediaToAppWrite(appStateClass.currentID, storageBucketIDs['image'], imageFilePath.value);
+            imagePath = await cloudController.uploadImageToAppWrite(
+              context,
+              imageFilePath.value
+            );
           }else{
             imagePath = imageNetworkPath.value;
           }
-          String stringified = jsonEncode({
-            'userID': currentID,
-            'name': nameText,
-            'username': usernameText,
-            'profilePicLink': imagePath,
-            'bio': bioController.text.trim(),
-            'birthDate': selectedBirthDate.toString()
-          });
-          var res = await dio.patch('$serverDomainAddress/users/editUserProfile', data: stringified);
-          if(res.data.isNotEmpty){
-            if(res.data['message'] == 'Successfully updated user profile'){
-              UserDataClass currentUserProfileDataClass = appStateClass.usersDataNotifiers.value[currentID]!.notifier.value;
-              UserDataClass updatedCurrentUserProfileDataClass = UserDataClass(
-                currentID, nameText, usernameText, imagePath, currentUserProfileDataClass.dateJoined, 
-                selectedBirthDate.toString(), bioController.text.trim(),
-                currentUserProfileDataClass.mutedByCurrentID, currentUserProfileDataClass.blockedByCurrentID, 
-                currentUserProfileDataClass.blocksCurrentID, currentUserProfileDataClass.private,
-                currentUserProfileDataClass.requestedByCurrentID, currentUserProfileDataClass.requestsToCurrentID,
-                currentUserProfileDataClass.verified, currentUserProfileDataClass.suspended, currentUserProfileDataClass.deleted
-              );
-              appStateClass.usersDataNotifiers.value[currentID]!.notifier.value = updatedCurrentUserProfileDataClass;
-              if(mounted){
-                Navigator.pop(context);
+          if(mounted){
+            dynamic res = await fetchDataRepo.fetchData(
+              context, 
+              RequestPatch.editUserProfile, 
+              {
+                'userID': currentID,
+                'name': nameText,
+                'username': usernameText,
+                'profilePicLink': imagePath,
+                'bio': bioController.text.trim(),
+                'birthDate': selectedBirthDate.toString()
               }
-            }else{
-              if(mounted){
-                showDialog(
-                  context: context,
-                  barrierDismissible: true,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text('Alert!!!', style: TextStyle(fontSize: defaultTextFontSize)),
-                      content: SingleChildScrollView(
-                        child: ListBody(
-                          children: [
-                            Text(res.data['message'], style: TextStyle(fontSize: defaultTextFontSize)),
-                          ],
-                        ),
-                      ),
-                      actions: <Widget>[
-                        TextButton(
-                          child: Text('Continue', style: TextStyle(fontSize: defaultTextFontSize)),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ],
-                    );
-                  },
+            );
+            if(mounted){
+              if(res != null){
+                UserDataClass currentUserProfileDataClass = appStateClass.usersDataNotifiers.value[currentID]!.notifier.value;
+                UserDataClass updatedCurrentUserProfileDataClass = UserDataClass(
+                  currentID, nameText, usernameText, imagePath, currentUserProfileDataClass.dateJoined, 
+                  selectedBirthDate.toString(), bioController.text.trim(),
+                  currentUserProfileDataClass.mutedByCurrentID, currentUserProfileDataClass.blockedByCurrentID, 
+                  currentUserProfileDataClass.blocksCurrentID, currentUserProfileDataClass.private,
+                  currentUserProfileDataClass.requestedByCurrentID, currentUserProfileDataClass.requestsToCurrentID,
+                  currentUserProfileDataClass.verified, currentUserProfileDataClass.suspended, currentUserProfileDataClass.deleted
                 );
+                appStateClass.usersDataNotifiers.value[currentID]!.notifier.value = updatedCurrentUserProfileDataClass;
+                Navigator.pop(context);
               }
             }
           }
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
 }

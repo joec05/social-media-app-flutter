@@ -125,7 +125,7 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                     CustomButton(
                       onTapped: (){
                         Navigator.pop(bottomSheetContext);
-                        runDelay(() => deleteComment(commentData, context), actionDelayTime) ;
+                        runDelay(() => deleteComment(context, commentData), actionDelayTime) ;
                       },
                       buttonText: 'Delete comment',
                       width: double.infinity,
@@ -307,9 +307,9 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                         (){
                           runDelay((){
                             if(commentData.likedByCurrentID){
-                              unlikeComment(commentData);
+                              unlikeComment(context, commentData);
                             }else{
-                              likeComment(commentData);
+                              likeComment(context, commentData);
                             }
                           }, actionDelayTime);
                         },
@@ -328,9 +328,9 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                         (){
                           runDelay((){
                             if(commentData.bookmarkedByCurrentID){
-                              unbookmarkComment(commentData);
+                              unbookmarkComment(context, commentData);
                             }else{
-                              bookmarkComment(commentData);
+                              bookmarkComment(context, commentData);
                             }
                           }, actionDelayTime);
                         },

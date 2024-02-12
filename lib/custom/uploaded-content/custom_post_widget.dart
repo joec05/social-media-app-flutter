@@ -126,7 +126,7 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
                     CustomButton(
                       onTapped: (){
                         Navigator.pop(bottomSheetContext);
-                        runDelay(() => deletePost(postData), actionDelayTime);
+                        runDelay(() => deletePost(context, postData), actionDelayTime);
                       },
                       buttonText: 'Delete post',
                       width: double.infinity,
@@ -308,9 +308,9 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
                         (){
                           runDelay((){
                             if(postData.likedByCurrentID){
-                              unlikePost(postData);
+                              unlikePost(context, postData);
                             }else{
-                              likePost(postData);
+                              likePost(context, postData);
                             }
                           }, actionDelayTime);
                         },
@@ -329,9 +329,9 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
                         (){
                           runDelay((){
                             if(postData.bookmarkedByCurrentID){
-                              unbookmarkPost(postData);
+                              unbookmarkPost(context, postData);
                             }else{
-                              bookmarkPost(postData);
+                              bookmarkPost(context, postData);
                             }
                           }, actionDelayTime);
                         },

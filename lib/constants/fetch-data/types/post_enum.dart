@@ -1,4 +1,4 @@
-enum APIPost {
+enum RequestPost {
   completeSignUpProfile,
   loginWithEmail,
   loginWithUsername,

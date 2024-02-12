@@ -51,9 +51,9 @@ class GroupMembersController {
   Future<void> fetchGroupMembersData(int currentUsersLength, bool isRefreshing) async{
     if(mounted){
       try {
-        dynamic res = await apiCallRepo.runAPICall(
+        dynamic res = await fetchDataRepo.fetchData(
           context, 
-          APIGet.fetchGroupMembersData, 
+          RequestGet.fetchGroupMembersData, 
           {
             'usersID': usersID,
             'currentID': appStateClass.currentID,
@@ -64,20 +64,20 @@ class GroupMembersController {
         );
         if(mounted){
           loadingState.value = LoadingState.loaded;
-        }
-        if(res != null && mounted){
-          List followersProfileDatasList = res.data['usersProfileData'];
-          List followersSocialsDatasList = res.data['usersSocialsData'];
-          if(isRefreshing){
-            users.value = [];
-          }
-          for(int i = 0; i < followersProfileDatasList.length; i++){
-            Map userProfileData = followersProfileDatasList[i];
-            UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-            UserSocialClass userSocialClass = UserSocialClass.fromMap(followersSocialsDatasList[i]);
-            updateUserData(userDataClass);
-            updateUserSocials(userDataClass, userSocialClass);
-            users.value = [userProfileData['user_id'], ...users.value];
+          if(res != null){
+            List followersProfileDatasList = res.data['usersProfileData'];
+            List followersSocialsDatasList = res.data['usersSocialsData'];
+            if(isRefreshing){
+              users.value = [];
+            }
+            for(int i = 0; i < followersProfileDatasList.length; i++){
+              Map userProfileData = followersProfileDatasList[i];
+              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
+              UserSocialClass userSocialClass = UserSocialClass.fromMap(followersSocialsDatasList[i]);
+              updateUserData(userDataClass);
+              updateUserSocials(userDataClass, userSocialClass);
+              users.value = [userProfileData['user_id'], ...users.value];
+            }
           }
         }
       } catch (_) {

@@ -60,25 +60,27 @@ class CompleteSignUpController {
         isLoading.value = true;
         String uploadProfilePic = await uploadMediaToAppWrite(appStateClass.currentID, storageBucketIDs['image'], imageFilePath.value);
         if(mounted){
-          dynamic res = await apiCallRepo.runAPICall(
+          dynamic res = await fetchDataRepo.fetchData(
             context, 
-            APIPost.completeSignUpProfile, 
+            RequestPost.completeSignUpProfile, 
             {
               'userId': appStateClass.currentID,
               'profilePicLink': uploadProfilePic,
               'bio': bioController.text.trim(),
             }
           );
-          if(res != null && mounted) {
+          if(mounted){
             isLoading.value = false;
-            appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.profilePicLink = uploadProfilePic;
-            runDelay(() => Navigator.pushAndRemoveUntil(
-              context,
-              SliderRightToLeftRoute(
-                page: const MainPageWidget()
-              ),
-              (Route<dynamic> route) => false
-            ), navigatorDelayTime);
+            if(res != null) {
+              appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.profilePicLink = uploadProfilePic;
+              runDelay(() => Navigator.pushAndRemoveUntil(
+                context,
+                SliderRightToLeftRoute(
+                  page: const MainPageWidget()
+                ),
+                (Route<dynamic> route) => false
+              ), navigatorDelayTime);
+            }
           }
         }
       }

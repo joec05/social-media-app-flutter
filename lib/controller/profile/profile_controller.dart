@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
@@ -48,37 +47,32 @@ class ProfileController {
   }
 
   Future<void> fetchProfileData() async{
-    try {
-      if(mounted){
-        isLoading.value = true;
-        profilePostsWidgetUniqueKey.value = UniqueKey();
-        profileRepliesWidgetUniqueKey.value = UniqueKey();
-        String stringified = jsonEncode({
+    if(mounted){
+      isLoading.value = true;
+      profilePostsWidgetUniqueKey.value = UniqueKey();
+      profileRepliesWidgetUniqueKey.value = UniqueKey();
+      dynamic res = await fetchDataRepo.fetchData(
+        context, 
+        RequestGet.fetchUserProfileSocials, 
+        {
           'userID': userID,
           'currentID': appStateClass.currentID,
-        });
-        var res = await dio.get('$serverDomainAddress/users/fetchUserProfileSocials', data: stringified);
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data'){
-            Map userProfileData = res.data['userProfileData'];
-            if(userProfileData['code'] == 0){
-            }else{
-              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-              Map userSocialsData = res.data['userSocialsData'];
-              UserSocialClass userSocialClass = UserSocialClass.fromMap(userSocialsData);
-              if(mounted){
-                updateUserData(userDataClass);
-                updateUserSocials(userDataClass, userSocialClass);
-              }
-            }
-          }
-          if(mounted){
-            isLoading.value = false;
+        }
+      ); 
+      if(mounted){
+        isLoading.value = false;
+        if(res != null){
+          Map userProfileData = res.data['userProfileData'];
+          if(userProfileData['code'] == 0){
+          }else{
+            UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
+            Map userSocialsData = res.data['userSocialsData'];
+            UserSocialClass userSocialClass = UserSocialClass.fromMap(userSocialsData);
+            updateUserData(userDataClass);
+            updateUserSocials(userDataClass, userSocialClass);
           }
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
 }

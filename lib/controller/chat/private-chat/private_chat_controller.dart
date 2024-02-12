@@ -123,8 +123,8 @@ class PrivateChatController {
     if(mounted){
       try {
         isLoading.value = true;
-        APIGet call = isPaginating ? APIGet.fetchPrivateChatPagination : APIGet.fetchPrivateChat;
-        dynamic res = await apiCallRepo.runAPICall(
+        RequestGet call = isPaginating ? RequestGet.fetchPrivateChatPagination : RequestGet.fetchPrivateChat;
+        dynamic res = await fetchDataRepo.fetchData(
           context, 
           call, 
           {
@@ -138,32 +138,32 @@ class PrivateChatController {
         );
         if(mounted){
           isLoading.value = false;
-        }
-        if(res != null && mounted){
-          if(res.data['message'] != 'blacklisted'){
-            chatID.value = res.data['chatID'];
-            List messagesData = res.data['messagesData'];
-            List usersProfileDatasList = res.data['membersProfileData'];
-            List usersSocialsDatasList = res.data['membersSocialsData'];
-            if(isRefreshing){
-              messages.value = [];
-            }
-            canPaginate.value = res.data['canPaginate'];
-            for(int i = 0; i < usersProfileDatasList.length; i++){
-              Map userProfileData = usersProfileDatasList[i];
-              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-              UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
-              updateUserData(userDataClass);
-              updateUserSocials(userDataClass, userSocialClass);
-            }
-            for(int i = 0; i < messagesData.length; i++){
-              Map messageData = messagesData[i];
-              List<MediaDatasClass> newMediasDatas = await loadMediasDatas(jsonDecode(messageData['medias_datas']));
-              messages.value = [...messages.value, PrivateMessageNotifier(
-                messageData['message_id'], ValueNotifier(
-                  PrivateMessageClass.fromMap(messageData, newMediasDatas)
-                )
-              )];
+          if(res != null){
+            if(res.data['message'] != 'blacklisted'){
+              chatID.value = res.data['chatID'];
+              List messagesData = res.data['messagesData'];
+              List usersProfileDatasList = res.data['membersProfileData'];
+              List usersSocialsDatasList = res.data['membersSocialsData'];
+              if(isRefreshing){
+                messages.value = [];
+              }
+              canPaginate.value = res.data['canPaginate'];
+              for(int i = 0; i < usersProfileDatasList.length; i++){
+                Map userProfileData = usersProfileDatasList[i];
+                UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
+                UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
+                updateUserData(userDataClass);
+                updateUserSocials(userDataClass, userSocialClass);
+              }
+              for(int i = 0; i < messagesData.length; i++){
+                Map messageData = messagesData[i];
+                List<MediaDatasClass> newMediasDatas = await loadMediasDatas(jsonDecode(messageData['medias_datas']));
+                messages.value = [...messages.value, PrivateMessageNotifier(
+                  messageData['message_id'], ValueNotifier(
+                    PrivateMessageClass.fromMap(messageData, newMediasDatas)
+                  )
+                )];
+              }
             }
           }
         }

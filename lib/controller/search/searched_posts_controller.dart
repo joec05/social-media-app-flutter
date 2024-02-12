@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
@@ -49,62 +48,66 @@ class SearchedPostsController {
   }
 
   Future<void> fetchSearchedPosts(int currentPostsLength, bool isRefreshing, bool isPaginating) async{
-    try {
-      if(mounted){
-        String stringified = '';
-        Response res;
+    if(mounted) {
+      try {
+        Map data;
+        RequestGet call;
         if(!isPaginating){
-          stringified = jsonEncode({
+          data = {
             'searchedText': searchedText,
             'currentID': appStateClass.currentID,
             'currentLength': currentPostsLength,
             'paginationLimit': postsPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
-          });
-          res = await dio.get('$serverDomainAddress/users/fetchSearchedPosts', data: stringified);
+          };
+          call = RequestGet.fetchSearchedPosts;
         }else{
           List paginatedSearchedPosts = await DatabaseHelper().fetchPaginatedSearchedPosts(currentPostsLength, postsPaginationLimit);
-          stringified = jsonEncode({
+          data = {
             'searchedText': searchedText,
             'searchedPostsEncoded': jsonEncode(paginatedSearchedPosts),
             'currentID': appStateClass.currentID,
             'currentLength': currentPostsLength,
             'paginationLimit': postsPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
-          });
-          res = await dio.get('$serverDomainAddress/users/fetchSearchedPostsPagination', data: stringified);
+          };
+          call = RequestGet.fetchSearchedPostsPagination;
         }
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data' && mounted){
-            if(!isPaginating){
-              List searchedPosts = res.data['searchedPosts'];
-              await DatabaseHelper().replaceAllSearchedPosts(searchedPosts);
-            }
-            List modifiedSearchedPostsData = res.data['modifiedSearchedPosts'];
-            List userProfileDataList = res.data['usersProfileData'];
-            List usersSocialsDatasList = res.data['usersSocialsData'];
-            if(isRefreshing && mounted){
-              posts.value = [];
-            }
-            if(!isPaginating && mounted){
-              totalPostsLength.value = min(res.data['totalPostsLength'], postsServerFetchLimit);
-            }
-            for(int i = 0; i < userProfileDataList.length; i++){
-              Map userProfileData = userProfileDataList[i];
-              UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-              UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
-              if(mounted){
+        if(mounted) {
+          dynamic res = await fetchDataRepo.fetchData(
+            context, 
+            call, 
+            data
+          );
+          if(mounted) {
+            loadingState.value = LoadingState.loaded;
+            if(res != null) {
+              if(!isPaginating){
+                List searchedPosts = res.data['searchedPosts'];
+                await DatabaseHelper().replaceAllSearchedPosts(searchedPosts);
+              }
+              List modifiedSearchedPostsData = res.data['modifiedSearchedPosts'];
+              List userProfileDataList = res.data['usersProfileData'];
+              List usersSocialsDatasList = res.data['usersSocialsData'];
+              if(isRefreshing){
+                posts.value = [];
+              }
+              if(!isPaginating){
+                totalPostsLength.value = min(res.data['totalPostsLength'], postsServerFetchLimit);
+              }
+              for(int i = 0; i < userProfileDataList.length; i++){
+                Map userProfileData = userProfileDataList[i];
+                UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
+                UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
                 updateUserData(userDataClass);
                 updateUserSocials(userDataClass, userSocialClass);
               }
-            }
-            for(int i = 0; i < modifiedSearchedPostsData.length; i++){
-              Map postData = modifiedSearchedPostsData[i];
-              List<dynamic> mediasDatasFromServer = jsonDecode(postData['medias_datas']);            
-              List<MediaDatasClass> newMediasDatas = [];
-              newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
-              PostClass postDataClass = PostClass.fromMap(postData, newMediasDatas);
-              if(mounted){
+              for(int i = 0; i < modifiedSearchedPostsData.length; i++){
+                Map postData = modifiedSearchedPostsData[i];
+                List<dynamic> mediasDatasFromServer = jsonDecode(postData['medias_datas']);            
+                List<MediaDatasClass> newMediasDatas = [];
+                newMediasDatas = await loadMediasDatas(mediasDatasFromServer);
+                PostClass postDataClass = PostClass.fromMap(postData, newMediasDatas);
                 updatePostData(postDataClass);
                 if(posts.value.length < totalPostsLength.value){
                   posts.value = [...posts.value, DisplayPostDataClass(postData['sender'], postData['post_id'])];
@@ -112,31 +115,31 @@ class SearchedPostsController {
               }
             }
           }
-          if(mounted){
-            loadingState.value = LoadingState.loaded;
-          }
+        }
+      } catch (_) {
+        if(mounted) {
+          loadingState.value = LoadingState.loaded;
+          handler.displaySnackbar(
+            context, 
+            SnackbarType.error, 
+            tErr.unknown
+          );
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
 
   Future<void> loadMorePosts() async{
-    try {
-      if(mounted){
-        loadingState.value = LoadingState.paginating;
-        paginationStatus.value = PaginationStatus.loading;
-        Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
-          timer.cancel();
-          await fetchSearchedPosts(posts.value.length, false, true);
-          if(mounted){
-            paginationStatus.value = PaginationStatus.loaded;
-          }
-        });
-      }
-    } on Exception catch (e) {
-      
+    if(mounted){
+      loadingState.value = LoadingState.paginating;
+      paginationStatus.value = PaginationStatus.loading;
+      Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
+        timer.cancel();
+        await fetchSearchedPosts(posts.value.length, false, true);
+        if(mounted){
+          paginationStatus.value = PaginationStatus.loaded;
+        }
+      });
     }
   }
 

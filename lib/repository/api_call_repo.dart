@@ -14,13 +14,13 @@ class APICallRepository {
   ) async{
     try {
       late Response res;
-      if (call is APIPost) {
+      if (call is RequestPost) {
         res = await _runAPIPost(call, data);
-      }else if (call is APIPatch){
+      }else if (call is RequestPatch){
         res = await _runAPIPatch(call, data);
-      }else if (call is APIGet){
+      }else if (call is RequestGet){
         res = await _runAPIGet(call, data);
-      }else if(call is APIDelete){
+      }else if(call is RequestDelete){
         res = await _runAPIDelete(call, data);
       }
       if(res.data != null){
@@ -48,7 +48,7 @@ class APICallRepository {
   }
 
   Future<Response> _runAPIGet(
-    APIGet call,
+    RequestGet call,
     Map data
   ) async{
     var request = await dio.get(
@@ -59,7 +59,7 @@ class APICallRepository {
   }
 
   Future<Response> _runAPIPatch(
-    APIPatch call,
+    RequestPatch call,
     Map data
   ) async{
     var request = await dio.patch(
@@ -70,7 +70,7 @@ class APICallRepository {
   }
 
   Future<Response> _runAPIPost(
-    APIPost call,
+    RequestPost call,
     Map data
   ) async{
     var request = await dio.post(
@@ -81,7 +81,7 @@ class APICallRepository {
   }
 
   Future<Response> _runAPIDelete(
-    APIDelete call,
+    RequestDelete call,
     Map data
   ) async{
     var request = await dio.delete(

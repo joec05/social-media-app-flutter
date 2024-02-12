@@ -72,61 +72,50 @@ class NotificationsController {
   }
 
   Future<void> fetchNotificationsData(int currentPostsLength, bool isRefreshing, bool isPaginating) async{
-    try {
-      if(mounted){
-        String stringified = jsonEncode({
+    if(mounted){
+      dynamic res = await fetchDataRepo.fetchData(
+        context, 
+        RequestGet.fetchUserNotifications, 
+        {
           'currentID': appStateClass.currentID,
           'currentLength': currentPostsLength,
           'paginationLimit': notificationsPaginationLimit,
           'maxFetchLimit': notificationsServerFetchLimit
-        }); 
-        var res = await dio.get('$serverDomainAddress/users/fetchUserNotifications', data: stringified);
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data'){
-            List userNotificationsData = res.data['userNotificationsData'];
-            if(isRefreshing && mounted){
-              notifications.value = [];
-            }
-            if(mounted){
-              canPaginate.value = res.data['canPaginate'];
-            }
-            for(int i = 0; i < userNotificationsData.length; i++){
-              Map notificationData = userNotificationsData[i];
-              if(mounted){
-                notifications.value = [...notifications.value, NotificationClass(
-                  notificationData['type'], notificationData['sender'], notificationData['referenced_post_id'], 
-                  notificationData['referenced_post_type'], notificationData['notified_time'], notificationData['content'], 
-                  (jsonDecode(notificationData['medias_datas'])), notificationData['sender_name'],
-                  notificationData['sender_profile_picture_link'], notificationData['parent_post_type'], notificationData['post_deleted']
-                )];
-              }
-            }
+        }
+      );
+      if(mounted){
+        loadingState.value = LoadingState.loaded;
+        if(res != null){
+          List userNotificationsData = res.data['userNotificationsData'];
+          if(isRefreshing){
+            notifications.value = [];
           }
-          if(mounted){ 
-            loadingState.value = LoadingState.loaded;
+          canPaginate.value = res.data['canPaginate'];
+          for(int i = 0; i < userNotificationsData.length; i++){
+            Map notificationData = userNotificationsData[i];
+            notifications.value = [...notifications.value, NotificationClass(
+              notificationData['type'], notificationData['sender'], notificationData['referenced_post_id'], 
+              notificationData['referenced_post_type'], notificationData['notified_time'], notificationData['content'], 
+              (jsonDecode(notificationData['medias_datas'])), notificationData['sender_name'],
+              notificationData['sender_profile_picture_link'], notificationData['parent_post_type'], notificationData['post_deleted']
+            )];
           }
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
 
   Future<void> loadMoreNotifications() async{
-    try {
-      if(mounted){
-        loadingState.value = LoadingState.paginating;
-        paginationStatus.value = PaginationStatus.loading;
-        Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
-          timer.cancel();
-          await fetchNotificationsData(notifications.value.length, false, true);
-          if(mounted){
-            paginationStatus.value = PaginationStatus.loaded;
-          }
-        });
-      }
-    } on Exception catch (e) {
-      
+    if(mounted){
+      loadingState.value = LoadingState.paginating;
+      paginationStatus.value = PaginationStatus.loading;
+      Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
+        timer.cancel();
+        await fetchNotificationsData(notifications.value.length, false, true);
+        if(mounted){
+          paginationStatus.value = PaginationStatus.loaded;
+        }
+      });
     }
   }
 

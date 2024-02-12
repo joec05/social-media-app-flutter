@@ -1,0 +1,3 @@
+enum RequestDelete {
+  deleteAccount
+}

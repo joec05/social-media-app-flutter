@@ -54,18 +54,22 @@ class ProfileRepliesController {
   }
 
   Future<void> fetchProfileReplies(int currentCommentsLength, bool isRefreshing) async{
-    try {
-      if(mounted){
-        String stringified = jsonEncode({
-          'userID': userID,
-          'currentID': appStateClass.currentID,
-          'currentLength': currentCommentsLength,
-          'paginationLimit': postsPaginationLimit,
-          'maxFetchLimit': postsServerFetchLimit
-        });
-        var res = await dio.get('$serverDomainAddress/users/fetchUserComments', data: stringified);
-        if(res.data.isNotEmpty){
-          if(res.data['message'] == 'Successfully fetched data'){
+    if(mounted){
+      try {
+        dynamic res = await fetchDataRepo.fetchData(
+          context, 
+          RequestGet.fetchUserComments, 
+          {
+            'userID': userID,
+            'currentID': appStateClass.currentID,
+            'currentLength': currentCommentsLength,
+            'paginationLimit': postsPaginationLimit,
+            'maxFetchLimit': postsServerFetchLimit
+          }
+        );
+        if(mounted) {
+          loadingState.value = LoadingState.loaded;
+          if(res != null) {
             List userCommentsData = res.data['userCommentsData'];
             List userProfileDataList = res.data['usersProfileData'];
             List usersSocialsDatasList = res.data['usersSocialsData'];
@@ -96,31 +100,31 @@ class ProfileRepliesController {
               }
             }
           }
-          if(mounted){
-            loadingState.value = LoadingState.loaded;
-          }
+        }
+      } catch (_) {
+        if(mounted) {
+          loadingState.value = LoadingState.loaded;
+          handler.displaySnackbar(
+            context, 
+            SnackbarType.error, 
+            tErr.unknown
+          );
         }
       }
-    } on Exception catch (e) {
-      
     }
   }
 
   Future<void> loadMoreComments() async{
-    try {
-      if(mounted){
-        loadingState.value = LoadingState.paginating;
-        paginationStatus.value = PaginationStatus.loading;
-        Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
-          timer.cancel();
-          await fetchProfileReplies(comments.value.length, false);
-          if(mounted){
-            paginationStatus.value = PaginationStatus.loaded;
-          }
-        });
-      }
-    } on Exception catch (e) {
-      
+    if(mounted){
+      loadingState.value = LoadingState.paginating;
+      paginationStatus.value = PaginationStatus.loading;
+      Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
+        timer.cancel();
+        await fetchProfileReplies(comments.value.length, false);
+        if(mounted){
+          paginationStatus.value = PaginationStatus.loaded;
+        }
+      });
     }
   }
 }

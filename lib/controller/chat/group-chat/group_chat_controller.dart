@@ -164,8 +164,8 @@ class GroupChatController {
       try{
         if(recipientsList == null){
           isLoading.value = true;
-          APIGet call = isPaginating ? APIGet.fetchGroupChatPagination : APIGet.fetchGroupChat;
-          dynamic res = await apiCallRepo.runAPICall(
+          RequestGet call = isPaginating ? RequestGet.fetchGroupChatPagination : RequestGet.fetchGroupChat;
+          dynamic res = await fetchDataRepo.fetchData(
             context, 
             call, 
             {
@@ -178,53 +178,53 @@ class GroupChatController {
           );
           if(mounted){
             isLoading.value = false;
-          }
-          if(res != null && mounted){
-            if(res.data['message'] != 'blacklisted'){
-              chatID.value = res.data['chatID'];
-              List messagesData = res.data['messagesData'];
-              List usersProfileDatasList = res.data['membersProfileData'];
-              List usersSocialsDatasList = res.data['membersSocialsData'];
-              if(!isPaginating){
-                List<String> groupMembersID = List<String>.from(res.data['groupMembersID']);
-                Map groupProfileData = res.data['groupProfileData'];
-                groupProfile.value = GroupProfileClass(
-                  groupProfileData['name'], groupProfileData['profile_pic_link'], 
-                  groupProfileData['description'], groupMembersID
-                );
-              }
-              if(isRefreshing){
-                messages.value = [];
-              }
-              canPaginate.value = res.data['canPaginate'];
-              for(int i = 0; i < usersProfileDatasList.length; i++){
-                Map userProfileData = usersProfileDatasList[i];
-                UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-                UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
-                updateUserData(userDataClass);
-                updateUserSocials(userDataClass, userSocialClass);
-              }
-              for(int i = 0; i < messagesData.length; i++){
-                Map messageData = messagesData[i];
-                if(messageData['type'] != 'message'){
-                  String senderName = usersProfileDatasList.where((e) => e['user_id'] == messageData['sender']).toList()[0]['name'];
-                  if(messageData['type'] == 'edit_group_profile'){
-                    messageData['content'] = '$senderName has edited the group profile';
-                  }else if(messageData['type'] == 'leave_group'){
-                    messageData['content'] = '$senderName has left the group';
-                  }else if(messageData['type'].contains('add_users_to_group')){
-                    String addedUserID = messageData['type'].replaceAll('add_users_to_group_', '');
-                    String addedUserName = usersProfileDatasList.where((e) => e['user_id'] == addedUserID).toList()[0]['name'];
-                    messageData['content'] = '$senderName has added $addedUserName to the group';
+            if(res != null){
+              if(res.data['message'] != 'blacklisted'){
+                chatID.value = res.data['chatID'];
+                List messagesData = res.data['messagesData'];
+                List usersProfileDatasList = res.data['membersProfileData'];
+                List usersSocialsDatasList = res.data['membersSocialsData'];
+                if(!isPaginating){
+                  List<String> groupMembersID = List<String>.from(res.data['groupMembersID']);
+                  Map groupProfileData = res.data['groupProfileData'];
+                  groupProfile.value = GroupProfileClass(
+                    groupProfileData['name'], groupProfileData['profile_pic_link'], 
+                    groupProfileData['description'], groupMembersID
+                  );
+                }
+                if(isRefreshing){
+                  messages.value = [];
+                }
+                canPaginate.value = res.data['canPaginate'];
+                for(int i = 0; i < usersProfileDatasList.length; i++){
+                  Map userProfileData = usersProfileDatasList[i];
+                  UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
+                  UserSocialClass userSocialClass = UserSocialClass.fromMap(usersSocialsDatasList[i]);
+                  updateUserData(userDataClass);
+                  updateUserSocials(userDataClass, userSocialClass);
+                }
+                for(int i = 0; i < messagesData.length; i++){
+                  Map messageData = messagesData[i];
+                  if(messageData['type'] != 'message'){
+                    String senderName = usersProfileDatasList.where((e) => e['user_id'] == messageData['sender']).toList()[0]['name'];
+                    if(messageData['type'] == 'edit_group_profile'){
+                      messageData['content'] = '$senderName has edited the group profile';
+                    }else if(messageData['type'] == 'leave_group'){
+                      messageData['content'] = '$senderName has left the group';
+                    }else if(messageData['type'].contains('add_users_to_group')){
+                      String addedUserID = messageData['type'].replaceAll('add_users_to_group_', '');
+                      String addedUserName = usersProfileDatasList.where((e) => e['user_id'] == addedUserID).toList()[0]['name'];
+                      messageData['content'] = '$senderName has added $addedUserName to the group';
+                    }
+                  } 
+                  List<MediaDatasClass> newMediasDatas = await loadMediasDatas(jsonDecode(messageData['medias_datas']));
+                  if(mounted){
+                    messages.value = [...messages.value, GroupMessageNotifier(
+                      messageData['message_id'], ValueNotifier(
+                        GroupMessageClass.fromMap(messageData, newMediasDatas)
+                      )
+                    )];
                   }
-                } 
-                List<MediaDatasClass> newMediasDatas = await loadMediasDatas(jsonDecode(messageData['medias_datas']));
-                if(mounted){
-                  messages.value = [...messages.value, GroupMessageNotifier(
-                    messageData['message_id'], ValueNotifier(
-                      GroupMessageClass.fromMap(messageData, newMediasDatas)
-                    )
-                  )];
                 }
               }
             }
