@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
@@ -55,101 +56,99 @@ class LoginController {
   }
   
   void loginWithEmail() async{
+    try {
+      if(mounted){
+        if(!isLoading.value){
+          if(checkEmailValid(emailController.text.trim()) == false){
+            handler.displaySnackbar(
+              context,
+              SnackbarType.error,
+              'Email format is invalid'
+            );
+          }else{  
+            if(mounted){
+              isLoading.value = true;
+              await authRepo.loginUserWithEmailAndPassword(
+                context, 
+                emailController.text.trim(), 
+                passwordController.text.trim()
+              ).then((value) async{
+                isLoading.value = false;
+                User? user = authRepo.currentUser.value;
+                if(user != null){
+                  isLoading.value = true;
+                  var verified = authRepo.currentUser.value?.emailVerified == false ? 
+                    await Navigator.push(
+                      context,
+                      SliderRightToLeftRoute(
+                        page: const EmailVerificationPage()
+                      )
+                    )
+                  : true;
+                  if(verified == true && mounted){
+                    dynamic res = await fetchDataRepo.fetchData(
+                      context, 
+                      RequestPost.loginWithEmail, 
+                      {
+                        'email': emailController.text.trim(),
+                      }
+                    );
+                    if(mounted){
+                      isLoading.value = false;
+                      if(res != null) {
+                        appStateRepo.currentID = res['userID'];
+                        Map userProfileData = (res['userProfileData']);
+                        UserDataClass userProfileDataClass = UserDataClass(
+                          userProfileData['user_id'], userProfileData['name'], userProfileData['username'], userProfileData['profile_picture_link'], 
+                          userProfileData['date_joined'], userProfileData['birth_date'], userProfileData['bio'], 
+                          false, false, false, userProfileData['private'], false, false, userProfileData['verified'], false, false
+                        );
+                        UserSocialClass userSocialClass = UserSocialClass(
+                          0, 0, false, false
+                        );
+                        updateUserData(userProfileDataClass);
+                        updateUserSocials(userProfileDataClass, userSocialClass);
+                        secureStorageController.writeUserState(
+                          AppLifecycleState.resumed.name, 
+                          DateTime.now().toIso8601String()
+                        );
+                        runDelay(() => Navigator.pushAndRemoveUntil(
+                          context,
+                          SliderRightToLeftRoute(
+                            page: const MainPageWidget()),
+                          (Route<dynamic> route) => false
+                        ), navigatorDelayTime);
+                      }
+                    }
+                  }
+                }
+              });
+            }
+          }
+        }
+      }
+    } catch (_) {
+      isLoading.value = false;
+    }
+  }
+
+  void resetPassword(BuildContext context) async{
     if(mounted){
       if(!isLoading.value){
-        if(checkEmailValid(emailController.text.trim()) == false){
+        if(emailController.text.isEmpty){
+          handler.displaySnackbar(
+            context,
+            SnackbarType.error,
+            'Please fill your email'
+          );
+        }else if(checkEmailValid(emailController.text.trim()) == false){
           handler.displaySnackbar(
             context,
             SnackbarType.error,
             'Email format is invalid'
           );
         }else{  
-          if(mounted){
-            isLoading.value = true;
-            dynamic res = await fetchDataRepo.fetchData(
-              context, 
-              RequestPost.loginWithEmail, 
-              {
-                'email': emailController.text.trim(),
-                'password': passwordController.text.trim(),
-              }
-            );
-            if(mounted){
-              isLoading.value = false;
-              if(res != null) {
-                appStateClass.currentID = res.data['userID'];
-                Map userProfileData = (res.data['userProfileData']);
-                UserDataClass userProfileDataClass = UserDataClass(
-                  userProfileData['user_id'], userProfileData['name'], userProfileData['username'], userProfileData['profile_picture_link'], 
-                  userProfileData['date_joined'], userProfileData['birth_date'], userProfileData['bio'], 
-                  false, false, false, userProfileData['private'], false, false, userProfileData['verified'], false, false
-                );
-                UserSocialClass userSocialClass = UserSocialClass(
-                  0, 0, false, false
-                );
-                updateUserData(userProfileDataClass);
-                updateUserSocials(userProfileDataClass, userSocialClass);
-                SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
-                runDelay(() => Navigator.pushAndRemoveUntil(
-                  context,
-                  SliderRightToLeftRoute(
-                    page: const MainPageWidget()),
-                  (Route<dynamic> route) => false
-                ), navigatorDelayTime);
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  void loginWithUsername() async{
-    if(mounted){
-      if(!isLoading.value){
-        if(checkUsernameValid(usernameController.text.trim()) == false){
-          handler.displaySnackbar(
-            context,
-            SnackbarType.error,
-            'Username format is invalid'
-          );
-        }else{
-          if(mounted){
-            isLoading.value = true;
-            dynamic res = await fetchDataRepo.fetchData(
-              context, 
-              RequestPost.loginWithUsername, 
-              {
-                'username': usernameController.text.trim(),
-                'password': passwordController.text.trim(),
-              }
-            );
-            if(mounted) {
-              isLoading.value = false;
-              if(res != null) {
-                appStateClass.currentID = res.data['userID'];
-                Map userProfileData = (res.data['userProfileData']);
-                UserDataClass userProfileDataClass = UserDataClass(
-                  userProfileData['user_id'], userProfileData['name'], userProfileData['username'], userProfileData['profile_picture_link'], 
-                  userProfileData['date_joined'], userProfileData['birth_date'], userProfileData['bio'], 
-                  false, false, false, userProfileData['private'], false, false, userProfileData['verified'],
-                  false, false
-                );
-                UserSocialClass userSocialClass = UserSocialClass(
-                  0, 0, false, false
-                );
-                updateUserData(userProfileDataClass);
-                updateUserSocials(userProfileDataClass, userSocialClass);
-                SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
-                runDelay(() => Navigator.pushAndRemoveUntil(
-                  context,
-                  SliderRightToLeftRoute(
-                    page: const MainPageWidget()),
-                  (Route<dynamic> route) => false
-                ), navigatorDelayTime); 
-              }
-            }
-          }
+          authRepo.resetPassword(context, emailController.text.trim());
         }
       }
     }

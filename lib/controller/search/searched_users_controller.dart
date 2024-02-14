@@ -54,7 +54,7 @@ class SearchedUsersController {
       if(!isPaginating){
         data = {
           'searchedText': searchedText,
-          'currentID': appStateClass.currentID,
+          'currentID': appStateRepo.currentID,
           'currentLength': currentUsersLength,
           'paginationLimit': usersPaginationLimit,
           'maxFetchLimit': usersServerFetchLimit
@@ -65,7 +65,7 @@ class SearchedUsersController {
         data = {
           'searchedText': searchedText,
           'searchedUsersEncoded': jsonEncode(paginatedSearchedUsers),
-          'currentID': appStateClass.currentID,
+          'currentID': appStateRepo.currentID,
           'currentLength': currentUsersLength,
           'paginationLimit': usersPaginationLimit,
           'maxFetchLimit': usersServerFetchLimit
@@ -82,16 +82,16 @@ class SearchedUsersController {
           loadingState.value = LoadingState.loaded;
           if(res != null){
             if(!isPaginating){
-              List searchedUsers = res.data['searchedUsers'];
+              List searchedUsers = res['searchedUsers'];
               await DatabaseHelper().replaceAllSearchedUsers(searchedUsers);
             }
-            List userProfileDataList = res.data['usersProfileData'];
-            List usersSocialsDatasList = res.data['usersSocialsData'];
+            List userProfileDataList = res['usersProfileData'];
+            List usersSocialsDatasList = res['usersSocialsData'];
             if(isRefreshing){
               users.value = [];
             }
             if(!isPaginating){
-              totalUsersLength.value = min(res.data['totalUsersLength'], usersServerFetchLimit);
+              totalUsersLength.value = min(res['totalUsersLength'], usersServerFetchLimit);
             }
             for(int i = 0; i < userProfileDataList.length; i++){
               Map userProfileData = userProfileDataList[i];

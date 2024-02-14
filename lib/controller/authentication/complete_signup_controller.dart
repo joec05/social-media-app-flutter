@@ -58,13 +58,13 @@ class CompleteSignUpController {
     if(mounted){
       if(!isLoading.value){
         isLoading.value = true;
-        String uploadProfilePic = await uploadMediaToAppWrite(appStateClass.currentID, storageBucketIDs['image'], imageFilePath.value);
+        String uploadProfilePic = await uploadMediaToAppWrite(appStateRepo.currentID, storageBucketIDs['image'], imageFilePath.value);
         if(mounted){
           dynamic res = await fetchDataRepo.fetchData(
             context, 
             RequestPost.completeSignUpProfile, 
             {
-              'userId': appStateClass.currentID,
+              'userId': appStateRepo.currentID,
               'profilePicLink': uploadProfilePic,
               'bio': bioController.text.trim(),
             }
@@ -72,7 +72,7 @@ class CompleteSignUpController {
           if(mounted){
             isLoading.value = false;
             if(res != null) {
-              appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.profilePicLink = uploadProfilePic;
+              appStateRepo.usersDataNotifiers.value[appStateRepo.currentID]!.notifier.value.profilePicLink = uploadProfilePic;
               runDelay(() => Navigator.pushAndRemoveUntil(
                 context,
                 SliderRightToLeftRoute(

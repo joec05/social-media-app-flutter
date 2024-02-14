@@ -58,17 +58,17 @@ class ProfileWithUsernameController {
         RequestGet.fetchUserProfileSocialsWithUsername, 
         {
           'username': username,
-          'currentID': appStateClass.currentID,
+          'currentID': appStateRepo.currentID,
         }
       );
       if(mounted) {
         isLoading.value = false;
         if(res != null) {
-          Map userProfileData = res.data['userProfileData'];
+          Map userProfileData = res['userProfileData'];
           if(userProfileData['code'] == 0){
           }else{
             UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
-            Map userSocialsData = res.data['userSocialsData'];
+            Map userSocialsData = res['userSocialsData'];
             UserSocialClass userSocialClass = UserSocialClass.fromMap(userSocialsData);
             updateUserData(userDataClass);
             updateUserSocials(userDataClass, userSocialClass);

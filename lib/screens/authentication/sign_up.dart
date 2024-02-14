@@ -86,6 +86,7 @@ class _SignUpStatefulState extends State<SignUpStateful> {
                       textFieldWithDescription(
                         TextField(
                           controller: controller.emailController,
+                          keyboardType: TextInputType.emailAddress,
                           decoration: generateProfileTextFieldDecoration('your email', Icons.mail),
                         ),
                         'Email',
@@ -166,14 +167,17 @@ class _SignUpStatefulState extends State<SignUpStateful> {
                             bool passwordVerified = controller.verifyPasswordFormat.value;
                             bool isLoadingValue = controller.isLoading.value;
                             return CustomButton(
-                              width: defaultTextFieldButtonSize.width, height: defaultTextFieldButtonSize.height,
-                              buttonColor: nameVerified && usernameVerified && emailVerified 
+                              width: defaultTextFieldButtonSize.width, 
+                              height: defaultTextFieldButtonSize.height,
+                              color: nameVerified && usernameVerified && emailVerified 
                               && passwordVerified && birthDateVerified && !isLoadingValue ? Colors.red : Colors.grey, 
-                              buttonText: 'Sign Up', 
+                              text: 'Sign Up', 
                               onTapped: nameVerified && usernameVerified && emailVerified 
                               && passwordVerified && birthDateVerified && !isLoadingValue ?
                                 controller.signUp : () {},
                               setBorderRadius: true,
+                              prefix: null,
+                              loading: isLoadingValue,
                             );
                           }
                         )

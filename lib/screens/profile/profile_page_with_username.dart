@@ -53,14 +53,14 @@ class _ProfilePageWithUsernameWidgetStatefulState extends State<_ProfilePageWith
                 decoration: defaultAppBarDecoration
               ),
               actions: <Widget>[
-                appStateClass.usersDataNotifiers.value[userID] != null ? 
+                appStateRepo.usersDataNotifiers.value[userID] != null ? 
                   ValueListenableBuilder(
-                    valueListenable: appStateClass.usersDataNotifiers.value[userID]!.notifier,
+                    valueListenable: appStateRepo.usersDataNotifiers.value[userID]!.notifier,
                     builder: ((context, userData, child) {
                       if(!userData.suspended && !userData.deleted){
-                        if(userData.userID != appStateClass.currentID){
+                        if(userData.userID != appStateRepo.currentID){
                           return ValueListenableBuilder(
-                            valueListenable: appStateClass.usersSocialsNotifiers.value[userID]!.notifier,
+                            valueListenable: appStateRepo.usersSocialsNotifiers.value[userID]!.notifier,
                             builder: ((context, userSocials, child) {
                               return PopupMenuButton(
                                 onSelected: (result) {
@@ -131,9 +131,9 @@ class _ProfilePageWithUsernameWidgetStatefulState extends State<_ProfilePageWith
                               builder: (context, isLoadingValue, child) {
                                 if(!isLoadingValue){
                                   if(userID.isNotEmpty){
-                                    if(appStateClass.usersDataNotifiers.value[userID] != null){
+                                    if(appStateRepo.usersDataNotifiers.value[userID] != null){
                                       return ValueListenableBuilder(
-                                        valueListenable: appStateClass.usersDataNotifiers.value[userID]!.notifier,
+                                        valueListenable: appStateRepo.usersDataNotifiers.value[userID]!.notifier,
                                         builder: ((context, userData, child) {
                                           return CustomProfileHeader(
                                             userID: userID, userData: userData, key: UniqueKey(),

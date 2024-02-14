@@ -28,7 +28,7 @@ void navigateBackToInitialScreen(BuildContext context) async{
   runDelay(()async => await Navigator.pushAndRemoveUntil(
     context,
     SliderRightToLeftRoute(
-      page: const MyApp()
+      page: const SocialMediaApp()
     ),
     (Route<dynamic> route) => false
   ), navigatorDelayTime);

@@ -63,7 +63,7 @@ class ProfileFollowingController {
         RequestGet.fetchUserProfileFollowing, 
         {
           'userID': userID,
-          'currentID': appStateClass.currentID,
+          'currentID': appStateRepo.currentID,
           'currentLength': currentUsersLength,
           'paginationLimit': usersPaginationLimit,
           'maxFetchLimit': usersServerFetchLimit
@@ -72,12 +72,12 @@ class ProfileFollowingController {
       if(mounted){
         loadingState.value = LoadingState.loaded;
         if(res != null){
-          List userProfileDataList = res.data['usersProfileData'];
-          List followingSocialsDatasList = res.data['usersSocialsData'];
+          List userProfileDataList = res['usersProfileData'];
+          List followingSocialsDatasList = res['usersSocialsData'];
           if(isRefreshing){
             users.value = [];
           }
-          canPaginate.value = res.data['canPaginate'];
+          canPaginate.value = res['canPaginate'];
           for(int i = 0; i < userProfileDataList.length; i++){
             Map userProfileData = userProfileDataList[i];
             UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);

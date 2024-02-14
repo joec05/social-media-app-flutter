@@ -53,7 +53,7 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
           builder: ((context, String recipientValue, child) {
             if(recipientValue.isNotEmpty){
               return ValueListenableBuilder(
-                valueListenable: appStateClass.usersDataNotifiers.value[recipientValue]!.notifier, 
+                valueListenable: appStateRepo.usersDataNotifiers.value[recipientValue]!.notifier, 
                 builder: ((context, UserDataClass userData, child) {
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -243,7 +243,7 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
                     builder: ((context, recipientValue, child) {
                       if(recipientValue.isNotEmpty){
                         return ValueListenableBuilder(
-                          valueListenable: appStateClass.usersDataNotifiers.value[recipientValue]!.notifier, 
+                          valueListenable: appStateRepo.usersDataNotifiers.value[recipientValue]!.notifier, 
                           builder: ((context, UserDataClass userData, child) {
                             if(userData.blockedByCurrentID || userData.blocksCurrentID || userData.suspended || userData.deleted){
                               return Container();

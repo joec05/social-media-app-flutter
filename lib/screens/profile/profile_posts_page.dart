@@ -76,17 +76,17 @@ class _ProfilePagePostsWidgetStatefulState extends State<_ProfilePagePostsWidget
           return ValueListenableBuilder(
             valueListenable: controller.paginationStatus,
             builder: (context, loadingStatusValue, child){
-              if(appStateClass.usersDataNotifiers.value[userID] != null){
+              if(appStateRepo.usersDataNotifiers.value[userID] != null){
                 return ValueListenableBuilder(
-                  valueListenable: appStateClass.usersDataNotifiers.value[userID]!.notifier, 
+                  valueListenable: appStateRepo.usersDataNotifiers.value[userID]!.notifier, 
                   builder: ((context, profilePageUserData, child) {
                     if(profilePageUserData.blocksCurrentID){
                       return Container();
                     }
                     return ValueListenableBuilder(
-                      valueListenable: appStateClass.usersSocialsNotifiers.value[userID]!.notifier, 
+                      valueListenable: appStateRepo.usersSocialsNotifiers.value[userID]!.notifier, 
                       builder: ((context, profilePageUserSocials, child) {
-                        if(profilePageUserData.private && !profilePageUserSocials.followedByCurrentID && userID != appStateClass.currentID){
+                        if(profilePageUserData.private && !profilePageUserSocials.followedByCurrentID && userID != appStateRepo.currentID){
                           return Container();
                         }
                         return ListenableBuilder(
@@ -118,28 +118,28 @@ class _ProfilePagePostsWidgetStatefulState extends State<_ProfilePagePostsWidget
                                     addAutomaticKeepAlives: true,
                                     childCount: postsList.length, 
                                     (context, index) {
-                                      if(appStateClass.postsNotifiers.value[postsList[index].sender] == null){
+                                      if(appStateRepo.postsNotifiers.value[postsList[index].sender] == null){
                                         return Container();
                                       }
-                                      if(appStateClass.postsNotifiers.value[postsList[index].sender]![postsList[index].postID] == null){
+                                      if(appStateRepo.postsNotifiers.value[postsList[index].sender]![postsList[index].postID] == null){
                                         return Container();
                                       }
                                       return ListenableBuilder(
                                         listenable: Listenable.merge([
-                                          appStateClass.postsNotifiers.value[postsList[index].sender]![postsList[index].postID]!.notifier,
-                                          appStateClass.usersDataNotifiers.value[postsList[index].sender]!.notifier
+                                          appStateRepo.postsNotifiers.value[postsList[index].sender]![postsList[index].postID]!.notifier,
+                                          appStateRepo.usersDataNotifiers.value[postsList[index].sender]!.notifier
                                         ]),
                                         builder: (context, child){
-                                          PostClass postData = appStateClass.postsNotifiers.value[postsList[index].sender]![postsList[index].postID]!.notifier.value;
-                                          UserDataClass userData = appStateClass.usersDataNotifiers.value[postsList[index].sender]!.notifier.value;
+                                          PostClass postData = appStateRepo.postsNotifiers.value[postsList[index].sender]![postsList[index].postID]!.notifier.value;
+                                          UserDataClass userData = appStateRepo.usersDataNotifiers.value[postsList[index].sender]!.notifier.value;
                                           if(!postData.deleted){
                                             if(userData.blocksCurrentID){
                                               return Container();
                                             }
                                             return ValueListenableBuilder(
-                                              valueListenable: appStateClass.usersSocialsNotifiers.value[postsList[index].sender]!.notifier, 
+                                              valueListenable: appStateRepo.usersSocialsNotifiers.value[postsList[index].sender]!.notifier, 
                                               builder: ((context, userSocials, child) { 
-                                                if(userData.private && !userSocials.followedByCurrentID && userData.userID != appStateClass.currentID){
+                                                if(userData.private && !userSocials.followedByCurrentID && userData.userID != appStateRepo.currentID){
                                                   return Container();
                                                 }
                                                 return CustomPostWidget(

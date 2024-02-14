@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
-class AppStateClass{
+class AppStateRepository{
   String currentID;
   String socketID;
   ValueNotifier<Map<String, UserDataNotifier>> usersDataNotifiers;
@@ -9,7 +9,7 @@ class AppStateClass{
   ValueNotifier<Map<String, Map<String, PostNotifier>>> postsNotifiers;
   ValueNotifier<Map<String, Map<String, CommentNotifier>>> commentsNotifiers;
 
-  AppStateClass({
+  AppStateRepository({
     required this.currentID,
     required this.socketID,  
     required this.usersDataNotifiers,
@@ -27,7 +27,7 @@ class AppStateClass{
   }
 }
 
-final appStateClass = AppStateClass(
+final appStateRepo = AppStateRepository(
   currentID: '',
   socketID: '',
   usersDataNotifiers: ValueNotifier({}),

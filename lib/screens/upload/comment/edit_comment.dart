@@ -67,13 +67,17 @@ class __EditCommentWidgetStatefulState extends State<_EditCommentWidgetStateful>
                   horizontal: getScreenWidth() * 0.025
                 ),
                 child: CustomButton(
-                  width: getScreenWidth() * 0.25, height: kToolbarHeight, 
-                  buttonColor: Colors.red, buttonText: 'Edit',
+                  width: getScreenWidth() * 0.25, 
+                  height: kToolbarHeight, 
+                  color: Colors.red, 
+                  text: 'Edit',
                   onTapped: !isUploadingValue && (mediasDatasValue.isNotEmpty || commentVerified) ?
                     () => controller.editComment(
                       widget.commentData
                     ) : null,
-                  setBorderRadius: true
+                  setBorderRadius: true,
+                  prefix: null,
+                  loading: isUploadingValue,
                 ),
               );
             }

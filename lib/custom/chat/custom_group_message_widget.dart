@@ -42,7 +42,7 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
       socket.emit("delete-group-message-to-server", {
         'chatID': widget.chatID,
         'messageID': groupMessageData.messageID,
-        'currentID': appStateClass.currentID,
+        'currentID': appStateRepo.currentID,
       });
       await fetchDataRepo.fetchData(
         context, 
@@ -50,7 +50,7 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
         {
           'chatID': widget.chatID,
           'messageID': groupMessageData.messageID,
-          'currentID': appStateClass.currentID,
+          'currentID': appStateRepo.currentID,
         }
       );
     } catch (e) {
@@ -69,7 +69,7 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
       socket.emit("delete-group-message-for-all-to-server", {
         'chatID': widget.chatID,
         'messageID': groupMessageData.messageID,
-        'currentID': appStateClass.currentID,
+        'currentID': appStateRepo.currentID,
         'content': '',
         'recipients': widget.recipients
       });
@@ -79,7 +79,7 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
         {
           'chatID': widget.chatID,
           'messageID': groupMessageData.messageID,
-          'currentID': appStateClass.currentID,
+          'currentID': appStateRepo.currentID,
           'recipients': widget.recipients
         }
       );
@@ -126,23 +126,27 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
                     Navigator.pop(bottomSheetContext);
                     runDelay(() => deleteGroupMessage(), actionDelayTime);
                   },
-                  buttonText: 'Delete message',
+                  text: 'Delete message',
                   width: double.infinity,
                   height: getScreenHeight() * 0.08,
-                  buttonColor: Colors.transparent,
+                  color: Colors.transparent,
                   setBorderRadius: false,
+                  prefix: null,
+                  loading: false
                 ),
-                groupMessageData.sender == appStateClass.currentID ?
+                groupMessageData.sender == appStateRepo.currentID ?
                   CustomButton(
                     onTapped: (){
                       Navigator.pop(bottomSheetContext);
                       runDelay(() => deleteGroupMessageForAll(), actionDelayTime);
                     },
-                    buttonText: 'Delete message for everyone',
+                    text: 'Delete message for everyone',
                     width: double.infinity,
                     height: getScreenHeight() * 0.08,
-                    buttonColor: Colors.transparent,
+                    color: Colors.transparent,
                     setBorderRadius: false,
+                    prefix: null,
+                    loading: false
                   )
                 : Container()
               ]
@@ -155,11 +159,11 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
   
   @override
   Widget build(BuildContext context) {
-    if(groupMessageData.deletedList.contains(appStateClass.currentID)){
+    if(groupMessageData.deletedList.contains(appStateRepo.currentID)){
       return Container(
       );
     }
-    UserDataClass senderProfileData = appStateClass.usersDataNotifiers.value[groupMessageData.sender]!.notifier.value;
+    UserDataClass senderProfileData = appStateRepo.usersDataNotifiers.value[groupMessageData.sender]!.notifier.value;
     if(senderProfileData.blockedByCurrentID || senderProfileData.blocksCurrentID){
       return Container(
       );
@@ -189,13 +193,13 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
             ) 
           : Container(),
             Column(
-              crossAxisAlignment: groupMessageData.sender == appStateClass.currentID ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: groupMessageData.sender == appStateRepo.currentID ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: groupMessageData.sender == appStateClass.currentID ? MainAxisAlignment.end : MainAxisAlignment.start,
+                  mainAxisAlignment: groupMessageData.sender == appStateRepo.currentID ? MainAxisAlignment.end : MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    groupMessageData.sender != appStateClass.currentID ?
+                    groupMessageData.sender != appStateRepo.currentID ?
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.end,
@@ -230,7 +234,7 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
                     : Container(),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: groupMessageData.sender == appStateClass.currentID ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                      crossAxisAlignment: groupMessageData.sender == appStateRepo.currentID ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                       children: [
                         Column(
                           mainAxisAlignment: MainAxisAlignment.end,
@@ -242,7 +246,7 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
                         ),
                         groupMessageData.content.isNotEmpty ?
                           Align(
-                            alignment: groupMessageData.sender == appStateClass.currentID ? Alignment.topRight : Alignment.topLeft,
+                            alignment: groupMessageData.sender == appStateRepo.currentID ? Alignment.topRight : Alignment.topLeft,
                             child: InkWell(
                               onLongPress: () {
                                 displayMessageBottomSheet();
@@ -253,7 +257,7 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(7.5),
                                   border: Border.all(width: 2, color: Colors.white),
-                                  color: groupMessageData.sender == appStateClass.currentID ? Colors.blue : Colors.grey.withOpacity(0.5)
+                                  color: groupMessageData.sender == appStateRepo.currentID ? Colors.blue : Colors.grey.withOpacity(0.5)
                                 ),
                                 constraints: BoxConstraints(
                                   maxWidth: getScreenWidth() * 0.7,
@@ -281,10 +285,10 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
                   children: [
                     SizedBox(height: 0.01 * getScreenHeight()),
                     Row(      
-                      mainAxisAlignment: groupMessageData.sender == appStateClass.currentID ? MainAxisAlignment.end : MainAxisAlignment.start,
+                      mainAxisAlignment: groupMessageData.sender == appStateRepo.currentID ? MainAxisAlignment.end : MainAxisAlignment.start,
                       children: [
                         SizedBox(
-                          width: groupMessageData.sender == appStateClass.currentID ? 0 : getScreenWidth() * 0.09,
+                          width: groupMessageData.sender == appStateRepo.currentID ? 0 : getScreenWidth() * 0.09,
                         ),
                         Text(getCleanTimeFormat(groupMessageData.uploadTime), style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey)),
                       ],

@@ -24,7 +24,7 @@ class ProfileBookmarksController {
   void initializeController(){
     runDelay(() async => fetchProfileBookmarks(posts.value.length, false), actionDelayTime);
     bookmarkDataStreamClassSubscription = BookmarkDataStreamClass().bookmarkDataStream.listen((BookmarkDataStreamControllerClass data) {
-      if(data.uniqueID == 'add_bookmarks_${appStateClass.currentID}'){
+      if(data.uniqueID == 'add_bookmarks_${appStateRepo.currentID}'){
         var postClass = data.postClass;
         String bookmarkedID = postClass is DisplayPostDataClass ? postClass.postID : postClass.commentID;
         bool isExistsInList = posts.value.where((e) => e is DisplayPostDataClass ? e.postID == bookmarkedID : e.commentID == bookmarkedID).toList().isNotEmpty;
@@ -66,7 +66,7 @@ class ProfileBookmarksController {
           RequestGet.fetchUserBookmarks, 
           {
             'userID': userID,
-            'currentID': appStateClass.currentID,
+            'currentID': appStateRepo.currentID,
             'currentLength': currentBookmarksLength,
             'paginationLimit': postsPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
@@ -75,13 +75,13 @@ class ProfileBookmarksController {
         if(mounted){
           loadingState.value = LoadingState.loaded;
           if(res != null){
-            List userBookmarksData = res.data['userBookmarksData'];
-            List userProfileDataList = res.data['usersProfileData'];
-            List usersSocialsDatasList = res.data['usersSocialsData'];
+            List userBookmarksData = res['userBookmarksData'];
+            List userProfileDataList = res['usersProfileData'];
+            List usersSocialsDatasList = res['usersSocialsData'];
             if(isRefreshing){
               posts.value = [];
             }
-            canPaginate.value = res.data['canPaginate'];
+            canPaginate.value = res['canPaginate'];
             for(int i = 0; i < userProfileDataList.length; i++){
               Map userProfileData = userProfileDataList[i];
               UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);

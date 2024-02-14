@@ -31,7 +31,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
   @override
   Widget build(BuildContext context) {
     if(!widget.skeletonMode){
-      String currentID = appStateClass.currentID;
+      String currentID = appStateRepo.currentID;
       return Container(
         padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding, vertical: defaultVerticalPadding),
         child: Column(
@@ -129,14 +129,16 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
                     height: getScreenHeight() * 0.0225
                   ),
                   ValueListenableBuilder(
-                    valueListenable: appStateClass.usersSocialsNotifiers.value[userID]!.notifier,
+                    valueListenable: appStateRepo.usersSocialsNotifiers.value[userID]!.notifier,
                     builder: ((context, UserSocialClass userSocials, child) {
                       return CustomButton(
-                        width: getScreenWidth() * 0.55, height: getScreenHeight() * 0.065, 
-                        buttonColor: userData.blockedByCurrentID ? Colors.red : const Color.fromARGB(255, 70, 125, 170), onTapped: (){
+                        width: getScreenWidth() * 0.55, 
+                        height: getScreenHeight() * 0.065, 
+                        color: userData.blockedByCurrentID ? Colors.red : const Color.fromARGB(255, 70, 125, 170), 
+                        onTapped: (){
                           if(userData.suspended && userData.deleted){
                             null;
-                          }else if(userData.userID == appStateClass.currentID){
+                          }else if(userData.userID == appStateRepo.currentID){
                             runDelay(() => Navigator.push(
                               context,
                               SliderRightToLeftRoute(
@@ -155,11 +157,13 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
                             }
                           }
                         },
-                        buttonText: userData.blockedByCurrentID ? 'Unblock' :
-                        userData.userID == appStateClass.currentID ? 'Edit Profile'
+                        text: userData.blockedByCurrentID ? 'Unblock' :
+                        userData.userID == appStateRepo.currentID ? 'Edit Profile'
                         : userData.requestedByCurrentID ? 'Cancel Request' :
                         userSocials.followedByCurrentID ? 'Unfollow' : 'Follow',
                         setBorderRadius: true,
+                        prefix: null,
+                        loading: false
                       );
                     })
                   )
@@ -209,7 +213,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
               )
             : Container(),
             ValueListenableBuilder(
-              valueListenable: appStateClass.usersSocialsNotifiers.value[userID]!.notifier,
+              valueListenable: appStateRepo.usersSocialsNotifiers.value[userID]!.notifier,
               builder: ((context, UserSocialClass userSocials, child) {
                 return userData.private && !userSocials.followedByCurrentID && userData.userID != currentID && !userData.suspended && !userData.deleted ?
                   Container(
@@ -239,7 +243,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       ValueListenableBuilder(
-                        valueListenable: appStateClass.usersSocialsNotifiers.value[userData.userID]!.notifier,
+                        valueListenable: appStateRepo.usersSocialsNotifiers.value[userData.userID]!.notifier,
                         builder: ((context, UserSocialClass userSocials, child) {
                           return GestureDetector(
                             behavior: HitTestBehavior.opaque,
@@ -275,7 +279,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
                         width: getScreenWidth() * 0.075,
                       ),
                       ValueListenableBuilder(
-                        valueListenable: appStateClass.usersSocialsNotifiers.value[userData.userID]!.notifier,
+                        valueListenable: appStateRepo.usersSocialsNotifiers.value[userData.userID]!.notifier,
                         builder: ((context, UserSocialClass userSocials, child) {
                           return GestureDetector(
                             behavior: HitTestBehavior.opaque,
@@ -418,10 +422,12 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
               margin: EdgeInsets.zero,
               child: CustomButton(
                 width: getScreenWidth() * 0.55, height: getScreenHeight() * 0.055,
-                buttonColor: Colors.transparent, 
+                color: Colors.transparent, 
                 onTapped: (){},
-                buttonText: '',
+                text: '',
                 setBorderRadius: true,
+                prefix: null,
+                loading: false
               ),
             ),
             Column(

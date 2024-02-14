@@ -43,7 +43,7 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
         if(userData.blockedByCurrentID || userData.blocksCurrentID){
           return Container();
         }
-        if(widget.profilePageUserID == appStateClass.currentID){
+        if(widget.profilePageUserID == appStateRepo.currentID){
           if(widget.userDisplayType == UserDisplayType.followers){
             if(!userSocials.followsCurrentID){
               return Container();
@@ -55,7 +55,7 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
           }
         }
       }
-      if(userData.userID == appStateClass.currentID){
+      if(userData.userID == appStateRepo.currentID){
         if(widget.userDisplayType == UserDisplayType.likes){
           if(!widget.isLiked!){
             return Container();
@@ -207,9 +207,9 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
                         SizedBox(height: getScreenHeight() * 0.015),
                         CustomButton(
                           width: double.infinity, height: getScreenHeight() * 0.055, 
-                          buttonColor: userData.blockedByCurrentID ? Colors.red : const Color.fromARGB(255, 70, 125, 170), 
+                          color: userData.blockedByCurrentID ? Colors.red : const Color.fromARGB(255, 70, 125, 170), 
                           onTapped: (){
-                            if(userData.userID == appStateClass.currentID){
+                            if(userData.userID == appStateRepo.currentID){
                               runDelay(() => Navigator.push(
                                 context,
                                 SliderRightToLeftRoute(
@@ -228,11 +228,13 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
                               }
                             }
                           },
-                          buttonText: userData.blockedByCurrentID ? 'Unblock' :
-                          userData.userID == appStateClass.currentID ? 'Edit Profile'
+                          text: userData.blockedByCurrentID ? 'Unblock' :
+                          userData.userID == appStateRepo.currentID ? 'Edit Profile'
                           : userData.requestedByCurrentID ? 'Cancel Request' :
                           userSocials.followedByCurrentID ? 'Unfollow' : 'Follow',
                           setBorderRadius: true,
+                          prefix: null,
+                          loading: false
                         ),
                       ],
                     )
@@ -317,10 +319,12 @@ class _CustomUserDataWidgetState extends State<CustomUserDataWidget>{
                         margin: EdgeInsets.zero,
                         child: CustomButton(
                           width: double.infinity, height: getScreenHeight() * 0.055, 
-                          buttonColor: Colors.transparent, 
+                          color: Colors.transparent, 
                           onTapped: (){},
-                          buttonText: '',
+                          text: '',
                           setBorderRadius: true,
+                          prefix: null,
+                          loading: false
                         ),
                       ),
                     ],

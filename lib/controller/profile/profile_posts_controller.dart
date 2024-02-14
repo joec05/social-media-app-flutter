@@ -24,7 +24,7 @@ class ProfilePostsController {
   void initializeController(){
     runDelay(() async => fetchProfilePosts(posts.value.length, false), actionDelayTime);
     postDataStreamClassSubscription = PostDataStreamClass().postDataStream.listen((PostDataStreamControllerClass data) {
-      if(data.uniqueID == appStateClass.currentID && mounted){
+      if(data.uniqueID == appStateRepo.currentID && mounted){
         posts.value = [data.postClass, ...posts.value];
       }
     });
@@ -61,7 +61,7 @@ class ProfilePostsController {
           RequestGet.fetchUserPosts, 
           {
             'userID': userID,
-            'currentID': appStateClass.currentID,
+            'currentID': appStateRepo.currentID,
             'currentLength': currentPostsLength,
             'paginationLimit': postsPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
@@ -70,13 +70,13 @@ class ProfilePostsController {
         if(mounted){
           loadingState.value = LoadingState.loaded;
           if(res != null) {
-            List userPostsData = res.data['userPostsData'];
-            List userProfileDataList = res.data['usersProfileData'];
-            List usersSocialsDatasList = res.data['usersSocialsData'];
+            List userPostsData = res['userPostsData'];
+            List userProfileDataList = res['usersProfileData'];
+            List usersSocialsDatasList = res['usersSocialsData'];
             if(isRefreshing){
               posts.value = [];
             }
-            canPaginate.value = res.data['canPaginate'];
+            canPaginate.value = res['canPaginate'];
             for(int i = 0; i < userProfileDataList.length; i++){
               Map userProfileData = userProfileDataList[i];
               UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);

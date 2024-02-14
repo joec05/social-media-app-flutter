@@ -82,13 +82,13 @@ class EditUserProfileController {
         context, 
         RequestGet.fetchCurrentUserProfile, 
         {
-          'currentID': appStateClass.currentID
+          'currentID': appStateRepo.currentID
         }
       );
       if(mounted){
         isLoading.value = false;
         if(res != null){
-          Map userProfileData = res.data['userProfileData'];
+          Map userProfileData = res['userProfileData'];
           nameController.text = userProfileData['name'];
           usernameController.text = userProfileData['username'];
           bioController.text = userProfileData['bio'];
@@ -157,7 +157,8 @@ class EditUserProfileController {
             'Username format is invalid.'
           );
         }else{  
-          String currentID = appStateClass.currentID;
+          isLoading.value = true;
+          String currentID = appStateRepo.currentID;
           String nameText = nameController.text.trim();
           String usernameText = usernameController.text.trim();
           String imagePath = '';
@@ -183,8 +184,9 @@ class EditUserProfileController {
               }
             );
             if(mounted){
+              isLoading.value = false;
               if(res != null){
-                UserDataClass currentUserProfileDataClass = appStateClass.usersDataNotifiers.value[currentID]!.notifier.value;
+                UserDataClass currentUserProfileDataClass = appStateRepo.usersDataNotifiers.value[currentID]!.notifier.value;
                 UserDataClass updatedCurrentUserProfileDataClass = UserDataClass(
                   currentID, nameText, usernameText, imagePath, currentUserProfileDataClass.dateJoined, 
                   selectedBirthDate.toString(), bioController.text.trim(),
@@ -193,7 +195,7 @@ class EditUserProfileController {
                   currentUserProfileDataClass.requestedByCurrentID, currentUserProfileDataClass.requestsToCurrentID,
                   currentUserProfileDataClass.verified, currentUserProfileDataClass.suspended, currentUserProfileDataClass.deleted
                 );
-                appStateClass.usersDataNotifiers.value[currentID]!.notifier.value = updatedCurrentUserProfileDataClass;
+                appStateRepo.usersDataNotifiers.value[currentID]!.notifier.value = updatedCurrentUserProfileDataClass;
                 Navigator.pop(context);
               }
             }

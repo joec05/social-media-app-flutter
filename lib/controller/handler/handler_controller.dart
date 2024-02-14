@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:social_media_app/global_files.dart';
 
-class HandlerControllerClass {
-
+class HandlerController {
   Color getHandlerColor(SnackbarType type) {
     if(type == SnackbarType.error){
       return Colors.redAccent;
@@ -15,6 +14,19 @@ class HandlerControllerClass {
       return Colors.yellow;
     }
     return Colors.red;
+  }
+
+  IconData? getIconData(SnackbarType type) {
+    if(type == SnackbarType.error){
+      return FontAwesomeIcons.x;
+    }else if(type == SnackbarType.successful){
+      return FontAwesomeIcons.check;
+    }else if(type == SnackbarType.regular){
+      return null;
+    }else if(type == SnackbarType.warning){
+      return FontAwesomeIcons.triangleExclamation;
+    }
+    return null;
   }
 
   void displaySnackbar(
@@ -30,33 +42,10 @@ class HandlerControllerClass {
         padding: padding,
         margin: margin,
         shape: shape,
-        content: snackbarContentTemplate(FontAwesomeIcons.x, text)
+        content: snackbarContentTemplate(getIconData(type), text)
       )
-    );
-  }
-
-  void displayDialog(
-    BuildContext context, 
-    String title,
-    String description,
-    List<DialogAction> dialogActions
-  ){
-    showDialog(
-      context: context,
-      builder: (context){
-        return AlertDialog(
-          title: Text(title),
-          backgroundColor: Colors.blueGrey,
-          shape: shape,
-          content: Container(
-            padding: padding,
-            margin: margin,
-            child: dialogContentTemplate(description, dialogActions)
-          ),
-        );
-      }
     );
   }
 }
 
-final handler = HandlerControllerClass();
+final handler = HandlerController();

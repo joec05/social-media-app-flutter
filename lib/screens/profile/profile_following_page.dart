@@ -96,12 +96,12 @@ class _ProfilePageFollowingWidgetStatefulState extends State<_ProfilePageFollowi
                     SliverList(delegate: SliverChildBuilderDelegate(
                       childCount: usersList.length, 
                       (context, index) {
-                        if(appStateClass.usersDataNotifiers.value[usersList[index]] != null){
+                        if(appStateRepo.usersDataNotifiers.value[usersList[index]] != null){
                           return ValueListenableBuilder(
-                            valueListenable: appStateClass.usersDataNotifiers.value[usersList[index]]!.notifier, 
+                            valueListenable: appStateRepo.usersDataNotifiers.value[usersList[index]]!.notifier, 
                             builder: ((context, userData, child) {
                               return ValueListenableBuilder(
-                                valueListenable: appStateClass.usersSocialsNotifiers.value[usersList[index]]!.notifier, 
+                                valueListenable: appStateRepo.usersSocialsNotifiers.value[usersList[index]]!.notifier, 
                                 builder: ((context, userSocial, child) {
                                   return CustomUserDataWidget(
                                     userData: userData,

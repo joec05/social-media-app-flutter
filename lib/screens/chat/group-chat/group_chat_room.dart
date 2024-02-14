@@ -188,13 +188,13 @@ class _GroupChatRoomWidgetStatefulState extends State<_GroupChatRoomWidgetStatef
                                   return ListenableBuilder(
                                     listenable: Listenable.merge([
                                       messagesList[index].notifier,
-                                      appStateClass.usersDataNotifiers.value[
+                                      appStateRepo.usersDataNotifiers.value[
                                         messagesList[index].notifier.value.sender
                                       ]!.notifier
                                     ]),
                                     builder: (context, child){
                                       GroupMessageClass messageData = messagesList[index].notifier.value;
-                                      UserDataClass userData = appStateClass.usersDataNotifiers.value[messageData.sender]!.notifier.value;
+                                      UserDataClass userData = appStateRepo.usersDataNotifiers.value[messageData.sender]!.notifier.value;
                                       return CustomGroupMessage(
                                         key: UniqueKey(),
                                         chatID: chatController.chatID.value,

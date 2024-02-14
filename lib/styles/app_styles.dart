@@ -15,8 +15,6 @@ double getScreenWidth(){
 
 double defaultTextFontSize = 16;
 
-double defaultLoginAlternativeTextFontSize = 14;
-
 double defaultHorizontalPadding = getScreenWidth() * 0.045;
 
 double defaultTextFieldVerticalMargin = getScreenHeight() * 0.015;

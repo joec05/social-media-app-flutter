@@ -86,15 +86,15 @@ class _ViewPostCommentsWidgetStatefulState extends State<ViewPostCommentsWidgetS
                                 if(selectedPost != null){
                                   return ListenableBuilder(
                                     listenable: Listenable.merge([
-                                      appStateClass.postsNotifiers.value[selectedPost.sender]![selectedPost.postID]!.notifier,
-                                      appStateClass.usersDataNotifiers.value[selectedPost.sender]!.notifier
+                                      appStateRepo.postsNotifiers.value[selectedPost.sender]![selectedPost.postID]!.notifier,
+                                      appStateRepo.usersDataNotifiers.value[selectedPost.sender]!.notifier
                                     ]),
                                     builder: (context, child){
-                                      PostClass postData = appStateClass.postsNotifiers.value[selectedPost.sender]![selectedPost.postID]!.notifier.value;
-                                      UserDataClass userData = appStateClass.usersDataNotifiers.value[selectedPost.sender]!.notifier.value;
+                                      PostClass postData = appStateRepo.postsNotifiers.value[selectedPost.sender]![selectedPost.postID]!.notifier.value;
+                                      UserDataClass userData = appStateRepo.usersDataNotifiers.value[selectedPost.sender]!.notifier.value;
                                       if(!postData.deleted){
                                         return ValueListenableBuilder(
-                                          valueListenable: appStateClass.usersSocialsNotifiers.value[selectedPost.sender]!.notifier, 
+                                          valueListenable: appStateRepo.usersSocialsNotifiers.value[selectedPost.sender]!.notifier, 
                                           builder: ((context, userSocials, child) {
                                             return CustomPostWidget(
                                               postData: postData, 
@@ -160,23 +160,23 @@ class _ViewPostCommentsWidgetStatefulState extends State<ViewPostCommentsWidgetS
                                 return SliverList(delegate: SliverChildBuilderDelegate(
                                   childCount: commentsList.length, 
                                   (context, index) {
-                                    if(appStateClass.commentsNotifiers.value[commentsList[index].sender] == null){
+                                    if(appStateRepo.commentsNotifiers.value[commentsList[index].sender] == null){
                                       return Container();
                                     }
-                                    if(appStateClass.commentsNotifiers.value[commentsList[index].sender]![commentsList[index].commentID] == null){
+                                    if(appStateRepo.commentsNotifiers.value[commentsList[index].sender]![commentsList[index].commentID] == null){
                                       return Container();
                                     }
                                     return ListenableBuilder(
                                       listenable: Listenable.merge([
-                                        appStateClass.commentsNotifiers.value[commentsList[index].sender]![commentsList[index].commentID]!.notifier,
-                                        appStateClass.usersDataNotifiers.value[commentsList[index].sender]!.notifier
+                                        appStateRepo.commentsNotifiers.value[commentsList[index].sender]![commentsList[index].commentID]!.notifier,
+                                        appStateRepo.usersDataNotifiers.value[commentsList[index].sender]!.notifier
                                       ]),
                                       builder: (context, child){
-                                        CommentClass commentData = appStateClass.commentsNotifiers.value[commentsList[index].sender]![commentsList[index].commentID]!.notifier.value;
-                                        UserDataClass userData = appStateClass.usersDataNotifiers.value[commentsList[index].sender]!.notifier.value;
+                                        CommentClass commentData = appStateRepo.commentsNotifiers.value[commentsList[index].sender]![commentsList[index].commentID]!.notifier.value;
+                                        UserDataClass userData = appStateRepo.usersDataNotifiers.value[commentsList[index].sender]!.notifier.value;
                                         if(!commentData.deleted){
                                           return ValueListenableBuilder(
-                                            valueListenable: appStateClass.usersSocialsNotifiers.value[commentsList[index].sender]!.notifier, 
+                                            valueListenable: appStateRepo.usersSocialsNotifiers.value[commentsList[index].sender]!.notifier, 
                                             builder: ((context, userSocials, child) {
                                               return CustomCommentWidget(
                                                 commentData: commentData, 

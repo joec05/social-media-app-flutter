@@ -60,7 +60,7 @@ class GroupChatController {
         )), ...messages.value];
       }
     });
-    socket.on("delete-group-message-${appStateClass.currentID}-$socketChatID", ( data ) async{
+    socket.on("delete-group-message-${appStateRepo.currentID}-$socketChatID", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < messages.value.length; i++){
           GroupMessageClass groupMessageData = messages.value[i].notifier.value;
@@ -113,7 +113,7 @@ class GroupChatController {
         );
       }
     });
-    socket.on("leave-group-sender-${appStateClass.currentID}", ( data ) async{
+    socket.on("leave-group-sender-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
         runDelay(() => Navigator.pushReplacement(
           context,
@@ -170,7 +170,7 @@ class GroupChatController {
             call, 
             {
               'chatID': chatID.value,
-              'currentID': appStateClass.currentID,
+              'currentID': appStateRepo.currentID,
               'currentLength': currentPostsLength,
               'paginationLimit': messagesPaginationLimit,
               'maxFetchLimit': messagesServerFetchLimit
@@ -179,14 +179,14 @@ class GroupChatController {
           if(mounted){
             isLoading.value = false;
             if(res != null){
-              if(res.data['message'] != 'blacklisted'){
-                chatID.value = res.data['chatID'];
-                List messagesData = res.data['messagesData'];
-                List usersProfileDatasList = res.data['membersProfileData'];
-                List usersSocialsDatasList = res.data['membersSocialsData'];
+              if(res['message'] != 'blacklisted'){
+                chatID.value = res['chatID'];
+                List messagesData = res['messagesData'];
+                List usersProfileDatasList = res['membersProfileData'];
+                List usersSocialsDatasList = res['membersSocialsData'];
                 if(!isPaginating){
-                  List<String> groupMembersID = List<String>.from(res.data['groupMembersID']);
-                  Map groupProfileData = res.data['groupProfileData'];
+                  List<String> groupMembersID = List<String>.from(res['groupMembersID']);
+                  Map groupProfileData = res['groupProfileData'];
                   groupProfile.value = GroupProfileClass(
                     groupProfileData['name'], groupProfileData['profile_pic_link'], 
                     groupProfileData['description'], groupMembersID
@@ -195,7 +195,7 @@ class GroupChatController {
                 if(isRefreshing){
                   messages.value = [];
                 }
-                canPaginate.value = res.data['canPaginate'];
+                canPaginate.value = res['canPaginate'];
                 for(int i = 0; i < usersProfileDatasList.length; i++){
                   Map userProfileData = usersProfileDatasList[i];
                   UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);

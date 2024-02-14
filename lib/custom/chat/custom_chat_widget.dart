@@ -70,8 +70,8 @@ class CustomChatWidgetState extends State<CustomChatWidget> {
       bool senderIsCurrentID = false;
       String subject = '';
       if(chatData.latestMessageData.type == 'message'){
-        senderIsCurrentID = latestMessageSender == appStateClass.currentID;
-        subject = senderIsCurrentID ? 'You' : appStateClass.usersDataNotifiers.value[latestMessageSender]!.notifier.value.name;
+        senderIsCurrentID = latestMessageSender == appStateRepo.currentID;
+        subject = senderIsCurrentID ? 'You' : appStateRepo.usersDataNotifiers.value[latestMessageSender]!.notifier.value.name;
       }
       if(chatData.deleted){
         return Container();
@@ -182,7 +182,7 @@ class CustomChatWidgetState extends State<CustomChatWidget> {
           )
         );
       }else{
-        UserDataClass? senderProfileData = chatData.latestMessageData.messageID.isNotEmpty ? appStateClass.usersDataNotifiers.value[chatData.latestMessageData.sender]!.notifier.value : null;
+        UserDataClass? senderProfileData = chatData.latestMessageData.messageID.isNotEmpty ? appStateRepo.usersDataNotifiers.value[chatData.latestMessageData.sender]!.notifier.value : null;
         return Card(
           clipBehavior: Clip.antiAlias,
           margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),

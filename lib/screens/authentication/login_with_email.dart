@@ -80,6 +80,7 @@ class _LoginWithEmailStatefulState extends State<LoginWithEmailStateful> {
                       textFieldWithDescription(
                         TextField(
                           controller: controller.emailController,
+                          keyboardType: TextInputType.emailAddress,
                           decoration: generateProfileTextFieldDecoration('your email', Icons.mail),
                         ),
                         'Email',
@@ -124,13 +125,16 @@ class _LoginWithEmailStatefulState extends State<LoginWithEmailStateful> {
                             bool passwordVerified = controller.verifyPasswordFormat.value;
                             bool isLoadingValue = controller.isLoading.value;
                             return CustomButton(
-                              width: defaultTextFieldButtonSize.width, height: defaultTextFieldButtonSize.height,
-                              buttonColor: emailVerified && passwordVerified && !isLoadingValue ? 
+                              width: defaultTextFieldButtonSize.width, 
+                              height: defaultTextFieldButtonSize.height,
+                              color: emailVerified && passwordVerified && !isLoadingValue ? 
                                 Colors.red : Colors.grey, 
-                              buttonText: 'Login', 
+                              text: 'Login', 
                               onTapped: emailVerified && passwordVerified && !isLoadingValue ?
                                 controller.loginWithEmail : (){},
                               setBorderRadius: true,
+                              prefix: null,
+                              loading: isLoadingValue
                             );
                           }
                         )
@@ -143,15 +147,10 @@ class _LoginWithEmailStatefulState extends State<LoginWithEmailStateful> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         GestureDetector(
-                          onTap: (){
-                            runDelay(() => Navigator.pushReplacement(
-                              context,
-                              SliderRightToLeftRoute(
-                                page: const LoginWithUsernameStateless()
-                              )
-                            ), navigatorDelayTime);
-                          },
-                          child: Text('Login with username instead', style: TextStyle(fontSize: defaultLoginAlternativeTextFontSize, color: Colors.amberAccent,))
+                          onTap: () => controller.resetPassword(context),
+                          child: const Text('Forgot your password?', 
+                            style: TextStyle(fontSize: 14, color: Colors.amberAccent,)
+                          )
                         )
                       ]
                     ),

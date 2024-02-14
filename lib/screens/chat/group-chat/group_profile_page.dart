@@ -108,11 +108,13 @@ class _GroupProfilePageWidgetStatefulState extends State<_GroupProfilePageWidget
                         )
                       ), navigatorDelayTime);
                     },
-                    buttonText: 'View members',
+                    text: 'View members',
                     width: double.infinity,
                     height: getScreenHeight() * 0.065,
-                    buttonColor: const Color.fromARGB(255, 70, 125, 170),
+                    color: const Color.fromARGB(255, 70, 125, 170),
                     setBorderRadius: false,
+                    prefix: null,
+                    loading: false,
                   )
                 )
               ),
@@ -136,11 +138,13 @@ class _GroupProfilePageWidgetStatefulState extends State<_GroupProfilePageWidget
                         )
                       ), navigatorDelayTime);
                     },
-                    buttonText: 'Edit group profile',
+                    text: 'Edit group profile',
                     width: double.infinity,
                     height: getScreenHeight() * 0.065,
-                    buttonColor: const Color.fromARGB(255, 70, 125, 170),
+                    color: const Color.fromARGB(255, 70, 125, 170),
                     setBorderRadius: false,
+                    prefix: null,
+                    loading: false,
                   )
                 )
               ),
@@ -164,11 +168,13 @@ class _GroupProfilePageWidgetStatefulState extends State<_GroupProfilePageWidget
                         )
                       ), navigatorDelayTime);
                     },
-                    buttonText: 'Add user to group',
+                    text: 'Add user to group',
                     width: double.infinity,
                     height: getScreenHeight() * 0.065,
-                    buttonColor: const Color.fromARGB(255, 70, 125, 170),
+                    color: const Color.fromARGB(255, 70, 125, 170),
                     setBorderRadius: false,
+                    prefix: null,
+                    loading: false,
                   )
                 )
               ),
@@ -182,11 +188,13 @@ class _GroupProfilePageWidgetStatefulState extends State<_GroupProfilePageWidget
                   splashFactory: InkRipple.splashFactory,
                   child: CustomButton(
                     onTapped: () => controller.leaveGroup(),
-                    buttonText: 'Leave group',
+                    text: 'Leave group',
                     width: double.infinity,
                     height: getScreenHeight() * 0.065,
-                    buttonColor: const Color.fromARGB(255, 70, 125, 170),
+                    color: const Color.fromARGB(255, 70, 125, 170),
                     setBorderRadius: false,
+                    prefix: null,
+                    loading: false,
                   )
                 )
               )

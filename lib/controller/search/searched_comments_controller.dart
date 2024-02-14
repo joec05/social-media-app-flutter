@@ -55,7 +55,7 @@ class SearchedCommentsController {
         if(!isPaginating){
           data = {
             'searchedText': searchedText,
-            'currentID': appStateClass.currentID,
+            'currentID': appStateRepo.currentID,
             'currentLength': currentCommentsLength,
             'paginationLimit': postsPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
@@ -66,7 +66,7 @@ class SearchedCommentsController {
           data = {
             'searchedText': searchedText,
             'searchedCommentsEncoded': jsonEncode(paginatedSearchedComments),
-            'currentID': appStateClass.currentID,
+            'currentID': appStateRepo.currentID,
             'currentLength': currentCommentsLength,
             'paginationLimit': postsPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
@@ -83,17 +83,17 @@ class SearchedCommentsController {
             loadingState.value = LoadingState.loaded;
             if(res != null){
               if(!isPaginating){
-                List searchedComments = res.data['searchedComments'];
+                List searchedComments = res['searchedComments'];
                 await DatabaseHelper().replaceAllSearchedComments(searchedComments);
               }
-              List modifiedSearchedCommentsData = res.data['modifiedSearchedComments'];
-              List userProfileDataList = res.data['usersProfileData'];
-              List usersSocialsDatasList = res.data['usersSocialsData'];
+              List modifiedSearchedCommentsData = res['modifiedSearchedComments'];
+              List userProfileDataList = res['usersProfileData'];
+              List usersSocialsDatasList = res['usersSocialsData'];
               if(isRefreshing){
                 comments.value = [];
               }
               if(!isPaginating){
-                totalCommentsLength.value = min(res.data['totalCommentsLength'], postsServerFetchLimit);
+                totalCommentsLength.value = min(res['totalCommentsLength'], postsServerFetchLimit);
               }
               for(int i = 0; i < userProfileDataList.length; i++){
                 Map userProfileData = userProfileDataList[i];

@@ -61,11 +61,15 @@ class __WritePostWidgetStatefulState extends State<_WritePostWidgetStateful> wit
                   horizontal: getScreenWidth() * 0.025
                 ),
                 child: CustomButton(
-                  width: getScreenWidth() * 0.25, height: kToolbarHeight, 
-                  buttonColor: Colors.red, buttonText: 'Upload',
+                  width: getScreenWidth() * 0.25, 
+                  height: kToolbarHeight, 
+                  color: Colors.red, 
+                  text: 'Upload',
                   onTapped: !isUploadingValue && (mediasDatasValue.isNotEmpty || postVerified) ? 
                     () => controller.uploadPost() : null,
-                  setBorderRadius: true
+                  setBorderRadius: true,
+                  prefix: null,
+                  loading: isUploadingValue,
                 )
               );
             }

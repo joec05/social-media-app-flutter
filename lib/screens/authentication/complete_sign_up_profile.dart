@@ -144,25 +144,27 @@ class _CompleteSignUpProfileStatefulState extends State<CompleteSignUpProfileSta
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      ValueListenableBuilder<String>(
-                        valueListenable: controller.imageFilePath,
-                        builder: (context, String filePath, child) {
-                          return ValueListenableBuilder(
-                            valueListenable: controller.isLoading,
-                            builder: (context, isLoadingValue, child) {
-                              return CustomButton(
-                                width: defaultTextFieldButtonSize.width, 
-                                height: defaultTextFieldButtonSize.height,
-                                buttonColor: Colors.red, buttonText: 'Continue', 
-                                onTapped: filePath.isNotEmpty && !isLoadingValue ?
-                                  () => controller.completeSignUpProfile() : null,
-                                setBorderRadius: true,
-                              );
-                            }
+                      ListenableBuilder(
+                        listenable: Listenable.merge([
+                          controller.imageFilePath,
+                          controller.isLoading
+                        ]),
+                        builder: (context, child){
+                          String filePath = controller.imageFilePath.value;
+                          bool isLoadingValue = controller.isLoading.value;
+                          return CustomButton(
+                            width: defaultTextFieldButtonSize.width, 
+                            height: defaultTextFieldButtonSize.height,
+                            color: Colors.red, 
+                            text: 'Continue', 
+                            onTapped: filePath.isNotEmpty && !isLoadingValue ?
+                              () => controller.completeSignUpProfile() : null,
+                            setBorderRadius: true,
+                            prefix: null,
+                            loading: isLoadingValue
                           );
-                        }
-                      )
-                          
+                        },
+                      )    
                     ]
                   ),
                   SizedBox(

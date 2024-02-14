@@ -101,12 +101,12 @@ class __SearchTagUsersWidgetStatefulState extends State<_SearchTagUsersWidgetSta
                         child: GestureDetector(
                           onTap: () => controller.toggleSelectUser(
                             usersList[i], 
-                            appStateClass.usersDataNotifiers.value[usersList[i]]!.notifier.value.username
+                            appStateRepo.usersDataNotifiers.value[usersList[i]]!.notifier.value.username
                           ),
                           child: Container(
                             color: selectedUsersID.contains(usersList[i]) ? Colors.grey.withOpacity(0.5) : Colors.transparent,
                             child: CustomSimpleUserDataWidget(
-                              userData: appStateClass.usersDataNotifiers.value[usersList[i]]!.notifier.value,
+                              userData: appStateRepo.usersDataNotifiers.value[usersList[i]]!.notifier.value,
                               key: UniqueKey()
                             )
                           )
@@ -126,15 +126,20 @@ class __SearchTagUsersWidgetStatefulState extends State<_SearchTagUsersWidgetSta
                   return Padding(
                     padding: EdgeInsets.symmetric(vertical: getScreenHeight() * 0.025, horizontal: getScreenWidth() * 0.025),
                     child: CustomButton(
-                      width: double.infinity, height: getScreenHeight() * 0.08,
-                      buttonColor: Colors.red, buttonText: 'Continue',
-                      onTapped: selectedUsersID.isNotEmpty ? () => controller.continueTag(
+                      width: double.infinity, 
+                      height: getScreenHeight() * 0.08,
+                      color: Colors.red, 
+                      text: 'Continue',
+                      onTapped: selectedUsersID.isNotEmpty ? () {
+                        Navigator.pop(context);
                         widget.onUserIsSelected(
                           controller.selectedUsersUsername.value, 
                           controller.selectedUsersID.value
-                        )
-                      ) : null,
-                      setBorderRadius: true
+                        );
+                      } : () {},
+                      setBorderRadius: true,
+                      prefix: null,
+                      loading: false,
                     ),
                   );
                 }

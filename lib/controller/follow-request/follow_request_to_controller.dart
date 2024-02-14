@@ -21,15 +21,15 @@ class FollowRequestToController {
   void initializeController(){
     runDelay(() async => fetchFollowRequestsTo(users.value.length, false, false), actionDelayTime);
     requestsToDataStreamClassSubscription = RequestsToDataStreamClass().requestsToDataStream.listen((RequestsToDataStreamControllerClass data) {
-      if(data.uniqueID == 'unlock_account_${appStateClass.currentID}' && mounted){
+      if(data.uniqueID == 'unlock_account_${appStateRepo.currentID}' && mounted){
         List<String> usersIdList = [...users.value];
         users.value = [];
         for(int i = 0; i < usersIdList.length; i++){
           String userID = usersIdList[i];
           acceptFollowRequest(context, userID);
         }
-        UserSocialClass currentUserSocialClass = appStateClass.usersSocialsNotifiers.value[appStateClass.currentID]!.notifier.value;
-        appStateClass.usersSocialsNotifiers.value[appStateClass.currentID]!.notifier.value = UserSocialClass(
+        UserSocialClass currentUserSocialClass = appStateRepo.usersSocialsNotifiers.value[appStateRepo.currentID]!.notifier.value;
+        appStateRepo.usersSocialsNotifiers.value[appStateRepo.currentID]!.notifier.value = UserSocialClass(
           currentUserSocialClass.followersCount + usersIdList.length, currentUserSocialClass.followingCount, 
           false, false
         );
@@ -64,7 +64,7 @@ class FollowRequestToController {
         context, 
         RequestGet.fetchFollowRequestsToUser, 
         {
-          'currentID': appStateClass.currentID,
+          'currentID': appStateRepo.currentID,
           'currentLength': currentPostsLength,
           'paginationLimit': followRequestsPaginationLimit,
           'maxFetchLimit': usersServerFetchLimit
@@ -73,8 +73,8 @@ class FollowRequestToController {
       if(mounted){
         loadingState.value = LoadingState.loaded;
         if(res != null){
-          List usersProfileDataList = res.data['usersProfileData'];
-          List usersSocialsDataList = res.data['usersSocialsData'];
+          List usersProfileDataList = res['usersProfileData'];
+          List usersSocialsDataList = res['usersSocialsData'];
           if(isRefreshing){
             users.value = [];
           }
@@ -86,7 +86,7 @@ class FollowRequestToController {
             updateUserSocials(userDataClass, userSocialClass);
             users.value = [...users.value, userProfileData['user_id']];
           }
-          canPaginate.value = res.data['canPaginate'];
+          canPaginate.value = res['canPaginate'];
         }
       }
     }

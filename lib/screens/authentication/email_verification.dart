@@ -59,8 +59,9 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
               ),
               SizedBox(height: getScreenHeight() * 0.04),
               CustomButton(
-                width: getScreenWidth() * 0.65, height: getScreenHeight() * 0.07,
-                buttonColor: Colors.red, buttonText: 'Resend email', 
+                width: getScreenWidth() * 0.65, 
+                height: getScreenHeight() * 0.07,
+                color: Colors.red, text: 'Resend email', 
                 onTapped: (){
                   try{
                     auth.currentUser!.sendEmailVerification();
@@ -69,6 +70,8 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                   }
                 },
                 setBorderRadius: true,
+                prefix: null,
+                loading: false
               )
             ],
           ),

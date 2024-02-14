@@ -63,7 +63,7 @@ class PostLikesController {
         RequestGet.fetchPostLikes,
         {
           'postID': postID,
-          'currentID': appStateClass.currentID,
+          'currentID': appStateRepo.currentID,
           'currentLength': currentUsersLength,
           'paginationLimit': usersPaginationLimit,
           'maxFetchLimit': usersServerFetchLimit
@@ -72,12 +72,12 @@ class PostLikesController {
       if(mounted) {
         loadingState.value = LoadingState.loaded;
         if(res != null) {
-          List followersProfileDatasList = res.data['usersProfileData'];
-          List followersSocialsDatasList = res.data['usersSocialsData'];
+          List followersProfileDatasList = res['usersProfileData'];
+          List followersSocialsDatasList = res['usersSocialsData'];
           if(isRefreshing){
             users.value = [];
           }
-          canPaginate.value = res.data['canPaginate'];
+          canPaginate.value = res['canPaginate'];
           for(int i = 0; i < followersProfileDatasList.length; i++){
             Map userProfileData = followersProfileDatasList[i];
             UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);

@@ -12,23 +12,29 @@ class GlobalObserver extends WidgetsBindingObserver{
         break;
       case AppLifecycleState.resumed:
         debugPrint('appLifeCycleState resumed');
-        Map userLifecycleData = await SharedPreferencesClass().fetchCurrentUser();
-        if(userLifecycleData['last_lifecycle_state'].isNotEmpty){
+        Map map = await secureStorageController.readUserState();
+        if(map['last_lifecycle_state'] != null){
           AutoNavigateLifecycleStreamClass().emitData(
             AutoNavigateLifecycleStreamControllerClass(
-              userLifecycleData['last_lifecycle_state'],
-              userLifecycleData['last_lifecycle_time'],
+              map['last_lifecycle_state'],
+              map['last_lifecycle_time'],
             )
           );
         }
         break;
       case AppLifecycleState.paused:
         debugPrint('appLifeCycleState paused');
-        SharedPreferencesClass().updateCurrentUser(appStateClass.currentID, AppLifecycleState.paused);
+        secureStorageController.writeUserState(
+          AppLifecycleState.paused.name, 
+          DateTime.now().toIso8601String()
+        );
         break;
       case AppLifecycleState.detached:
         debugPrint('appLifeCycleState detached');
-        SharedPreferencesClass().updateCurrentUser(appStateClass.currentID, AppLifecycleState.detached);
+        secureStorageController.writeUserState(
+          AppLifecycleState.detached.name, 
+          DateTime.now().toIso8601String()
+        );
         socket.disconnect();
         break;
       case AppLifecycleState.hidden:

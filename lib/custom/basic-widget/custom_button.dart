@@ -4,14 +4,23 @@ import 'package:social_media_app/global_files.dart';
 class CustomButton extends StatefulWidget {
   final double width;
   final double height;
-  final Color buttonColor;
-  final String buttonText;
+  final Color color;
+  final String text;
+  final Widget? prefix;
   final VoidCallback? onTapped;
   final bool setBorderRadius;
+  final bool loading;
 
-  const CustomButton({super.key, 
-    required this.width, required this.height, required this.buttonColor, required this.buttonText,
-    required this.onTapped, required this.setBorderRadius
+  const CustomButton({
+    super.key, 
+    required this.width, 
+    required this.height, 
+    required this.color, 
+    required this.text,
+    required this.prefix,
+    required this.onTapped, 
+    required this.setBorderRadius,
+    required this.loading
   });
 
   @override
@@ -30,7 +39,7 @@ class CustomButtonState extends State<CustomButton> {
       child: Container(
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: widget.onTapped == null ? Colors.white.withOpacity(0.5) : widget.buttonColor,
+          color: widget.onTapped == null ? Colors.white.withOpacity(0.5) : widget.color,
           borderRadius: widget.setBorderRadius ? const BorderRadius.all(Radius.circular(5)) : BorderRadius.zero
         ),
         child: Material(
@@ -38,10 +47,36 @@ class CustomButtonState extends State<CustomButton> {
           child: InkWell(
             splashFactory: InkRipple.splashFactory,
             onTap: (){
-              Future.delayed(Duration(milliseconds: navigatorDelayTime), (){}).then((value) => widget.onTapped!());
+              Future.delayed(
+                Duration(milliseconds: navigatorDelayTime), 
+                (){}
+              ).then((value) => widget.onTapped!());
             },
             child: Center(
-              child: Text(widget.buttonText, style: TextStyle(fontWeight: FontWeight.bold, fontSize: defaultTextFontSize))
+              child: widget.loading ? 
+                SizedBox(
+                  width: widget.height * 0.45,
+                  height: widget.height * 0.45,
+                  child: const CircularProgressIndicator(
+                    color: Colors.cyan,
+                    strokeWidth: 2.5,
+                  )
+                )
+              :
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    widget.prefix ?? Container(),
+                    Text(
+                      widget.text, 
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold, 
+                        fontSize: defaultTextFontSize
+                      )
+                    ),
+                  ],
+                )
             )
           ),
         ),

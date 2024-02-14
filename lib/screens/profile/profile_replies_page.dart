@@ -77,17 +77,17 @@ class _ProfilePageRepliesWidgetStatefulState extends State<_ProfilePageRepliesWi
           return ValueListenableBuilder(
             valueListenable: controller.paginationStatus,
             builder: (context, loadingStatusValue, child){
-              if(appStateClass.usersDataNotifiers.value[userID] != null){
+              if(appStateRepo.usersDataNotifiers.value[userID] != null){
                 return ValueListenableBuilder(
-                  valueListenable: appStateClass.usersDataNotifiers.value[userID]!.notifier, 
+                  valueListenable: appStateRepo.usersDataNotifiers.value[userID]!.notifier, 
                   builder: ((context, profilePageUserData, child) {
                     if(profilePageUserData.blocksCurrentID){
                       return Container();
                     }
                     return ValueListenableBuilder(
-                      valueListenable: appStateClass.usersSocialsNotifiers.value[userID]!.notifier, 
+                      valueListenable: appStateRepo.usersSocialsNotifiers.value[userID]!.notifier, 
                       builder: ((context, profilePageUserSocials, child) {
-                        if(profilePageUserData.private && !profilePageUserSocials.followedByCurrentID && userID != appStateClass.currentID){
+                        if(profilePageUserData.private && !profilePageUserSocials.followedByCurrentID && userID != appStateRepo.currentID){
                           return Container();
                         }
                         return ListenableBuilder(
@@ -119,28 +119,28 @@ class _ProfilePageRepliesWidgetStatefulState extends State<_ProfilePageRepliesWi
                                     addAutomaticKeepAlives: true,
                                     childCount: commentsList.length, 
                                     (context, index) {
-                                      if(appStateClass.commentsNotifiers.value[commentsList[index].sender] == null){
+                                      if(appStateRepo.commentsNotifiers.value[commentsList[index].sender] == null){
                                         return Container();
                                       }
-                                      if(appStateClass.commentsNotifiers.value[commentsList[index].sender]![commentsList[index].commentID] == null){
+                                      if(appStateRepo.commentsNotifiers.value[commentsList[index].sender]![commentsList[index].commentID] == null){
                                         return Container();
                                       }
                                       return ListenableBuilder(
                                         listenable: Listenable.merge([
-                                          appStateClass.usersDataNotifiers.value[commentsList[index].sender]!.notifier,
-                                          appStateClass.usersSocialsNotifiers.value[commentsList[index].sender]!.notifier
+                                          appStateRepo.usersDataNotifiers.value[commentsList[index].sender]!.notifier,
+                                          appStateRepo.usersSocialsNotifiers.value[commentsList[index].sender]!.notifier
                                         ]),
                                         builder: (context, child){
-                                          CommentClass commentData = appStateClass.commentsNotifiers.value[commentsList[index].sender]![commentsList[index].commentID]!.notifier.value;
-                                          UserDataClass userData = appStateClass.usersDataNotifiers.value[commentsList[index].sender]!.notifier.value;
+                                          CommentClass commentData = appStateRepo.commentsNotifiers.value[commentsList[index].sender]![commentsList[index].commentID]!.notifier.value;
+                                          UserDataClass userData = appStateRepo.usersDataNotifiers.value[commentsList[index].sender]!.notifier.value;
                                           if(!commentData.deleted){
                                             if(userData.blocksCurrentID){
                                               return Container();
                                             }
                                             return ValueListenableBuilder(
-                                              valueListenable: appStateClass.usersSocialsNotifiers.value[commentsList[index].sender]!.notifier, 
+                                              valueListenable: appStateRepo.usersSocialsNotifiers.value[commentsList[index].sender]!.notifier, 
                                               builder: ((context, userSocials, child) {
-                                                if(userData.private && !userSocials.followedByCurrentID && userData.userID != appStateClass.currentID){
+                                                if(userData.private && !userSocials.followedByCurrentID && userData.userID != appStateRepo.currentID){
                                                   return Container();
                                                 }
                                                 return CustomCommentWidget(

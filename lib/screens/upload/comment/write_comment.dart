@@ -67,15 +67,19 @@ class __WriteCommentWidgetStatefulState extends State<_WriteCommentWidgetStatefu
                   horizontal: getScreenWidth() * 0.025
                 ),
                 child: CustomButton(
-                  width: getScreenWidth() * 0.25, height: kToolbarHeight, 
-                  buttonColor: Colors.red, buttonText: 'Upload',
+                  width: getScreenWidth() * 0.25, 
+                  height: kToolbarHeight, 
+                  color: Colors.red, 
+                  text: 'Upload',
                   onTapped: !isUploadingValue && (mediasDatasValue.isNotEmpty || commentVerified) ?
                     () => controller.uploadComment(
                       widget.parentPostID, 
                       widget.parentPostSender, 
                       widget.parentPostType
                     ) : null,
-                  setBorderRadius: true
+                  setBorderRadius: true,
+                  prefix: null,
+                  loading: isUploadingValue,
                 ),
               );
             }

@@ -227,11 +227,13 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
                           return CustomButton(
                             width: defaultTextFieldButtonSize.width, 
                             height: defaultTextFieldButtonSize.height,
-                            buttonColor: Colors.red, 
-                            buttonText: 'Continue', 
+                            color: Colors.red, 
+                            text: 'Continue', 
                             onTapped: nameVerified && usernameVerified && birthDateVerified && (filePath.isNotEmpty || networkPath.isNotEmpty) && !isLoadingValue ?
                               controller.editProfile : null,
                             setBorderRadius: true,
+                            prefix: null,
+                            loading: isLoadingValue,
                           );
                         }
                       )

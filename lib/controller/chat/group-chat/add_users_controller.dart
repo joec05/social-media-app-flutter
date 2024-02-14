@@ -66,7 +66,7 @@ class AddUsersToGroupController {
           {
             'searchedText': searchedController.text,
             'recipients': groupProfile.value.recipients,
-            'currentID': appStateClass.currentID,
+            'currentID': appStateRepo.currentID,
             'currentLength': isPaginating ? users.value.length : 0,
             'paginationLimit': searchTagUsersFetchLimit
           }
@@ -74,7 +74,7 @@ class AddUsersToGroupController {
         if(mounted) {
           isSearching.value = false;
           if(res != null){
-            List userProfileDataList = res.data['usersProfileData'];
+            List userProfileDataList = res['usersProfileData'];
             users.value = [];
             for(int i = 0; i < userProfileDataList.length; i++){
               Map userProfileData = userProfileDataList[i];
@@ -114,18 +114,18 @@ class AddUsersToGroupController {
           );
         }else{
           List<String> messagesID = List.filled(selectedUsersName.value.length, 0).map((e) => const Uuid().v4()).toList();
-          String senderName = appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.name;
+          String senderName = appStateRepo.usersDataNotifiers.value[appStateRepo.currentID]!.notifier.value.name;
           List<String> contentsList = selectedUsersName.value.map((e) => '$senderName has added $e to the group').toList();
           List<Map> addedUsersDataList = [];
           for(int i = 0; i < selectedUsersID.value.length; i++){
-            addedUsersDataList.add(appStateClass.usersDataNotifiers.value[selectedUsersID.value[i]]!.notifier.value.toMap());
+            addedUsersDataList.add(appStateRepo.usersDataNotifiers.value[selectedUsersID.value[i]]!.notifier.value.toMap());
           }
           socket.emit("add-users-to-group-to-server", {
             'chatID': chatID,
             'messagesID': messagesID,
             'contentsList': contentsList,
             'type': 'add_users_to_group',
-            'sender': appStateClass.currentID,
+            'sender': appStateRepo.currentID,
             'recipients': groupProfile.value.recipients,
             'mediasDatas': [],
             'addedUsersID': selectedUsersID.value,
@@ -142,7 +142,7 @@ class AddUsersToGroupController {
             {
               'chatID': chatID,
               'messagesID': messagesID,
-              'sender': appStateClass.currentID,
+              'sender': appStateRepo.currentID,
               'recipients': groupProfile.value.recipients,
               'addedUsersID': selectedUsersID.value,
             }

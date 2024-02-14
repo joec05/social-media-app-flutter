@@ -45,9 +45,9 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
               margin: EdgeInsets.only(top: getScreenHeight() * 0.05),
               width:  0.85 * getScreenWidth(),
               height: getScreenHeight() * 0.2,
-              child: appStateClass.usersDataNotifiers.value[appStateClass.currentID] != null ?
+              child: appStateRepo.usersDataNotifiers.value[appStateRepo.currentID] != null ?
                 ValueListenableBuilder(
-                  valueListenable: appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier,
+                  valueListenable: appStateRepo.usersDataNotifiers.value[appStateRepo.currentID]!.notifier,
                   builder: (context, UserDataClass userData, child){
                     return Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -226,7 +226,7 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
                 runDelay(() => Navigator.push(
                   parentContext,
                   SliderRightToLeftRoute(
-                    page: ProfilePageBookmarksWidget(userID: appStateClass.currentID)
+                    page: ProfilePageBookmarksWidget(userID: appStateRepo.currentID)
                   )
                 ), navigatorDelayTime);
               }, navigatorDelayTime);
@@ -262,6 +262,30 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
                   )
                 ), navigatorDelayTime);
               }, navigatorDelayTime);
+            }
+          ),
+          ListTile(
+            title: SizedBox(
+              width:  0.85 * getScreenWidth(),
+              height: getScreenHeight() * 0.07,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(FontAwesomeIcons.moon, size: 20),
+                      // icons should depend on theme mode
+                      SizedBox(width: getScreenWidth() * 0.05),
+                      Text('Toggle Theme', style: TextStyle(fontSize: defaultTextFontSize)),
+                    ],
+                  )
+                ]
+              ),
+            ),
+            onTap: () {
+              // create state to store value of current theme mode and set it up in materialapp
+              // toggle it here
             }
           ),
           ListTile(
@@ -314,7 +338,7 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
                 if(mounted){
                   Navigator.pop(context);
                 }
-                runDelay(() => deleteAccount(parentContext), actionDelayTime);
+                runDelay(() => verifyDeleteAccount(parentContext), actionDelayTime);
               }, navigatorDelayTime);
             },
           ),

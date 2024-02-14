@@ -49,10 +49,14 @@ class __SearchChatUsersWidgetStatefulState extends State<_SearchChatUsersWidgetS
               return Padding(
                 padding: EdgeInsets.symmetric(vertical: kToolbarHeight * 0.15, horizontal: getScreenWidth() * 0.025),
                 child: CustomButton(
-                  width: getScreenWidth() * 0.25, height: kToolbarHeight, 
-                  buttonColor: Colors.red, buttonText: 'Continue',
+                  width: getScreenWidth() * 0.25, 
+                  height: kToolbarHeight, 
+                  color: Colors.red, 
+                  text: 'Continue',
                   onTapped: selectedUsersID.isNotEmpty ? () => controller.navigateToChat() : null,
-                  setBorderRadius: true
+                  setBorderRadius: true,
+                  prefix: null,
+                  loading: false,
                 ),
               );
             }
@@ -100,7 +104,7 @@ class __SearchChatUsersWidgetStatefulState extends State<_SearchChatUsersWidgetS
                       child: Container(
                         color: selectedUsersID.contains(usersList[i]) ? Colors.grey.withOpacity(0.5) : Colors.transparent,
                         child: CustomSimpleUserDataWidget(
-                          userData: appStateClass.usersDataNotifiers.value[usersList[i]]!.notifier.value,
+                          userData: appStateRepo.usersDataNotifiers.value[usersList[i]]!.notifier.value,
                           key: UniqueKey()
                         )
                       )

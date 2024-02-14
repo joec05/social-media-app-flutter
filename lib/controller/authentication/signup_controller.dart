@@ -125,56 +125,65 @@ class SignUpController {
                   'Email or username has already been used'
                 );
               }else{
-                await authRepo.createUserWithEmailAndPassword(
-                  context, 
-                  emailController.text.trim(), 
-                  passwordController.text.trim()
-                ).then((value) async{
-                  var verified = await Navigator.push(
-                    context,
-                    SliderRightToLeftRoute(
-                      page: const EmailVerificationPage()
-                    )
-                  );
-                  if(verified == true && mounted){
-                    isLoading.value = true;
-                    dynamic res = await fetchDataRepo.fetchData(
-                      context, 
-                      RequestPost.signUp, 
-                      {
-                        'name': nameController.text.trim(),
-                        'username': usernameController.text.trim(),
-                        'profilePicLink': defaultUserProfilePicLink,
-                        'email': emailController.text.trim(),
-                        'password': passwordController.text.trim(),
-                        'birthDate': selectedBirthDate.toString()
-                      }
-                    );
-                    if(mounted) {
-                      isLoading.value = false;
-                      if(res != null) {
-                        appStateClass.currentID = res.data['userID'];
-                        UserDataClass userDataClass = UserDataClass(
-                          res.data['userID'], nameController.text.trim(), usernameController.text.trim(), defaultUserProfilePicLink,
-                          DateTime.now().toString(), selectedBirthDate.toString(), '',  false, false, false, false,
-                          false, false, false, false, false
-                        );
-                        UserSocialClass userSocialClass = UserSocialClass(
-                          0, 0, false, false
-                        );
-                        updateUserData(userDataClass);
-                        updateUserSocials(userDataClass, userSocialClass);
-                        SharedPreferencesClass().updateCurrentUser(res.data['userID'], AppLifecycleState.resumed);
-                        runDelay(() => Navigator.push(
-                          context,
-                          SliderRightToLeftRoute(
-                            page: const CompleteSignUpProfileStateless()
-                          )
-                        ), navigatorDelayTime);
+                if(mounted){
+                  isLoading.value = true;
+                  await authRepo.createUserWithEmailAndPassword(
+                    context, 
+                    emailController.text.trim(), 
+                    passwordController.text.trim()
+                  ).then((value) async{
+                    User? user = authRepo.currentUser.value;
+                    if(user != null){
+                      dynamic res = await fetchDataRepo.fetchData(
+                        context, 
+                        RequestPost.signUp, 
+                        {
+                          'userId': user.uid,
+                          'name': nameController.text.trim(),
+                          'username': usernameController.text.trim(),
+                          'profilePicLink': defaultUserProfilePicLink,
+                          'email': emailController.text.trim(),
+                          'password': passwordController.text.trim(),
+                          'birthDate': selectedBirthDate.toString()
+                        }
+                      );
+                      if(mounted) {
+                        isLoading.value = false;
+                        if(res != null) {
+                          var verified = await Navigator.push(
+                            context,
+                            SliderRightToLeftRoute(
+                              page: const EmailVerificationPage()
+                            )
+                          );
+                          if(verified == true && mounted){
+                            appStateRepo.currentID = res['userID'];
+                            UserDataClass userDataClass = UserDataClass(
+                              res['userID'], nameController.text.trim(), usernameController.text.trim(), defaultUserProfilePicLink,
+                              DateTime.now().toString(), selectedBirthDate.toString(), '',  false, false, false, false,
+                              false, false, false, false, false
+                            );
+                            UserSocialClass userSocialClass = UserSocialClass(
+                              0, 0, false, false
+                            );
+                            updateUserData(userDataClass);
+                            updateUserSocials(userDataClass, userSocialClass);
+                            secureStorageController.writeUserState(
+                              AppLifecycleState.resumed.name, 
+                              DateTime.now().toIso8601String()
+                            );
+                            runDelay(() => Navigator.push(
+                              context,
+                              SliderRightToLeftRoute(
+                                page: const CompleteSignUpProfileStateless()
+                              )
+                            ), navigatorDelayTime);
+                          }
+                        }
                       }
                     }
-                  }
-                });
+                  });
+                }
               }
             }
           } on FirebaseAuthException catch (e) {
@@ -209,5 +218,4 @@ class SignUpController {
       }
     }
   }
-
 }

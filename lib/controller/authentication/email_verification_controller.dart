@@ -28,7 +28,7 @@ class EmailVerificationController {
         verified.value = auth.currentUser!.emailVerified;
         if(verified.value) {
           timer?.cancel();
-          Navigator.pop(context, verified);
+          Navigator.pop(context, verified.value);
         }
       }
     });

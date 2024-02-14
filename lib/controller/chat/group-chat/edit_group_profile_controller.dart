@@ -128,14 +128,14 @@ class EditGroupProfileController {
       try {
         Navigator.pop(context);
         String messageID = const Uuid().v4();
-        String senderName = appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.name;
+        String senderName = appStateRepo.usersDataNotifiers.value[appStateRepo.currentID]!.notifier.value.name;
         String content = '$senderName has edited the group profile';
         socket.emit("edit-group-profile-to-server", {
           'chatID': chatID,
           'messageID': messageID,
           'content': content,
           'type': 'edit_group_profile',
-          'sender': appStateClass.currentID,
+          'sender': appStateRepo.currentID,
           'recipients': groupProfile.value.recipients,
           'mediasDatas': [],
           'newData': {
@@ -150,7 +150,7 @@ class EditGroupProfileController {
           {
             'chatID': chatID,
             'messageID': messageID,
-            'sender': appStateClass.currentID,
+            'sender': appStateRepo.currentID,
             'recipients': groupProfile.value.recipients,
             'newData': {
               'name': nameController.text.trim(),

@@ -23,12 +23,12 @@ class FeedController {
   void initializeController(){
     runDelay(() async => fetchFeedPosts(posts.value.length, false, false), actionDelayTime);
     postDataStreamClassSubscription = PostDataStreamClass().postDataStream.listen((PostDataStreamControllerClass data) {
-      if(data.uniqueID == appStateClass.currentID && mounted){
+      if(data.uniqueID == appStateRepo.currentID && mounted){
         posts.value = [data.postClass, ...posts.value];
       }
     });
     commentDataStreamClassSubscription = CommentDataStreamClass().commentDataStream.listen((CommentDataStreamControllerClass data) {
-      if(data.uniqueID == appStateClass.currentID && mounted){
+      if(data.uniqueID == appStateRepo.currentID && mounted){
         posts.value = [data.commentClass, ...posts.value]; 
       }
     });
@@ -65,7 +65,7 @@ class FeedController {
         RequestGet call;
         if(!isPaginating){
           data = {
-            'userID': appStateClass.currentID,
+            'userID': appStateRepo.currentID,
             'currentLength': currentPostsLength,
             'paginationLimit': postsPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
@@ -74,7 +74,7 @@ class FeedController {
         }else{
           List paginatedFeed = await DatabaseHelper().fetchPaginatedFeedPosts(currentPostsLength, postsPaginationLimit);
           data = {
-            'userID': appStateClass.currentID,
+            'userID': appStateRepo.currentID,
             'feedPostsEncoded': jsonEncode(paginatedFeed),
             'currentLength': currentPostsLength,
             'paginationLimit': postsPaginationLimit,
@@ -91,9 +91,9 @@ class FeedController {
           if(mounted){
             loadingState.value = LoadingState.loaded;
             if(res != null){
-              List modifiedFeedPostsData = res.data['modifiedFeedPosts'];
-              List userProfileDataList = res.data['usersProfileData'];
-              List usersSocialsDatasList = res.data['usersSocialsData'];
+              List modifiedFeedPostsData = res['modifiedFeedPosts'];
+              List userProfileDataList = res['usersProfileData'];
+              List usersSocialsDatasList = res['usersSocialsData'];
               for(int i = 0; i < userProfileDataList.length; i++){
                 Map userProfileData = userProfileDataList[i];
                 UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
@@ -105,7 +105,7 @@ class FeedController {
                 posts.value = [];
               }
               if(!isPaginating){
-                totalPostsLength.value = res.data['totalPostsLength'];
+                totalPostsLength.value = res['totalPostsLength'];
               }
               for(int i = 0; i < modifiedFeedPostsData.length; i++){
                 if(modifiedFeedPostsData[i]['type'] == 'post'){
@@ -127,7 +127,7 @@ class FeedController {
                 }
               }
               if(!isPaginating){
-                List feedPosts = res.data['feedPosts'];
+                List feedPosts = res['feedPosts'];
                 await DatabaseHelper().replaceFeedPosts(feedPosts);
               }
             }

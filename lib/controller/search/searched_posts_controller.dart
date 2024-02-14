@@ -55,7 +55,7 @@ class SearchedPostsController {
         if(!isPaginating){
           data = {
             'searchedText': searchedText,
-            'currentID': appStateClass.currentID,
+            'currentID': appStateRepo.currentID,
             'currentLength': currentPostsLength,
             'paginationLimit': postsPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
@@ -66,7 +66,7 @@ class SearchedPostsController {
           data = {
             'searchedText': searchedText,
             'searchedPostsEncoded': jsonEncode(paginatedSearchedPosts),
-            'currentID': appStateClass.currentID,
+            'currentID': appStateRepo.currentID,
             'currentLength': currentPostsLength,
             'paginationLimit': postsPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
@@ -83,17 +83,17 @@ class SearchedPostsController {
             loadingState.value = LoadingState.loaded;
             if(res != null) {
               if(!isPaginating){
-                List searchedPosts = res.data['searchedPosts'];
+                List searchedPosts = res['searchedPosts'];
                 await DatabaseHelper().replaceAllSearchedPosts(searchedPosts);
               }
-              List modifiedSearchedPostsData = res.data['modifiedSearchedPosts'];
-              List userProfileDataList = res.data['usersProfileData'];
-              List usersSocialsDatasList = res.data['usersSocialsData'];
+              List modifiedSearchedPostsData = res['modifiedSearchedPosts'];
+              List userProfileDataList = res['usersProfileData'];
+              List usersSocialsDatasList = res['usersSocialsData'];
               if(isRefreshing){
                 posts.value = [];
               }
               if(!isPaginating){
-                totalPostsLength.value = min(res.data['totalPostsLength'], postsServerFetchLimit);
+                totalPostsLength.value = min(res['totalPostsLength'], postsServerFetchLimit);
               }
               for(int i = 0; i < userProfileDataList.length; i++){
                 Map userProfileData = userProfileDataList[i];

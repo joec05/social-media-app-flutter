@@ -166,31 +166,37 @@ class _CustomFollowRequestWidgetState extends State<CustomFollowRequestWidget>{
                     child: widget.followRequestType == FollowRequestType.from ?
                       CustomButton(
                         width: double.infinity, height: getScreenHeight() * 0.055, 
-                        buttonColor: Colors.red, onTapped: (){
+                        color: Colors.red, onTapped: (){
                           cancelFollowRequest(context, userData);
                         },
-                        buttonText: 'Cancel Request',
+                        text: 'Cancel Request',
                         setBorderRadius: false,
+                        prefix: null,
+                        loading: false
                       )
                     :
                       Row(
                         children: [
                           CustomButton(
                             width: getScreenWidth() * 0.4, height: getScreenHeight() * 0.055, 
-                            buttonColor: Colors.red, onTapped: (){
+                            color: Colors.red, onTapped: (){
                               rejectFollowRequest(context, userData);
                             },
-                            buttonText: 'Reject',
+                            text: 'Reject',
                             setBorderRadius: false,
+                            prefix: null,
+                            loading: false
                           ),
                           SizedBox(width: getScreenWidth() * 0.1),
                           CustomButton(
                             width: getScreenWidth() * 0.4, height: getScreenHeight() * 0.055, 
-                            buttonColor: Colors.lightBlue, onTapped: (){
+                            color: Colors.lightBlue, onTapped: (){
                               acceptFollowRequest(context, userData.userID);
                             },
-                            buttonText: 'Accept',
+                            text: 'Accept',
                             setBorderRadius: false,
+                            prefix: null,
+                            loading: false
                           )
                         ],
                       )
@@ -254,10 +260,12 @@ class _CustomFollowRequestWidgetState extends State<CustomFollowRequestWidget>{
                     margin: EdgeInsets.zero,
                     child: CustomButton(
                       width: double.infinity, height: getScreenHeight() * 0.055, 
-                      buttonColor: Colors.transparent, 
+                      color: Colors.transparent, 
                       onTapped: (){},
-                      buttonText: '',
+                      text: '',
                       setBorderRadius: true,
+                      prefix: null,
+                      loading: false
                     ),
                   ),
                 ]

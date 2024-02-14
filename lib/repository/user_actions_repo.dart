@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
@@ -6,7 +7,7 @@ void followUser(
   UserDataClass userData, 
   UserSocialClass userSocials
 ) async{
-  String currentID = appStateClass.currentID;
+  String currentID = appStateRepo.currentID;
   if(userData.private){
     RequestsFromDataStreamClass().emitData(
       RequestsFromDataStreamControllerClass(
@@ -14,7 +15,7 @@ void followUser(
         'send_follow_request_$currentID'
       )
     );
-    appStateClass.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
+    appStateRepo.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
       userData.userID, userData.name, userData.username, userData.profilePicLink, 
       userData.dateJoined, userData.birthDate, userData.bio, userData.mutedByCurrentID, 
       userData.blockedByCurrentID, userData.blocksCurrentID, userData.private, 
@@ -22,11 +23,11 @@ void followUser(
     );
   }else{
     UserSocialClass updatedFollowedUserSocialDataClass = UserSocialClass(userSocials.followersCount+ 1, userSocials.followingCount, true, userSocials.followsCurrentID);
-    appStateClass.usersSocialsNotifiers.value[userData.userID]!.notifier.value = updatedFollowedUserSocialDataClass;
+    appStateRepo.usersSocialsNotifiers.value[userData.userID]!.notifier.value = updatedFollowedUserSocialDataClass;
   
-    UserSocialClass currentUserSocialDataClass = appStateClass.usersSocialsNotifiers.value[currentID]!.notifier.value;    
+    UserSocialClass currentUserSocialDataClass = appStateRepo.usersSocialsNotifiers.value[currentID]!.notifier.value;    
     UserSocialClass updatedCurrentUserSocialDataClass = UserSocialClass(currentUserSocialDataClass.followersCount, currentUserSocialDataClass.followingCount+ 1, false, false);
-    appStateClass.usersSocialsNotifiers.value[currentID]!.notifier.value = updatedCurrentUserSocialDataClass;
+    appStateRepo.usersSocialsNotifiers.value[currentID]!.notifier.value = updatedCurrentUserSocialDataClass;
   
     UserDataStreamClass().emitData(
       UserDataStreamControllerClass(
@@ -55,13 +56,13 @@ void unfollowUser(
   UserDataClass userData, 
   UserSocialClass userSocials
 ) async{
-  String currentID = appStateClass.currentID;
+  String currentID = appStateRepo.currentID;
   UserSocialClass updatedFollowedUserSocialDataClass = UserSocialClass(userSocials.followersCount- 1, userSocials.followingCount, false, userSocials.followsCurrentID);
-  appStateClass.usersSocialsNotifiers.value[userData.userID]!.notifier.value = updatedFollowedUserSocialDataClass;
+  appStateRepo.usersSocialsNotifiers.value[userData.userID]!.notifier.value = updatedFollowedUserSocialDataClass;
   
-  UserSocialClass currentUserSocialDataClass = appStateClass.usersSocialsNotifiers.value[currentID]!.notifier.value;    
+  UserSocialClass currentUserSocialDataClass = appStateRepo.usersSocialsNotifiers.value[currentID]!.notifier.value;    
   UserSocialClass updatedCurrentUserSocialDataClass = UserSocialClass(currentUserSocialDataClass.followersCount, currentUserSocialDataClass.followingCount- 1, false, false);
-  appStateClass.usersSocialsNotifiers.value[currentID]!.notifier.value = updatedCurrentUserSocialDataClass;
+  appStateRepo.usersSocialsNotifiers.value[currentID]!.notifier.value = updatedCurrentUserSocialDataClass;
   
   UserDataStreamClass().emitData(
     UserDataStreamControllerClass(
@@ -88,8 +89,8 @@ void likePost(
   BuildContext context,
   PostClass postData
 ) async{
-  String currentID = appStateClass.currentID;
-  appStateClass.postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
+  String currentID = appStateRepo.currentID;
+  appStateRepo.postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
     postData.postID, postData.type, postData.content, postData.sender, postData.uploadTime, 
     postData.mediasDatas, postData.likesCount+ 1, true, postData.bookmarksCount, postData.bookmarkedByCurrentID, 
     postData.commentsCount, postData.deleted
@@ -116,8 +117,8 @@ void unlikePost(
   BuildContext context,
   PostClass postData
 ) async{
-  String currentID = appStateClass.currentID;
-  appStateClass.postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
+  String currentID = appStateRepo.currentID;
+  appStateRepo.postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
     postData.postID, postData.type, postData.content, postData.sender, postData.uploadTime, 
     postData.mediasDatas, postData.likesCount- 1, false, postData.bookmarksCount, postData.bookmarkedByCurrentID, 
     postData.commentsCount, postData.deleted
@@ -144,8 +145,8 @@ void bookmarkPost(
   BuildContext context,
   PostClass postData
 ) async{
-  String currentID = appStateClass.currentID;
-  appStateClass.postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
+  String currentID = appStateRepo.currentID;
+  appStateRepo.postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
     postData.postID, postData.type, postData.content, postData.sender, postData.uploadTime, 
     postData.mediasDatas, postData.likesCount, postData.likedByCurrentID, postData.bookmarksCount+ 1, true, 
     postData.commentsCount, postData.deleted
@@ -179,8 +180,8 @@ void unbookmarkPost(
   BuildContext context,
   PostClass postData
 ) async{
-  String currentID = appStateClass.currentID;
-  appStateClass.postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
+  String currentID = appStateRepo.currentID;
+  appStateRepo.postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
     postData.postID, postData.type, postData.content, postData.sender, postData.uploadTime, 
     postData.mediasDatas, postData.likesCount, postData.likedByCurrentID, postData.bookmarksCount- 1, false, 
     postData.commentsCount, postData.deleted
@@ -207,8 +208,8 @@ void deletePost(
   BuildContext context,
   PostClass postData
 ) async{
-  String currentID = appStateClass.currentID;
-  appStateClass.postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
+  String currentID = appStateRepo.currentID;
+  appStateRepo.postsNotifiers.value[postData.sender]![postData.postID]!.notifier.value = PostClass(
     postData.postID, postData.type, postData.content, postData.sender, postData.uploadTime, 
     postData.mediasDatas, postData.likesCount, postData.likedByCurrentID, postData.bookmarksCount,
     postData.bookmarkedByCurrentID, postData.commentsCount, true
@@ -237,8 +238,8 @@ void likeComment(
   BuildContext context,
   CommentClass commentData
 ) async{
-  String currentID = appStateClass.currentID;
-  appStateClass.commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
+  String currentID = appStateRepo.currentID;
+  appStateRepo.commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
     commentData.commentID, commentData.type, commentData.content, commentData.sender, commentData.uploadTime, 
     commentData.mediasDatas, commentData.likesCount+ 1, true, commentData.bookmarksCount, commentData.bookmarkedByCurrentID, commentData.commentsCount, 
     commentData.parentPostType, commentData.parentPostID, commentData.parentPostSender, 
@@ -266,8 +267,8 @@ void unlikeComment(
   BuildContext context,
   CommentClass commentData
 ) async{
-  String currentID = appStateClass.currentID;
-  appStateClass.commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
+  String currentID = appStateRepo.currentID;
+  appStateRepo.commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
     commentData.commentID, commentData.type, commentData.content, commentData.sender, commentData.uploadTime, 
     commentData.mediasDatas, commentData.likesCount- 1, false, commentData.bookmarksCount, commentData.bookmarkedByCurrentID, commentData.commentsCount, 
     commentData.parentPostType, commentData.parentPostID, commentData.parentPostSender, 
@@ -295,8 +296,8 @@ void bookmarkComment(
   BuildContext context,
   CommentClass commentData
 ) async{
-  String currentID = appStateClass.currentID;
-  appStateClass.commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
+  String currentID = appStateRepo.currentID;
+  appStateRepo.commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
     commentData.commentID, commentData.type, commentData.content, commentData.sender, commentData.uploadTime, 
     commentData.mediasDatas, commentData.likesCount, commentData.likedByCurrentID, commentData.bookmarksCount+ 1, true, commentData.commentsCount, 
     commentData.parentPostType, commentData.parentPostID, commentData.parentPostSender, 
@@ -331,8 +332,8 @@ void unbookmarkComment(
   BuildContext context,
   CommentClass commentData
 )async{
-  String currentID = appStateClass.currentID;
-  appStateClass.commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
+  String currentID = appStateRepo.currentID;
+  appStateRepo.commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = CommentClass(
     commentData.commentID, commentData.type, commentData.content, commentData.sender, commentData.uploadTime, 
     commentData.mediasDatas, commentData.likesCount, commentData.likedByCurrentID, commentData.bookmarksCount- 1, false, commentData.commentsCount, 
     commentData.parentPostType, commentData.parentPostID, commentData.parentPostSender, 
@@ -360,8 +361,8 @@ void deleteComment(
   BuildContext context,
   CommentClass commentData
 ) async{
-  String currentID = appStateClass.currentID;
-  appStateClass.commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = 
+  String currentID = appStateRepo.currentID;
+  appStateRepo.commentsNotifiers.value[commentData.sender]![commentData.commentID]!.notifier.value = 
   CommentClass(
     commentData.commentID, commentData.type, commentData.content, commentData.sender, commentData.uploadTime, 
     commentData.mediasDatas, commentData.likesCount, commentData.likedByCurrentID, commentData.bookmarksCount, commentData.bookmarkedByCurrentID, commentData.commentsCount, 
@@ -370,8 +371,8 @@ void deleteComment(
   );
   
   if(commentData.parentPostType == 'post'){
-    if(appStateClass.postsNotifiers.value[commentData.parentPostSender] != null && appStateClass.postsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID] != null){
-      PostClass parentPostClass = appStateClass.postsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID]!.notifier.value;
+    if(appStateRepo.postsNotifiers.value[commentData.parentPostSender] != null && appStateRepo.postsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID] != null){
+      PostClass parentPostClass = appStateRepo.postsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID]!.notifier.value;
       updatePostData(
         PostClass(
           parentPostClass.postID, parentPostClass.type, parentPostClass.content, parentPostClass.sender, 
@@ -381,8 +382,8 @@ void deleteComment(
       );
     }
   }else{
-    if(appStateClass.commentsNotifiers.value[commentData.parentPostSender] != null && appStateClass.commentsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID] != null){
-      CommentClass parentCommentClass = appStateClass.commentsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID]!.notifier.value;
+    if(appStateRepo.commentsNotifiers.value[commentData.parentPostSender] != null && appStateRepo.commentsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID] != null){
+      CommentClass parentCommentClass = appStateRepo.commentsNotifiers.value[commentData.parentPostSender]![commentData.parentPostID]!.notifier.value;
       updateCommentData(
         CommentClass(
           parentCommentClass.commentID, parentCommentClass.type, parentCommentClass.content, parentCommentClass.sender, 
@@ -416,18 +417,116 @@ void deleteComment(
   );
 }
 
-void deleteAccount(BuildContext context) async{
-  dynamic res = await fetchDataRepo.fetchData(
-    context, 
-    RequestDelete.deleteAccount, 
-    {
-      'currentID': appStateClass.currentID,
+void verifyDeleteAccount(BuildContext context) {
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      return Dialog(
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: getScreenWidth() * 0.025,
+          vertical: 0
+        ),
+        child: StatefulBuilder(
+          builder: (_, setState) {
+            return Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: getScreenWidth() * 0.025,
+                vertical: getScreenHeight() * 0.02
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Please re-enter your email and password to confirm deletion.', 
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18
+                    )
+                  ),
+                  containerMargin(
+                    textFieldWithDescription(
+                      TextField(
+                        controller: emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: generateProfileTextFieldDecoration('your email', Icons.mail),
+                      ),
+                      'Email',
+                      ''
+                    ),
+                    EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
+                  ),
+                  containerMargin(
+                    textFieldWithDescription(
+                      TextField(
+                        controller: passwordController,
+                        decoration: generateProfileTextFieldDecoration('password', Icons.lock),
+                        keyboardType: TextInputType.visiblePassword,
+                        maxLength: profileInputMaxLimit['password']
+                      ),
+                      'Password',
+                      "Your password should be between ${profileInputMinLimit['password']} and ${profileInputMaxLimit['password']} characters",
+                    ),
+                    EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
+                  ),
+                  SizedBox(
+                    height: textFieldToButtonMargin
+                  ),
+                  CustomButton(
+                    width: getScreenWidth() * 0.65, 
+                    height: getScreenHeight() * 0.07, 
+                    color: Colors.teal, 
+                    text: 'Delete', 
+                    prefix: null, 
+                    onTapped: () {
+                      Navigator.pop(dialogContext);
+                      deleteAccount(
+                        context,
+                        emailController.text.trim(),
+                        passwordController.text.trim()
+                      );
+                    }, 
+                    setBorderRadius: true, 
+                    loading: false
+                  ),
+                ]
+              ),
+            );
+          }
+        ),
+      );
     }
   );
-  if(res != null && context.mounted){
-    SharedPreferencesClass().resetCurrentUser();
-    appStateClass.resetSession();
-    navigateBackToInitialScreen(context);
+}
+
+void deleteAccount(
+  BuildContext context,
+  String email,
+  String password
+) async{
+  if(email.isNotEmpty && password.isNotEmpty) {
+    await authRepo.deleteEmailPasswordAccount(
+      context, 
+      email, 
+      password
+    ).then((value) async{
+      User? user = authRepo.currentUser.value;
+      if(user == null) {
+        dynamic res = await fetchDataRepo.fetchData(
+          context, 
+          RequestDelete.deleteAccount, 
+          {
+            'currentID': appStateRepo.currentID,
+          }
+        );
+        if(res != null && context.mounted){
+          appStateRepo.resetSession();
+          navigateBackToInitialScreen(context);
+        }
+      }
+    });
   }
 }
 
@@ -435,8 +534,8 @@ void muteUser(
   BuildContext context,
   UserDataClass userData
 ) async{
-  String currentID = appStateClass.currentID;
-  appStateClass.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
+  String currentID = appStateRepo.currentID;
+  appStateRepo.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
     userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
     userData.birthDate, userData.bio, true, userData.blockedByCurrentID, userData.blocksCurrentID,
     userData.private, userData.requestedByCurrentID, userData.requestsToCurrentID, 
@@ -466,8 +565,8 @@ void unmuteUser(
   BuildContext context,
   UserDataClass userData
 ) async{
-  String currentID = appStateClass.currentID;
-  appStateClass.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
+  String currentID = appStateRepo.currentID;
+  appStateRepo.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
     userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
     userData.birthDate, userData.bio, false, userData.blockedByCurrentID, userData.blocksCurrentID,
     userData.private, userData.requestedByCurrentID, userData.requestsToCurrentID,
@@ -489,22 +588,22 @@ void blockUser(
   UserDataClass userData, 
   UserSocialClass userSocials
 ) async{
-  String currentID = appStateClass.currentID;
-  UserSocialClass currentUserSocialClass = appStateClass.usersSocialsNotifiers.value[currentID]!.notifier.value;
+  String currentID = appStateRepo.currentID;
+  UserSocialClass currentUserSocialClass = appStateRepo.usersSocialsNotifiers.value[currentID]!.notifier.value;
   
-  appStateClass.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
+  appStateRepo.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
     userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
     userData.birthDate, userData.bio, userData.mutedByCurrentID, true, userData.blocksCurrentID,
     userData.private, false, false, userData.verified, userData.suspended, userData.deleted
   );
   
-  appStateClass.usersSocialsNotifiers.value[userData.userID]!.notifier.value = UserSocialClass(
+  appStateRepo.usersSocialsNotifiers.value[userData.userID]!.notifier.value = UserSocialClass(
     userSocials.followedByCurrentID ? userSocials.followersCount - 1 : userSocials.followersCount, 
     userSocials.followsCurrentID ? userSocials.followingCount - 1 : userSocials.followingCount, 
     false, false
   );
   
-  appStateClass.usersSocialsNotifiers.value[currentID]!.notifier.value = UserSocialClass(
+  appStateRepo.usersSocialsNotifiers.value[currentID]!.notifier.value = UserSocialClass(
     userSocials.followsCurrentID ? currentUserSocialClass.followersCount - 1 : currentUserSocialClass.followersCount, 
     userSocials.followedByCurrentID ? currentUserSocialClass.followingCount - 1 : currentUserSocialClass.followingCount, 
     false, 
@@ -539,8 +638,8 @@ void unblockUser(
   BuildContext context,
   UserDataClass userData
 ) async{
-  String currentID = appStateClass.currentID;
-  appStateClass.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
+  String currentID = appStateRepo.currentID;
+  appStateRepo.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
     userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
     userData.birthDate, userData.bio, userData.mutedByCurrentID, false, userData.blocksCurrentID,
     userData.private, userData.requestedByCurrentID, userData.requestsToCurrentID,
@@ -567,7 +666,7 @@ void lockAccount(
   UserDataClass userData
 ) async{
   String currentID = userData.userID;
-  appStateClass.usersDataNotifiers.value[currentID]!.notifier.value = UserDataClass(
+  appStateRepo.usersDataNotifiers.value[currentID]!.notifier.value = UserDataClass(
     userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
     userData.birthDate, userData.bio, userData.mutedByCurrentID, false, userData.blocksCurrentID,
     true, userData.requestedByCurrentID, userData.requestsToCurrentID,
@@ -588,7 +687,7 @@ void unlockAccount(
   UserDataClass userData
 ) async{
   String currentID = userData.userID;
-  appStateClass.usersDataNotifiers.value[currentID]!.notifier.value = UserDataClass(
+  appStateRepo.usersDataNotifiers.value[currentID]!.notifier.value = UserDataClass(
     userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
     userData.birthDate, userData.bio, userData.mutedByCurrentID, false, userData.blocksCurrentID,
     false, userData.requestedByCurrentID, userData.requestsToCurrentID,
@@ -614,17 +713,17 @@ void acceptFollowRequest(
   BuildContext context,
   String userID
 ) async{
-  String currentID = appStateClass.currentID;
-  UserDataClass userData = appStateClass.usersDataNotifiers.value[userID]!.notifier.value;
-  appStateClass.usersDataNotifiers.value[userID]!.notifier.value = UserDataClass(
+  String currentID = appStateRepo.currentID;
+  UserDataClass userData = appStateRepo.usersDataNotifiers.value[userID]!.notifier.value;
+  appStateRepo.usersDataNotifiers.value[userID]!.notifier.value = UserDataClass(
     userData.userID, userData.name, userData.username, userData.profilePicLink, 
     userData.dateJoined, userData.birthDate, userData.bio, userData.mutedByCurrentID, 
     userData.blockedByCurrentID, userData.blocksCurrentID, userData.private, 
     userData.requestedByCurrentID, false, userData.verified, userData.suspended, userData.deleted
   );
   
-  UserSocialClass userSocialClass = appStateClass.usersSocialsNotifiers.value[userID]!.notifier.value;
-  appStateClass.usersSocialsNotifiers.value[userID]!.notifier.value = UserSocialClass(
+  UserSocialClass userSocialClass = appStateRepo.usersSocialsNotifiers.value[userID]!.notifier.value;
+  appStateRepo.usersSocialsNotifiers.value[userID]!.notifier.value = UserSocialClass(
     userSocialClass.followersCount, userSocialClass.followingCount + 1, userSocialClass.followedByCurrentID, 
     true
   );
@@ -643,8 +742,8 @@ void rejectFollowRequest(
   BuildContext context,
   UserDataClass userData
 ) async{
-  String currentID = appStateClass.currentID;
-  appStateClass.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
+  String currentID = appStateRepo.currentID;
+  appStateRepo.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
     userData.userID, userData.name, userData.username, userData.profilePicLink, 
     userData.dateJoined, userData.birthDate, userData.bio, userData.mutedByCurrentID, 
     userData.blockedByCurrentID, userData.blocksCurrentID, userData.private, 
@@ -665,8 +764,8 @@ void cancelFollowRequest(
   BuildContext context,
   UserDataClass userData
 ) async{
-  String currentID = appStateClass.currentID;
-  appStateClass.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
+  String currentID = appStateRepo.currentID;
+  appStateRepo.usersDataNotifiers.value[userData.userID]!.notifier.value = UserDataClass(
     userData.userID, userData.name, userData.username, userData.profilePicLink, 
     userData.dateJoined, userData.birthDate, userData.bio, userData.mutedByCurrentID, 
     userData.blockedByCurrentID, userData.blocksCurrentID, userData.private, 

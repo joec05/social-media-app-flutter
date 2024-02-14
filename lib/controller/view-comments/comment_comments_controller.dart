@@ -74,7 +74,7 @@ class CommentCommentsController {
           {
             'sender': selectedCommentData.sender,
             'commentID': selectedCommentData.commentID,
-            'currentID': appStateClass.currentID,
+            'currentID': appStateRepo.currentID,
             'currentLength': currentCommentsLength,
             'paginationLimit': usersPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
@@ -83,15 +83,15 @@ class CommentCommentsController {
         if(mounted){
           loadingState.value = LoadingState.loaded;
           if(res != null){
-            List allPostsData = [...res.data['commentsData']];
+            List allPostsData = [...res['commentsData']];
             if(!isPaginating){
-              res.data['parentPostData']['type'] = 'parent_${res.data['parentPostData']['type']}';
-              res.data['selectedCommentData']['type'] = 'selected_${res.data['selectedCommentData']['type']}';
-              allPostsData.insertAll(0, [res.data['parentPostData'], res.data['selectedCommentData']]);
+              res['parentPostData']['type'] = 'parent_${res['parentPostData']['type']}';
+              res['selectedCommentData']['type'] = 'selected_${res['selectedCommentData']['type']}';
+              allPostsData.insertAll(0, [res['parentPostData'], res['selectedCommentData']]);
             }
-            canPaginate.value = res.data['canPaginate'];
-            List userProfileDataList = res.data['usersProfileData'];
-            List usersSocialsDatasList = res.data['usersSocialsData'];
+            canPaginate.value = res['canPaginate'];
+            List userProfileDataList = res['usersProfileData'];
+            List usersSocialsDatasList = res['usersSocialsData'];
             for(int i = 0; i < userProfileDataList.length; i++){
               Map userProfileData = userProfileDataList[i];
               UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);

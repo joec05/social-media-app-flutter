@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
@@ -98,7 +97,7 @@ class _CustomNotificationWidgetState extends State<CustomNotificationWidget>{
           SliderRightToLeftRoute(
             page: ViewPostCommentsWidget(
               selectedPostData: PostClass(
-                notificationClass.referencedPostID, 'post', '', appStateClass.currentID, '', 
+                notificationClass.referencedPostID, 'post', '', appStateRepo.currentID, '', 
                 [], 0, false, 0, false, 0, false
               )
             )
@@ -110,7 +109,7 @@ class _CustomNotificationWidgetState extends State<CustomNotificationWidget>{
           SliderRightToLeftRoute(
             page: ViewCommentCommentsWidget(
               selectedCommentData: CommentClass(
-                notificationClass.referencedPostID, 'comment', '', appStateClass.currentID, '', 
+                notificationClass.referencedPostID, 'comment', '', appStateRepo.currentID, '', 
                 [], 0, false, 0, false, 0, '', '', '', false
               )
             )

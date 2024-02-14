@@ -77,7 +77,7 @@ class NotificationsController {
         context, 
         RequestGet.fetchUserNotifications, 
         {
-          'currentID': appStateClass.currentID,
+          'currentID': appStateRepo.currentID,
           'currentLength': currentPostsLength,
           'paginationLimit': notificationsPaginationLimit,
           'maxFetchLimit': notificationsServerFetchLimit
@@ -86,11 +86,11 @@ class NotificationsController {
       if(mounted){
         loadingState.value = LoadingState.loaded;
         if(res != null){
-          List userNotificationsData = res.data['userNotificationsData'];
+          List userNotificationsData = res['userNotificationsData'];
           if(isRefreshing){
             notifications.value = [];
           }
-          canPaginate.value = res.data['canPaginate'];
+          canPaginate.value = res['canPaginate'];
           for(int i = 0; i < userNotificationsData.length; i++){
             Map notificationData = userNotificationsData[i];
             notifications.value = [...notifications.value, NotificationClass(

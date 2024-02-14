@@ -75,11 +75,13 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                       )
                     ), navigatorDelayTime);
                   },
-                  buttonText: 'View likes',
+                  text: 'View likes',
                   width: double.infinity,
                   height: getScreenHeight() * 0.08,
-                  buttonColor: Colors.transparent,
+                  color: Colors.transparent,
                   setBorderRadius: false,
+                  prefix: null,
+                  loading: false
                 ),
                 CustomButton(
                   onTapped: (){
@@ -94,14 +96,16 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                       )
                     ), navigatorDelayTime);
                   },
-                  buttonText: 'View bookmarks',
+                  text: 'View bookmarks',
                   width: double.infinity,
                   height: getScreenHeight() * 0.08,
-                  buttonColor: Colors.transparent,
+                  color: Colors.transparent,
                   setBorderRadius: false,
+                  prefix: null,
+                  loading: false
                 ),
                 Container(
-                  child: commentDataClass.sender == appStateClass.currentID ? 
+                  child: commentDataClass.sender == appStateRepo.currentID ? 
                     CustomButton(
                       onTapped: (){
                         Navigator.pop(bottomSheetContext);
@@ -112,26 +116,30 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                           )
                         ), navigatorDelayTime);
                       },
-                      buttonText: 'Edit comment',
+                      text: 'Edit comment',
                       width: double.infinity,
                       height: getScreenHeight() * 0.08,
-                      buttonColor: Colors.transparent,
+                      color: Colors.transparent,
                       setBorderRadius: false,
+                      prefix: null,
+                      loading: false
                     )
                   : null
                 ),     
                 Container(
-                  child: commentDataClass.sender == appStateClass.currentID ? 
+                  child: commentDataClass.sender == appStateRepo.currentID ? 
                     CustomButton(
                       onTapped: (){
                         Navigator.pop(bottomSheetContext);
                         runDelay(() => deleteComment(context, commentData), actionDelayTime) ;
                       },
-                      buttonText: 'Delete comment',
+                      text: 'Delete comment',
                       width: double.infinity,
                       height: getScreenHeight() * 0.08,
-                      buttonColor: Colors.transparent,
+                      color: Colors.transparent,
                       setBorderRadius: false,
+                      prefix: null,
+                      loading: false
                     )
                   : null
                 ),  
@@ -153,14 +161,14 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
       else if(senderData.mutedByCurrentID || senderData.blockedByCurrentID || senderData.blocksCurrentID){
         return Container();
       }
-      if(senderData.private && !senderSocials.followedByCurrentID && senderData.userID != appStateClass.currentID){
+      if(senderData.private && !senderSocials.followedByCurrentID && senderData.userID != appStateRepo.currentID){
         return Container();
       }
       if(widget.pageDisplayType == CommentDisplayType.bookmark && !commentData.bookmarkedByCurrentID){
         return Container();
       }
       List<MediaDatasClass> mediasDatas = (commentData.mediasDatas);
-      UserDataClass parentPostSender = appStateClass.usersDataNotifiers.value[commentData.parentPostSender]!.notifier.value;
+      UserDataClass parentPostSender = appStateRepo.usersDataNotifiers.value[commentData.parentPostSender]!.notifier.value;
       return Card(
         clipBehavior: Clip.antiAlias,
         margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),

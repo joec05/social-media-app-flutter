@@ -12,7 +12,7 @@ class CloudController {
     String uri
   ) async{
     String loadedUri = '';
-    String uniqueID = appStateClass.currentID;
+    String uniqueID = appStateRepo.currentID;
     String bucketID = storageBucketIDs['image'];
     final appWriteStorage = Storage(updateAppWriteClient());
     await appWriteStorage.createFile(
@@ -42,7 +42,7 @@ class CloudController {
     try {
       File mediaFilePath = File(url);
       FirebaseStorage storage = FirebaseStorage.instance;
-      String childDirectory = '/${appStateClass.currentID}/${const Uuid().v4()}';
+      String childDirectory = '/${appStateRepo.currentID}/${const Uuid().v4()}';
       Reference ref = storage.ref('/videos').child(childDirectory);
       UploadTask uploadTask = ref.putFile(mediaFilePath, SettableMetadata(contentType: 'video/mp4'));
       var mediaUrl = await (await uploadTask).ref.getDownloadURL();

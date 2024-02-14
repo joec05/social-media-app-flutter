@@ -66,13 +66,13 @@ class PostCommentsController {
         }else{
           call = RequestGet.fetchSelectedPostCommentsPagination;
         }
-        dynamic res = fetchDataRepo.fetchData(
+        dynamic res = await fetchDataRepo.fetchData(
           context, 
           call, 
           {
             'sender': selectedPostData.sender,
             'postID': selectedPostData.postID,
-            'currentID': appStateClass.currentID,
+            'currentID': appStateRepo.currentID,
             'currentLength': currentCommentsLength,
             'paginationLimit': usersPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
@@ -81,13 +81,13 @@ class PostCommentsController {
         if(mounted){
           loadingState.value = LoadingState.loaded;
           if(res != null){
-            List allPostsData = [...res.data['commentsData']];
+            List allPostsData = [...res['commentsData']];
             if(!isPaginating){
-              allPostsData.insert(0, res.data['selectedPostData']);
+              allPostsData.insert(0, res['selectedPostData']);
             }
-            canPaginate.value = res.data['canPaginate'];
-            List userProfileDataList = res.data['usersProfileData'];
-            List usersSocialsDatasList = res.data['usersSocialsData'];
+            canPaginate.value = res['canPaginate'];
+            List userProfileDataList = res['usersProfileData'];
+            List usersSocialsDatasList = res['usersSocialsData'];
             for(int i = 0; i < userProfileDataList.length; i++){
               Map userProfileData = userProfileDataList[i];
               UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);

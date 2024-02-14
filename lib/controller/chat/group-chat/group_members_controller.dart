@@ -56,7 +56,7 @@ class GroupMembersController {
           RequestGet.fetchGroupMembersData, 
           {
             'usersID': usersID,
-            'currentID': appStateClass.currentID,
+            'currentID': appStateRepo.currentID,
             'currentLength': currentUsersLength,
             'paginationLimit': usersPaginationLimit,
             'maxFetchLimit': usersServerFetchLimit
@@ -65,8 +65,8 @@ class GroupMembersController {
         if(mounted){
           loadingState.value = LoadingState.loaded;
           if(res != null){
-            List followersProfileDatasList = res.data['usersProfileData'];
-            List followersSocialsDatasList = res.data['usersSocialsData'];
+            List followersProfileDatasList = res['usersProfileData'];
+            List followersSocialsDatasList = res['usersSocialsData'];
             if(isRefreshing){
               users.value = [];
             }

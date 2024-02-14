@@ -75,11 +75,13 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
                       )
                     ), navigatorDelayTime);
                   },
-                  buttonText: 'View likes',
+                  text: 'View likes',
                   width: double.infinity,
                   height: getScreenHeight() * 0.08,
-                  buttonColor: Colors.transparent,
+                  color: Colors.transparent,
                   setBorderRadius: false,
+                  prefix: null,
+                  loading: false
                 ),
                 CustomButton(
                   onTapped: (){
@@ -93,14 +95,16 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
                       )
                     ), navigatorDelayTime);
                   },
-                  buttonText: 'View bookmarks',
+                  text: 'View bookmarks',
                   width: double.infinity,
                   height: getScreenHeight() * 0.08,
-                  buttonColor: Colors.transparent,
+                  color: Colors.transparent,
                   setBorderRadius: false,
+                  prefix: null,
+                  loading: false
                 ),
                 Container(
-                  child: postData.sender == appStateClass.currentID ? 
+                  child: postData.sender == appStateRepo.currentID ? 
                     CustomButton(
                       onTapped: (){
                         Navigator.pop(bottomSheetContext);
@@ -113,28 +117,31 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
                           )
                         ), navigatorDelayTime);
                       },
-                      buttonText: 'Edit post',
+                      text: 'Edit post',
                       width: double.infinity,
                       height: getScreenHeight() * 0.08,
-                      buttonColor: Colors.transparent,
+                      color: Colors.transparent,
                       setBorderRadius: false,
+                      prefix: null,
+                      loading: false
                     )
                   : null
                 ), 
                 Container(
-                  child: postData.sender == appStateClass.currentID ? 
+                  child: postData.sender == appStateRepo.currentID ? 
                     CustomButton(
                       onTapped: (){
                         Navigator.pop(bottomSheetContext);
                         runDelay(() => deletePost(context, postData), actionDelayTime);
                       },
-                      buttonText: 'Delete post',
+                      text: 'Delete post',
                       width: double.infinity,
                       height: getScreenHeight() * 0.08,
-                      buttonColor: Colors.transparent,
+                      color: Colors.transparent,
                       setBorderRadius: false,
+                      prefix: null,
+                      loading: false
                     )
-                    
                   : null
                 ), 
               ]
@@ -156,7 +163,7 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
       else if(senderData.mutedByCurrentID || senderData.blockedByCurrentID || senderData.blocksCurrentID){
         return Container();
       }
-      if(senderData.private && !senderSocials.followedByCurrentID && senderData.userID != appStateClass.currentID){
+      if(senderData.private && !senderSocials.followedByCurrentID && senderData.userID != appStateRepo.currentID){
         return Container();
       }
       if(widget.pageDisplayType == PostDisplayType.bookmark && !postData.bookmarkedByCurrentID){

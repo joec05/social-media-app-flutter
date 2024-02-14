@@ -98,17 +98,17 @@ class _CommentBookmarksListWidgetStatefulState extends State<_CommentBookmarksLi
                     SliverList(delegate: SliverChildBuilderDelegate(
                       childCount: usersList.length, 
                       (context, index) {
-                        if(appStateClass.usersDataNotifiers.value[usersList[index]] != null){
+                        if(appStateRepo.usersDataNotifiers.value[usersList[index]] != null){
                           return ListenableBuilder(
                             listenable: Listenable.merge([
-                              appStateClass.usersDataNotifiers.value[usersList[index]]!.notifier,
-                              appStateClass.usersSocialsNotifiers.value[usersList[index]]!.notifier,
-                              appStateClass.commentsNotifiers.value[widget.commentSender]![widget.commentID]!.notifier
+                              appStateRepo.usersDataNotifiers.value[usersList[index]]!.notifier,
+                              appStateRepo.usersSocialsNotifiers.value[usersList[index]]!.notifier,
+                              appStateRepo.commentsNotifiers.value[widget.commentSender]![widget.commentID]!.notifier
                             ]),
                             builder: (context, child){
-                              UserDataClass userData = appStateClass.usersDataNotifiers.value[usersList[index]]!.notifier.value;
-                              UserSocialClass userSocial = appStateClass.usersSocialsNotifiers.value[usersList[index]]!.notifier.value;
-                              CommentClass commentData = appStateClass.commentsNotifiers.value[widget.commentSender]![widget.commentID]!.notifier.value;
+                              UserDataClass userData = appStateRepo.usersDataNotifiers.value[usersList[index]]!.notifier.value;
+                              UserSocialClass userSocial = appStateRepo.usersSocialsNotifiers.value[usersList[index]]!.notifier.value;
+                              CommentClass commentData = appStateRepo.commentsNotifiers.value[widget.commentSender]![widget.commentID]!.notifier.value;
                               return CustomUserDataWidget(
                                 userData: userData,
                                 userSocials: userSocial,

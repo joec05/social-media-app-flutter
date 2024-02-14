@@ -38,7 +38,7 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
       socket.emit("delete-private-message-to-server", {
         'chatID': widget.chatID,
         'messageID': privateMessageData.messageID,
-        'currentID': appStateClass.currentID,
+        'currentID': appStateRepo.currentID,
         'recipient': widget.chatRecipient
       });
       await fetchDataRepo.fetchData(
@@ -47,7 +47,7 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
         {
           'chatID': widget.chatID,
           'messageID': privateMessageData.messageID,
-          'currentID': appStateClass.currentID,
+          'currentID': appStateRepo.currentID,
         }
       );
     } catch (_) {
@@ -66,7 +66,7 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
       socket.emit("delete-private-message-for-all-to-server", {
         'chatID': widget.chatID,
         'messageID': privateMessageData.messageID,
-        'currentID': appStateClass.currentID,
+        'currentID': appStateRepo.currentID,
         'recipient': widget.chatRecipient,
         'content': ''
       });
@@ -76,7 +76,7 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
         {
           'chatID': widget.chatID,
           'messageID': privateMessageData.messageID,
-          'currentID': appStateClass.currentID,
+          'currentID': appStateRepo.currentID,
           'recipient': widget.chatRecipient
         }
       );
@@ -123,13 +123,15 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
                     Navigator.pop(bottomSheetContext);
                     runDelay(() => deletePrivateMessage(), actionDelayTime);
                   },
-                  buttonText: 'Delete message',
+                  text: 'Delete message',
                   width: double.infinity,
                   height: getScreenHeight() * 0.08,
-                  buttonColor: Colors.transparent,
+                  color: Colors.transparent,
                   setBorderRadius: false,
+                  prefix: null,
+                  loading: false
                 ),
-                privateMessageData.sender == appStateClass.currentID ?
+                privateMessageData.sender == appStateRepo.currentID ?
                   InkWell(
                     onTap: (){},
                     splashFactory: InkRipple.splashFactory,
@@ -138,11 +140,13 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
                         Navigator.pop(bottomSheetContext);
                         runDelay(() => deletePrivateMessageForAll(), actionDelayTime);
                       },
-                      buttonText: 'Delete message for everyone',
+                      text: 'Delete message for everyone',
                       width: double.infinity,
                       height: getScreenHeight() * 0.08,
-                      buttonColor: Colors.transparent,
+                      color: Colors.transparent,
                       setBorderRadius: false,
+                      prefix: null,
+                      loading: false
                     )
                   )
                 : Container()
@@ -156,7 +160,7 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
   
   @override
   Widget build(BuildContext context) {
-    if(privateMessageData.deletedList.contains(appStateClass.currentID)){
+    if(privateMessageData.deletedList.contains(appStateRepo.currentID)){
       return Container();
     }
 
@@ -183,7 +187,7 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
             ) 
           : Container(),
           Column(
-            crossAxisAlignment: privateMessageData.sender == appStateClass.currentID ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: privateMessageData.sender == appStateRepo.currentID ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,7 +198,7 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
               ),
               privateMessageData.content.isNotEmpty ? 
                 Align(
-                  alignment: privateMessageData.sender == appStateClass.currentID ? Alignment.topRight : Alignment.topLeft,
+                  alignment: privateMessageData.sender == appStateRepo.currentID ? Alignment.topRight : Alignment.topLeft,
                   child: InkWell(
                     onLongPress: () {
                       displayMessageBottomSheet();
@@ -205,7 +209,7 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(7.5),
                         border: Border.all(width: 2, color: Colors.white),
-                        color: privateMessageData.sender == appStateClass.currentID ? Colors.blue : Colors.grey.withOpacity(0.5)
+                        color: privateMessageData.sender == appStateRepo.currentID ? Colors.blue : Colors.grey.withOpacity(0.5)
                       ),
                       constraints: BoxConstraints(
                         maxWidth: getScreenWidth() * 0.7,

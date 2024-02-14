@@ -95,15 +95,15 @@ class _FollowRequestsToWidgetStatefulState extends State<_FollowRequestsToWidget
                     SliverList(delegate: SliverChildBuilderDelegate(
                       childCount: usersList.length, 
                       (context, index) {
-                        if(appStateClass.usersDataNotifiers.value[usersList[index]] != null){
+                        if(appStateRepo.usersDataNotifiers.value[usersList[index]] != null){
                           return ListenableBuilder(
                             listenable: Listenable.merge([
-                              appStateClass.usersDataNotifiers.value[usersList[index]]!.notifier,
-                              appStateClass.usersSocialsNotifiers.value[usersList[index]]!.notifier
+                              appStateRepo.usersDataNotifiers.value[usersList[index]]!.notifier,
+                              appStateRepo.usersSocialsNotifiers.value[usersList[index]]!.notifier
                             ]),
                             builder: (context, child){
-                              UserDataClass userData = appStateClass.usersDataNotifiers.value[usersList[index]]!.notifier.value;
-                              UserSocialClass userSocial = appStateClass.usersSocialsNotifiers.value[usersList[index]]!.notifier.value;
+                              UserDataClass userData = appStateRepo.usersDataNotifiers.value[usersList[index]]!.notifier.value;
+                              UserSocialClass userSocial = appStateRepo.usersSocialsNotifiers.value[usersList[index]]!.notifier.value;
                               return CustomFollowRequestWidget(
                                 userData: userData, userSocials: userSocial,
                                 key: UniqueKey(), followRequestType: FollowRequestType.from,

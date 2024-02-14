@@ -36,7 +36,7 @@ class ChatsController {
   }
 
   void initializeSocketListeners() {
-    socket.on("update-latest-private-message-${appStateClass.currentID}", ( data ) async{
+    socket.on("update-latest-private-message-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
         bool chatDataFound = false;
         for(int i = 0; i < chats.value.length; i++){
@@ -59,7 +59,7 @@ class ChatsController {
         }
       }
     });
-    socket.on("remove-latest-private-message-${appStateClass.currentID}", ( data ) async{
+    socket.on("remove-latest-private-message-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < chats.value.length; i++){
           ChatDataClass chatData = chats.value[i].notifier.value;
@@ -73,10 +73,10 @@ class ChatsController {
         }
       }
     });
-    socket.on("update-latest-group-message-${appStateClass.currentID}", ( data ) async{
+    socket.on("update-latest-group-message-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
-        if(appStateClass.usersDataNotifiers.value[data['senderData']['user_id']] != null){
-          UserDataClass userData = appStateClass.usersDataNotifiers.value[data['senderData']['user_id']]!.notifier.value;
+        if(appStateRepo.usersDataNotifiers.value[data['senderData']['user_id']] != null){
+          UserDataClass userData = appStateRepo.usersDataNotifiers.value[data['senderData']['user_id']]!.notifier.value;
           UserDataClass senderData = UserDataClass.fromMap(data['senderData']);
           if(userData.name != senderData.name){
             UserDataClass updatedUserData = UserDataClass(
@@ -118,7 +118,7 @@ class ChatsController {
         }
       }
     });
-    socket.on("remove-latest-group-message-${appStateClass.currentID}", ( data ) async{
+    socket.on("remove-latest-group-message-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < chats.value.length; i++){
           ChatDataClass chatData = chats.value[i].notifier.value;
@@ -132,7 +132,7 @@ class ChatsController {
         }
       }
     });
-    socket.on("update-latest-edit-group-profile-announcement-${appStateClass.currentID}", ( data ) async{
+    socket.on("update-latest-edit-group-profile-announcement-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < chats.value.length; i++){
           ChatDataClass chatData = chats.value[i].notifier.value;
@@ -149,7 +149,7 @@ class ChatsController {
         }
       }
     });
-    socket.on("update-latest-leave-group-announcement-${appStateClass.currentID}", ( data ) async{
+    socket.on("update-latest-leave-group-announcement-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < chats.value.length; i++){
           ChatDataClass chatData = chats.value[i].notifier.value;
@@ -167,7 +167,7 @@ class ChatsController {
         }
       }
     });
-    socket.on("leave-group-sender-${appStateClass.currentID}", ( data ) async{
+    socket.on("leave-group-sender-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < chats.value.length; i++){
           ChatDataClass chatData = chats.value[i].notifier.value;
@@ -187,7 +187,7 @@ class ChatsController {
         }
       }
     });
-    socket.on("update-latest-add-users-to-group-announcement-${appStateClass.currentID}", ( data ) async{
+    socket.on("update-latest-add-users-to-group-announcement-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < chats.value.length; i++){
           ChatDataClass chatData = chats.value[i].notifier.value;
@@ -207,7 +207,7 @@ class ChatsController {
         }
       }
     });
-    socket.on("add-new-chat-to-added-users-${appStateClass.currentID}", ( data ) async{
+    socket.on("add-new-chat-to-added-users-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
         bool chatDataFound = false;
         for(int i = 0; i < chats.value.length; i++){
@@ -242,9 +242,9 @@ class ChatsController {
         }
       }
     });
-    socket.on("update-is-blocked-by-sender-id-user-data-${appStateClass.currentID}", ( data ) async{
+    socket.on("update-is-blocked-by-sender-id-user-data-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
-        UserDataClass userData = appStateClass.usersDataNotifiers.value[data['blockedUserID']]!.notifier.value;
+        UserDataClass userData = appStateRepo.usersDataNotifiers.value[data['blockedUserID']]!.notifier.value;
         UserDataClass updatedUserData = UserDataClass(
           userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
           userData.birthDate, userData.bio, userData.mutedByCurrentID, true, userData.blocksCurrentID, 
@@ -254,9 +254,9 @@ class ChatsController {
         updateUserData(updatedUserData);
       }
     });
-    socket.on("update-block-sender-id-user-data-${appStateClass.currentID}", ( data ) async{
+    socket.on("update-block-sender-id-user-data-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
-        UserDataClass userData = appStateClass.usersDataNotifiers.value[data['senderID']]!.notifier.value;
+        UserDataClass userData = appStateRepo.usersDataNotifiers.value[data['senderID']]!.notifier.value;
         UserDataClass updatedUserData = UserDataClass(
           userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
           userData.birthDate, userData.bio, userData.mutedByCurrentID, userData.blockedByCurrentID, true, 
@@ -266,9 +266,9 @@ class ChatsController {
         updateUserData(updatedUserData);
       }
     });
-    socket.on("update-is-unblocked-by-sender-id-user-data-${appStateClass.currentID}", ( data ) async{
+    socket.on("update-is-unblocked-by-sender-id-user-data-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
-        UserDataClass userData = appStateClass.usersDataNotifiers.value[data['unblockedUserID']]!.notifier.value;
+        UserDataClass userData = appStateRepo.usersDataNotifiers.value[data['unblockedUserID']]!.notifier.value;
         UserDataClass updatedUserData = UserDataClass(
           userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
           userData.birthDate, userData.bio, userData.mutedByCurrentID, false, userData.blocksCurrentID, 
@@ -278,9 +278,9 @@ class ChatsController {
         updateUserData(updatedUserData);
       }
     });
-    socket.on("update-unblock-sender-id-user-data-${appStateClass.currentID}", ( data ) async{
+    socket.on("update-unblock-sender-id-user-data-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
-        UserDataClass userData = appStateClass.usersDataNotifiers.value[data['senderID']]!.notifier.value;
+        UserDataClass userData = appStateRepo.usersDataNotifiers.value[data['senderID']]!.notifier.value;
         UserDataClass updatedUserData = UserDataClass(
           userData.userID, userData.name, userData.username, userData.profilePicLink, userData.dateJoined, 
           userData.birthDate, userData.bio, userData.mutedByCurrentID, userData.blockedByCurrentID, false, 
@@ -307,7 +307,7 @@ class ChatsController {
         context, 
         RequestGet.fetchUserChats, 
         {
-          'userID': appStateClass.currentID,
+          'userID': appStateRepo.currentID,
           'currentLength': currentPostsLength,
           'paginationLimit': postsPaginationLimit,
           'maxFetchLimit': chatsServerFetchLimit
@@ -316,13 +316,13 @@ class ChatsController {
       if(mounted) {
         loadingState.value = LoadingState.loaded;
         if(res != null) {
-          List userChatsData = res.data['userChatsData'];
-          List usersProfileDatasList = res.data['recipientsProfileData'];
-          List usersSocialsDatasList = res.data['recipientsSocialsData'];
+          List userChatsData = res['userChatsData'];
+          List usersProfileDatasList = res['recipientsProfileData'];
+          List usersSocialsDatasList = res['recipientsSocialsData'];
           if(isRefreshing){
             chats.value = [];
           }
-          canPaginate.value = res.data['canPaginate'];
+          canPaginate.value = res['canPaginate'];
           for(int i = 0; i < usersProfileDatasList.length; i++){
             Map userProfileData = usersProfileDatasList[i];
             UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
@@ -390,7 +390,7 @@ class ChatsController {
       RequestPatch.deletePrivateChat, 
       {
         'chatID': chatID,
-        'currentID': appStateClass.currentID,
+        'currentID': appStateRepo.currentID,
       }
     );
   }
@@ -411,7 +411,7 @@ class ChatsController {
       RequestPatch.deleteGroupChat, 
       {
         'chatID': chatID,
-        'currentID': appStateClass.currentID,
+        'currentID': appStateRepo.currentID,
       }
     );
   }

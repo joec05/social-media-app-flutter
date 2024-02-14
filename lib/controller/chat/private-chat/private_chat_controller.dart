@@ -47,7 +47,7 @@ class PrivateChatController {
   }
 
   void initializeSocketListeners() {
-    socket.on("send-private-message-${appStateClass.currentID}-$recipientValue", ( data ) async{
+    socket.on("send-private-message-${appStateRepo.currentID}-$recipientValue", ( data ) async{
       if(mounted && data != null){
         messages.value = [PrivateMessageNotifier(data['messageID'], ValueNotifier(
           PrivateMessageClass(
@@ -57,7 +57,7 @@ class PrivateChatController {
         )), ...messages.value];
       }
     });
-    socket.on("send-private-message-$recipientValue-${appStateClass.currentID}", ( data ) async{
+    socket.on("send-private-message-$recipientValue-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
         messages.value = [PrivateMessageNotifier(data['messageID'], ValueNotifier(
           PrivateMessageClass(
@@ -67,7 +67,7 @@ class PrivateChatController {
         )), ...messages.value];
       }
     });
-    socket.on("delete-private-message-${appStateClass.currentID}-${recipient.value}", ( data ) async{
+    socket.on("delete-private-message-${appStateRepo.currentID}-${recipient.value}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < messages.value.length; i++){
           PrivateMessageClass privateMessageData = messages.value[i].notifier.value;
@@ -80,7 +80,7 @@ class PrivateChatController {
         }
       }
     });
-    socket.on("delete-private-message-for-all-${appStateClass.currentID}-${recipient.value}", ( data ) async{
+    socket.on("delete-private-message-for-all-${appStateRepo.currentID}-${recipient.value}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < messages.value.length; i++){
           PrivateMessageClass privateMessageData = messages.value[i].notifier.value;
@@ -93,7 +93,7 @@ class PrivateChatController {
         }
       }
     });
-    socket.on("delete-private-message-for-all-${recipient.value}-${appStateClass.currentID}", ( data ) async{
+    socket.on("delete-private-message-for-all-${recipient.value}-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
         for(int i = 0; i < messages.value.length; i++){
           PrivateMessageClass privateMessageData = messages.value[i].notifier.value;
@@ -129,7 +129,7 @@ class PrivateChatController {
           call, 
           {
             'chatID': chatID.value,
-            'currentID': appStateClass.currentID,
+            'currentID': appStateRepo.currentID,
             'recipient': recipient.value,
             'currentLength': currentPostsLength,
             'paginationLimit': messagesPaginationLimit,
@@ -139,15 +139,15 @@ class PrivateChatController {
         if(mounted){
           isLoading.value = false;
           if(res != null){
-            if(res.data['message'] != 'blacklisted'){
-              chatID.value = res.data['chatID'];
-              List messagesData = res.data['messagesData'];
-              List usersProfileDatasList = res.data['membersProfileData'];
-              List usersSocialsDatasList = res.data['membersSocialsData'];
+            if(res['message'] != 'blacklisted'){
+              chatID.value = res['chatID'];
+              List messagesData = res['messagesData'];
+              List usersProfileDatasList = res['membersProfileData'];
+              List usersSocialsDatasList = res['membersSocialsData'];
               if(isRefreshing){
                 messages.value = [];
               }
-              canPaginate.value = res.data['canPaginate'];
+              canPaginate.value = res['canPaginate'];
               for(int i = 0; i < usersProfileDatasList.length; i++){
                 Map userProfileData = usersProfileDatasList[i];
                 UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);

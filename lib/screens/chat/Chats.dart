@@ -138,12 +138,12 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
                             if(chatData.type == 'private'){
                               return ListenableBuilder(
                                 listenable: Listenable.merge([
-                                  appStateClass.usersDataNotifiers.value[chatData.recipient]!.notifier,
-                                  appStateClass.usersSocialsNotifiers.value[chatData.recipient]!.notifier
+                                  appStateRepo.usersDataNotifiers.value[chatData.recipient]!.notifier,
+                                  appStateRepo.usersSocialsNotifiers.value[chatData.recipient]!.notifier
                                 ]),
                                 builder: (context, child){
-                                  UserDataClass userData = appStateClass.usersDataNotifiers.value[chatData.recipient]!.notifier.value;
-                                  UserSocialClass userSocials = appStateClass.usersSocialsNotifiers.value[chatData.recipient]!.notifier.value;
+                                  UserDataClass userData = appStateRepo.usersDataNotifiers.value[chatData.recipient]!.notifier.value;
+                                  UserSocialClass userSocials = appStateRepo.usersSocialsNotifiers.value[chatData.recipient]!.notifier.value;
                                   return CustomChatWidget(
                                     chatData: chatData, 
                                     recipientData: userData, 
@@ -155,7 +155,7 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
                                 }
                               );
                             }else{
-                              if(chatData.groupProfileData!.recipients.contains(appStateClass.currentID)){
+                              if(chatData.groupProfileData!.recipients.contains(appStateRepo.currentID)){
                                 if(chatData.latestMessageData.messageID.isEmpty){
                                   return CustomChatWidget(
                                     chatData: chatData, 
@@ -168,8 +168,8 @@ class _ChatsWidgetStatefulState extends State<_ChatsWidgetStateful> with Automat
                                 }
                                 return ListenableBuilder(
                                   listenable: Listenable.merge([
-                                    appStateClass.usersDataNotifiers.value[chatData.latestMessageData.sender]!.notifier,
-                                    appStateClass.usersSocialsNotifiers.value[chatData.latestMessageData.sender]!.notifier
+                                    appStateRepo.usersDataNotifiers.value[chatData.latestMessageData.sender]!.notifier,
+                                    appStateRepo.usersSocialsNotifiers.value[chatData.latestMessageData.sender]!.notifier
                                   ]),
                                   builder: (context, child){
                                     return CustomChatWidget(

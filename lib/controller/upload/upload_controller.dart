@@ -416,8 +416,8 @@ class UploadController {
               RequestPost.uploadPost, 
               {
                 'postId': postID,
-                'text': textController.text,
-                'sender': appStateClass.currentID,
+                'content': textController.text,
+                'sender': appStateRepo.currentID,
                 'mediasDatas': serverMediasDatas,
                 'hashtags': hashtags.toSet().toList(),
                 'taggedUsers': taggedUsersID.value.toSet().toList()
@@ -427,14 +427,14 @@ class UploadController {
               isUploading.value = false;
               if(res != null){
                 PostClass postDataClass = PostClass(
-                  postID, 'post', textController.text, appStateClass.currentID, DateTime.now().toString(),
+                  postID, 'post', textController.text, appStateRepo.currentID, DateTime.now().toString(),
                   updatedMediasDatas, 0, false, 0, false, 0, false 
                 );
                 updatePostData(postDataClass);
                 PostDataStreamClass().emitData(
                   PostDataStreamControllerClass(
                     DisplayPostDataClass(postDataClass.sender, postDataClass.postID),
-                    appStateClass.currentID
+                    appStateRepo.currentID
                   )
                 );
                 Navigator.pop(context);
@@ -461,7 +461,7 @@ class UploadController {
         if(!isUploading.value && (textController.text.isNotEmpty || mediasDatas.value.isNotEmpty)){
           isUploading.value = true;
           String postID = postData.postID;
-          PostClass previousPostData = appStateClass.postsNotifiers.value[postData.sender]![postID]!.notifier.value;
+          PostClass previousPostData = appStateRepo.postsNotifiers.value[postData.sender]![postID]!.notifier.value;
           List<MediaDatasClass> updatedMediasDatas = [];
           for(int i = 0; i < mediasDatas.value.length; i++){
             if(mounted){
@@ -500,8 +500,8 @@ class UploadController {
               RequestPatch.editPost, 
               {
                 'postId': postID,
-                'text': textController.text,
-                'sender': appStateClass.currentID,
+                'content': textController.text,
+                'sender': appStateRepo.currentID,
                 'mediasDatas': serverMediasDatas,
                 'hashtags': hashtags.toSet().toList(),
                 'taggedUsers': taggedUsersID.value.toSet().toList(),
@@ -511,7 +511,7 @@ class UploadController {
               isUploading.value = false;
               if(res != null) {
                 PostClass postDataClass = PostClass(
-                  postID, 'post', textController.text, appStateClass.currentID, previousPostData.uploadTime, updatedMediasDatas, 
+                  postID, 'post', textController.text, appStateRepo.currentID, previousPostData.uploadTime, updatedMediasDatas, 
                   previousPostData.likesCount, previousPostData.likedByCurrentID, previousPostData.bookmarksCount, 
                   previousPostData.bookmarkedByCurrentID, previousPostData.commentsCount, previousPostData.deleted
                 );
@@ -582,8 +582,8 @@ class UploadController {
               RequestPost.uploadComment, 
               {
                 'commentID': commentID,
-                'text': textController.text,
-                'sender': appStateClass.currentID,
+                'content': textController.text,
+                'sender': appStateRepo.currentID,
                 'mediasDatas': serverMediasDatas,
                 'parentPostID': parentPostID,
                 'parentPostSender': parentPostSender,
@@ -596,20 +596,20 @@ class UploadController {
               isUploading.value = false;
               if(res != null) {
                 CommentClass commentDataClass = CommentClass(
-                  commentID, 'comment', textController.text, appStateClass.currentID, DateTime.now().toString(),
+                  commentID, 'comment', textController.text, appStateRepo.currentID, DateTime.now().toString(),
                   updatedMediasDatas, 0, false, 0, false, 0, parentPostType, parentPostID, parentPostSender, false 
                 );
                 updateCommentData(commentDataClass);
                 if(parentPostType == 'post'){
-                  PostClass parentPostData = appStateClass.postsNotifiers.value[parentPostSender]![parentPostID]!.notifier.value;
-                  appStateClass.postsNotifiers.value[parentPostData.sender]![parentPostData.postID]!.notifier.value = PostClass(
+                  PostClass parentPostData = appStateRepo.postsNotifiers.value[parentPostSender]![parentPostID]!.notifier.value;
+                  appStateRepo.postsNotifiers.value[parentPostData.sender]![parentPostData.postID]!.notifier.value = PostClass(
                     parentPostData.postID, parentPostData.type, parentPostData.content, parentPostData.sender, parentPostData.uploadTime, 
                     parentPostData.mediasDatas, parentPostData.likesCount, parentPostData.likedByCurrentID, 
                     parentPostData.bookmarksCount, parentPostData.bookmarkedByCurrentID, parentPostData.commentsCount + 1, parentPostData.deleted
                   );
                 }else{
-                  CommentClass parentCommentData = appStateClass.commentsNotifiers.value[parentPostSender]![parentPostID]!.notifier.value;
-                  appStateClass.commentsNotifiers.value[parentCommentData.sender]![parentCommentData.commentID]!.notifier.value = CommentClass(
+                  CommentClass parentCommentData = appStateRepo.commentsNotifiers.value[parentPostSender]![parentPostID]!.notifier.value;
+                  appStateRepo.commentsNotifiers.value[parentCommentData.sender]![parentCommentData.commentID]!.notifier.value = CommentClass(
                     parentCommentData.commentID, parentCommentData.type, parentCommentData.content, 
                     parentCommentData.sender, parentCommentData.uploadTime, 
                     parentCommentData.mediasDatas, parentCommentData.likesCount, parentCommentData.likedByCurrentID, 
@@ -621,7 +621,7 @@ class UploadController {
                 CommentDataStreamClass().emitData(
                   CommentDataStreamControllerClass(
                     DisplayCommentDataClass(commentDataClass.sender, commentDataClass.commentID),
-                    appStateClass.currentID
+                    appStateRepo.currentID
                   )
                 );
                 CommentDataStreamClass().emitData(
@@ -654,7 +654,7 @@ class UploadController {
         if(!isUploading.value && (textController.text.isNotEmpty || mediasDatas.value.isNotEmpty)) {
           isUploading.value = true;
           String commentID = commentData.commentID;
-          CommentClass previousCommentData = appStateClass.commentsNotifiers.value[commentData.sender]![commentID]!.notifier.value;
+          CommentClass previousCommentData = appStateRepo.commentsNotifiers.value[commentData.sender]![commentID]!.notifier.value;
           List<MediaDatasClass> updatedMediasDatas = [];
           for(int i = 0; i < mediasDatas.value.length; i++){
             if(mounted){
@@ -694,7 +694,7 @@ class UploadController {
               {
                 'commentID': commentID,
                 'content': textController.text,
-                'sender': appStateClass.currentID,
+                'sender': appStateRepo.currentID,
                 'mediasDatas': serverMediasDatas,
                 'parentPostID': previousCommentData.parentPostID,
                 'parentPostSender': previousCommentData.parentPostSender,
@@ -707,7 +707,7 @@ class UploadController {
               isUploading.value = false;
               if(res != null){
                 CommentClass commentDataClass = CommentClass(
-                  commentID, 'comment', textController.text, appStateClass.currentID, previousCommentData.uploadTime,
+                  commentID, 'comment', textController.text, appStateRepo.currentID, previousCommentData.uploadTime,
                   updatedMediasDatas, previousCommentData.likesCount, previousCommentData.likedByCurrentID, previousCommentData.bookmarksCount,
                   previousCommentData.bookmarkedByCurrentID, previousCommentData.commentsCount, previousCommentData.parentPostType, 
                   previousCommentData.parentPostID, previousCommentData.parentPostSender, previousCommentData.deleted
@@ -781,7 +781,7 @@ class UploadController {
               'messageID': messageID,
               'type': 'message',
               'content': textController.text,
-              'sender': appStateClass.currentID,
+              'sender': appStateRepo.currentID,
               'recipient': recipient,
               'mediasDatas': serverMediasDatas,
             });
@@ -796,7 +796,7 @@ class UploadController {
                 'newChatID': newChatID,
                 'messageID': messageID,
                 'content': textController.text,
-                'sender': appStateClass.currentID,
+                'sender': appStateRepo.currentID,
                 'recipient': recipient,
                 'mediasDatas': serverMediasDatas,
               }
@@ -866,8 +866,8 @@ class UploadController {
               'chatID': chatController.chatID.value ?? chatController.newChatID.value,
               'messageID': messageID,
               'content': textController.text,
-              'sender': appStateClass.currentID,
-              'senderData': appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.toMap(),
+              'sender': appStateRepo.currentID,
+              'senderData': appStateRepo.usersDataNotifiers.value[appStateRepo.currentID]!.notifier.value.toMap(),
               'recipients': chatController.recipientsList,
               'mediasDatas': serverMediasDatas,
               'type': 'message'
@@ -883,7 +883,7 @@ class UploadController {
                 'newChatID': chatController.newChatID.value,
                 'messageID': messageID,
                 'content': textController.text,
-                'sender': appStateClass.currentID,
+                'sender': appStateRepo.currentID,
                 'recipients': chatController.recipientsList,
                 'mediasDatas': serverMediasDatas,
               }

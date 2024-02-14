@@ -49,15 +49,15 @@ class GroupProfileController {
     if(mounted){
       try {
         String messageID = const Uuid().v4();
-        String senderName = appStateClass.usersDataNotifiers.value[appStateClass.currentID]!.notifier.value.name;
+        String senderName = appStateRepo.usersDataNotifiers.value[appStateRepo.currentID]!.notifier.value.name;
         String content = '$senderName has left the group';
-        groupProfile.value.recipients.remove(appStateClass.currentID);
+        groupProfile.value.recipients.remove(appStateRepo.currentID);
         socket.emit("leave-group-to-server", {
           'chatID': chatID,
           'messageID': messageID,
           'content': content,
           'type': 'leave_group',
-          'sender': appStateClass.currentID,
+          'sender': appStateRepo.currentID,
           'recipients': groupProfile.value.recipients,
           'mediasDatas': [],
         });
@@ -67,7 +67,7 @@ class GroupProfileController {
           {
             'chatID': chatID,
             'messageID': messageID,
-            'sender': appStateClass.currentID,
+            'sender': appStateRepo.currentID,
             'recipients': groupProfile.value.recipients,
           }
         );

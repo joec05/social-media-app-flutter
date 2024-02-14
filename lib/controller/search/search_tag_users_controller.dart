@@ -42,7 +42,7 @@ class SearchTagUsersController {
         RequestGet.fetchSearchedTagUsers, 
         {
           'searchedText': searchedController.text,
-          'currentID': appStateClass.currentID,
+          'currentID': appStateRepo.currentID,
           'currentLength': isPaginating ? users.value.length : 0,
           'paginationLimit': searchTagUsersFetchLimit
         }
@@ -50,7 +50,7 @@ class SearchTagUsersController {
       if(mounted) {
         isSearching.value = false;
         if(res != null) {
-          List userProfileDataList = res.data['usersProfileData'];
+          List userProfileDataList = res['usersProfileData'];
           users.value = [];
           for(int i = 0; i < userProfileDataList.length; i++) {
             Map userProfileData = userProfileDataList[i];
@@ -75,10 +75,5 @@ class SearchTagUsersController {
     if(mounted){
       selectedUsersID.value = [...selectedUsersIDList];
     }
-  }
-
-  void continueTag(Function onUserIsSelected){
-    Navigator.pop(context);
-    onUserIsSelected;
   }
 }

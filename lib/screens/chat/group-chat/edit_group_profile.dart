@@ -194,11 +194,15 @@ class _EditGroupProfileStatefulState extends State<EditGroupProfileStateful> wit
                           String filePath = controller.imageFilePath.value;
                           String networkPath = controller.imageNetworkPath.value;
                           return CustomButton(
-                            width: defaultTextFieldButtonSize.width, height: defaultTextFieldButtonSize.height,
-                            buttonColor: Colors.red, buttonText: 'Continue', 
+                            width: defaultTextFieldButtonSize.width, 
+                            height: defaultTextFieldButtonSize.height,
+                            color: Colors.red, 
+                            text: 'Continue', 
                             onTapped: nameVerified && (filePath.isNotEmpty || networkPath.isNotEmpty) && !isLoadingValue ?
                               controller.editGroupProfile : null,
                             setBorderRadius: true,
+                            prefix: null,
+                            loading: isLoadingValue,
                           );
                         },
                       )

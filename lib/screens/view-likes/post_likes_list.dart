@@ -98,17 +98,17 @@ class _PostLikesListWidgetStatefulState extends State<_PostLikesListWidgetStatef
                     SliverList(delegate: SliverChildBuilderDelegate(
                       childCount: usersList.length, 
                       (context, index) {
-                        if(appStateClass.usersDataNotifiers.value[usersList[index]] != null){
+                        if(appStateRepo.usersDataNotifiers.value[usersList[index]] != null){
                           return ListenableBuilder(
                             listenable: Listenable.merge([
-                              appStateClass.usersDataNotifiers.value[usersList[index]]!.notifier,
-                              appStateClass.usersSocialsNotifiers.value[usersList[index]]!.notifier,
-                              appStateClass.postsNotifiers.value[widget.postSender]![widget.postID]!.notifier
+                              appStateRepo.usersDataNotifiers.value[usersList[index]]!.notifier,
+                              appStateRepo.usersSocialsNotifiers.value[usersList[index]]!.notifier,
+                              appStateRepo.postsNotifiers.value[widget.postSender]![widget.postID]!.notifier
                             ]),
                             builder: (context, child){
-                              UserDataClass userData = appStateClass.usersDataNotifiers.value[usersList[index]]!.notifier.value;
-                              UserSocialClass userSocial = appStateClass.usersSocialsNotifiers.value[usersList[index]]!.notifier.value;
-                              PostClass postData = appStateClass.postsNotifiers.value[widget.postSender]![widget.postID]!.notifier.value;
+                              UserDataClass userData = appStateRepo.usersDataNotifiers.value[usersList[index]]!.notifier.value;
+                              UserSocialClass userSocial = appStateRepo.usersSocialsNotifiers.value[usersList[index]]!.notifier.value;
+                              PostClass postData = appStateRepo.postsNotifiers.value[widget.postSender]![widget.postID]!.notifier.value;
                               return CustomUserDataWidget(
                                 userData: userData,
                                 userSocials: userSocial,

@@ -24,7 +24,7 @@ class ProfileRepliesController {
   void initializeController(){
     runDelay(() async => fetchProfileReplies(comments.value.length, false), actionDelayTime);
     commentDataStreamClassSubscription = CommentDataStreamClass().commentDataStream.listen((CommentDataStreamControllerClass data) {
-      if(data.uniqueID == appStateClass.currentID && mounted){
+      if(data.uniqueID == appStateRepo.currentID && mounted){
         comments.value = [data.commentClass, ...comments.value];
       }
     });
@@ -61,7 +61,7 @@ class ProfileRepliesController {
           RequestGet.fetchUserComments, 
           {
             'userID': userID,
-            'currentID': appStateClass.currentID,
+            'currentID': appStateRepo.currentID,
             'currentLength': currentCommentsLength,
             'paginationLimit': postsPaginationLimit,
             'maxFetchLimit': postsServerFetchLimit
@@ -70,14 +70,14 @@ class ProfileRepliesController {
         if(mounted) {
           loadingState.value = LoadingState.loaded;
           if(res != null) {
-            List userCommentsData = res.data['userCommentsData'];
-            List userProfileDataList = res.data['usersProfileData'];
-            List usersSocialsDatasList = res.data['usersSocialsData'];
+            List userCommentsData = res['userCommentsData'];
+            List userProfileDataList = res['usersProfileData'];
+            List usersSocialsDatasList = res['usersSocialsData'];
             if(isRefreshing && mounted){
               comments.value = [];
             }
             if(mounted){
-              canPaginate.value = res.data['canPaginate'];
+              canPaginate.value = res['canPaginate'];
             }
             for(int i = 0; i < userProfileDataList.length; i++){
               Map userProfileData = userProfileDataList[i];

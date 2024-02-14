@@ -59,17 +59,17 @@ class ExploreController {
         context, 
         RequestGet.fetchTopData, 
         {
-          'currentID': appStateClass.currentID,
+          'currentID': appStateRepo.currentID,
           'paginationLimit': exploreDataLimit,
         }
       );
       if(mounted){
         loadingState.value = LoadingState.loaded;
         if(res != null){
-          List postsData = res.data['postsData'];
-          List usersProfileDatasList = res.data['usersProfileData'];
-          List usersSocialsDatasList = res.data['usersSocialsData'];
-          List hashtagsData = res.data['hashtagsData'];
+          List postsData = res['postsData'];
+          List usersProfileDatasList = res['usersProfileData'];
+          List usersSocialsDatasList = res['usersSocialsData'];
+          List hashtagsData = res['hashtagsData'];
           for(int i = 0; i < postsData.length; i++){
             Map postData = postsData[i];
             List<dynamic> mediasDatasFromServer = jsonDecode(postData['medias_datas']);            

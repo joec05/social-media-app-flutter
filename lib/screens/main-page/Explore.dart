@@ -147,27 +147,27 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
                     itemCount: postsList.length,
                     shrinkWrap: true,
                     itemBuilder: (context, index) {
-                      if(appStateClass.postsNotifiers.value[postsList[index].sender] == null){
+                      if(appStateRepo.postsNotifiers.value[postsList[index].sender] == null){
                         return Container();
                       }
-                      if(appStateClass.postsNotifiers.value[postsList[index].sender]![postsList[index].postID] == null){
+                      if(appStateRepo.postsNotifiers.value[postsList[index].sender]![postsList[index].postID] == null){
                         return Container();
                       }
                       return ValueListenableBuilder<PostClass>(
-                        valueListenable: appStateClass.postsNotifiers.value[postsList[index].sender]![postsList[index].postID]!.notifier,
+                        valueListenable: appStateRepo.postsNotifiers.value[postsList[index].sender]![postsList[index].postID]!.notifier,
                         builder: ((context, postData, child) {
-                          if(appStateClass.usersDataNotifiers.value[postsList[index].sender] != null){
+                          if(appStateRepo.usersDataNotifiers.value[postsList[index].sender] != null){
                             return ValueListenableBuilder(
-                              valueListenable: appStateClass.usersDataNotifiers.value[postsList[index].sender]!.notifier, 
+                              valueListenable: appStateRepo.usersDataNotifiers.value[postsList[index].sender]!.notifier, 
                               builder: ((context, UserDataClass userData, child) {
                                 if(!postData.deleted){
                                   if(userData.blocksCurrentID){
                                     return Container();
                                   }
                                   return ValueListenableBuilder(
-                                    valueListenable: appStateClass.usersSocialsNotifiers.value[postsList[index].sender]!.notifier, 
+                                    valueListenable: appStateRepo.usersSocialsNotifiers.value[postsList[index].sender]!.notifier, 
                                     builder: ((context, UserSocialClass userSocials, child) { 
-                                      if(userData.private && !userSocials.followedByCurrentID && userData.userID != appStateClass.currentID){
+                                      if(userData.private && !userSocials.followedByCurrentID && userData.userID != appStateRepo.currentID){
                                         return Container();
                                       }
                                       return CustomPostWidget(
@@ -237,15 +237,15 @@ class __ExploreWidgetStatefulState extends State<_ExploreWidgetStateful> with Au
                     itemCount: usersList.length,
                     shrinkWrap: true,
                     itemBuilder: (context, index) {
-                      if(appStateClass.usersDataNotifiers.value[usersList[index]] != null){
+                      if(appStateRepo.usersDataNotifiers.value[usersList[index]] != null){
                         return ListenableBuilder(
                           listenable: Listenable.merge([
-                            appStateClass.usersDataNotifiers.value[usersList[index]]!.notifier,
-                            appStateClass.usersSocialsNotifiers.value[usersList[index]]!.notifier
+                            appStateRepo.usersDataNotifiers.value[usersList[index]]!.notifier,
+                            appStateRepo.usersSocialsNotifiers.value[usersList[index]]!.notifier
                           ]),
                           builder: (context, child){
-                            UserDataClass userData = appStateClass.usersDataNotifiers.value[usersList[index]]!.notifier.value;
-                            UserSocialClass userSocial = appStateClass.usersSocialsNotifiers.value[usersList[index]]!.notifier.value;
+                            UserDataClass userData = appStateRepo.usersDataNotifiers.value[usersList[index]]!.notifier.value;
+                            UserSocialClass userSocial = appStateRepo.usersSocialsNotifiers.value[usersList[index]]!.notifier.value;
                             return CustomUserDataWidget(
                               userData: userData,
                               userSocials: userSocial,

@@ -52,16 +52,32 @@ android {
         versionName flutterVersionName
     }
 
-    buildTypes {
-        debug{
-            minifyEnabled true
+    signingConfigs {
+        debug {
+            keyAlias 'debug-keystore'
+            keyPassword 'social-media-app-debug'
+            storeFile file('debug-keystore.jks')
+            storePassword 'social-media-app-debug'
         }
+        release {
+            keyAlias 'release-keystore'
+            keyPassword 'social-media-app-release'
+            storeFile file('release-keystore.jks')
+            storePassword 'social-media-app-release'
+        }
+    }
 
+    buildTypes {
+        debug {
+            minifyEnabled true
+            multiDexEnabled true
+            signingConfig signingConfigs.debug
+        }
+        
         release {
             minifyEnabled true
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug
+            multiDexEnabled true
+            signingConfig signingConfigs.release
         }
     }
 }

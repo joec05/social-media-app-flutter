@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:social_media_app/global_files.dart';
 
 class AuthenticationRepository {
@@ -15,6 +16,11 @@ class AuthenticationRepository {
     currentUser.value = _instance.currentUser;
     _instance.userChanges().listen((event) async{
       currentUser.value = event;
+      if(event != null) {
+        appStateRepo.currentID = event.uid;
+      }else{
+        appStateRepo.resetSession();
+      }
     });
   }
 
@@ -79,12 +85,59 @@ class AuthenticationRepository {
     }
   }
 
-  Future<void> signInWithGoogle(
-    BuildContext context
-  ) async{
+  Future<void> resetPassword(BuildContext context, String email) async{
     try {
-      // sign in with google
-      // use credentials to sign in google user to firebase auth
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: email,
+      );
+      if(context.mounted) {
+        handler.displaySnackbar(
+          context,
+          SnackbarType.regular, 
+          'An email has been sent to $email, check your inbox!'
+        );
+      }
+    } on FirebaseAuthException catch(e) {
+      final message = 'Error ${e.code}: ${e.message ?? tErr.firebase}';
+      if(context.mounted) {
+        handler.displaySnackbar(
+          context, 
+          SnackbarType.error, 
+          message
+        );
+      }
+    }
+  }
+
+  Future<void> logOut(BuildContext context) async{
+    try {
+      await FirebaseAuth.instance.signOut();
+      await GoogleSignIn().signOut();
+      secureStorageController.writeUserState(null, null);
+    } on FirebaseAuthException catch(e) {
+      final message = 'Error ${e.code}: ${e.message ?? tErr.firebase}';
+      if(context.mounted) {
+        handler.displaySnackbar(
+          context, 
+          SnackbarType.error, 
+          message
+        );
+      }
+    }
+  }
+
+  Future<void> deleteEmailPasswordAccount(
+    BuildContext context,
+    String email,
+    String password
+  ) async {
+    try {
+      await _instance.currentUser?.reauthenticateWithCredential(
+        EmailAuthProvider.credential(email: email, password: password)
+      ).then((value) async {
+        await _instance.currentUser?.delete();
+        logOut(context);
+      });
     } on FirebaseAuthException catch(e) {
       final message = 'Error ${e.code}: ${e.message ?? tErr.firebase}';
       if(context.mounted) {

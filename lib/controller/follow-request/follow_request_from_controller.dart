@@ -23,7 +23,7 @@ class FollowRequestFromController {
     runDelay(() async => fetchFollowRequestsFrom(users.value.length, false, false), actionDelayTime);
     requestsFromDataStreamClassSubscription = RequestsFromDataStreamClass().requestsFromDataStream.listen((RequestsFromDataStreamControllerClass data) {
       if(mounted){
-        if(data.uniqueID == 'send_follow_request_${appStateClass.currentID}'){
+        if(data.uniqueID == 'send_follow_request_${appStateRepo.currentID}'){
           if(!users.value.contains(data.userID)){
             users.value = [data.userID, ...users.value];
           }
@@ -67,7 +67,7 @@ class FollowRequestFromController {
           context, 
           RequestGet.fetchFollowRequestsFromUser, 
           {
-            'currentID': appStateClass.currentID,
+            'currentID': appStateRepo.currentID,
             'currentLength': currentPostsLength,
             'paginationLimit': followRequestsPaginationLimit,
             'maxFetchLimit': usersServerFetchLimit
@@ -76,8 +76,8 @@ class FollowRequestFromController {
         if(mounted){
           loadingState.value = LoadingState.loaded;
           if(res != null){
-            List usersProfileDataList = res.data['usersProfileData'];
-            List usersSocialsDataList = res.data['usersSocialsData'];
+            List usersProfileDataList = res['usersProfileData'];
+            List usersSocialsDataList = res['usersSocialsData'];
             if(isRefreshing){
               users.value = [];
             }
@@ -89,7 +89,7 @@ class FollowRequestFromController {
               updateUserSocials(userDataClass, userSocialClass);
               users.value = [...users.value, userProfileData['user_id']];
             }
-            canPaginate.value = res.data['canPaginate'];
+            canPaginate.value = res['canPaginate'];
           }
         }
       } catch (_) {
