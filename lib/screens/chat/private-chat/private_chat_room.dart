@@ -36,7 +36,6 @@ class _PrivateChatRoomWidgetStatefulState extends State<_PrivateChatRoomWidgetSt
     uploadController = UploadController(context);
     chatController.initializeController();
     uploadController.initializeController();
-    print(chatController.messages.value.map((e) => print(e.notifier.value.content)));
   }
 
   @override

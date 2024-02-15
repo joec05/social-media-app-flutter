@@ -2,18 +2,31 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
+/// Controller which is used when the user wants to login
 class LoginController {
+
+  /// A context will need to be passed to the controller to handle navigation and snackbars handler
   BuildContext context;
+
+  /// An editing controller for the user to insert an email
   TextEditingController emailController = TextEditingController();
-  TextEditingController usernameController = TextEditingController();
+
+  /// An editing controller for the user to insert a password
   TextEditingController passwordController = TextEditingController();
+
+  /// True if the email is in acceptable format
   ValueNotifier<bool> verifyEmailFormat = ValueNotifier(false);
-  ValueNotifier<bool> verifyUsernameFormat = ValueNotifier(false);
+
+  /// True if the password is in acceptable format
   ValueNotifier<bool> verifyPasswordFormat = ValueNotifier(false);
-  final int usernameCharacterMinLimit = profileInputMinLimit['username'];
+
+  /// Minimum length of a password
   final int passwordCharacterMinLimit = profileInputMinLimit['password'];
-  final int usernameCharacterMaxLimit = profileInputMaxLimit['username'];
+
+  /// Maximum length of a password
   final int passwordCharacterMaxLimit = profileInputMaxLimit['password'];
+
+  /// True if an API/Firebase/AppWrite function is running
   ValueNotifier<bool> isLoading = ValueNotifier(false);
   
   LoginController(
@@ -22,18 +35,12 @@ class LoginController {
 
   bool get mounted => context.mounted;
 
+  /// This is where the controller is initialized. Called at every page's initState function
   void initializeController(){
     emailController.addListener(() {
       if(mounted){
         String emailText = emailController.text;
         verifyEmailFormat.value = emailText.isNotEmpty && checkEmailValid(emailText);
-      }
-    });
-    usernameController.addListener(() {
-      if(mounted){
-        String usernameText = usernameController.text;
-        verifyUsernameFormat.value = usernameText.isNotEmpty && checkUsernameValid(usernameText) &&
-        usernameText.length >= usernameCharacterMinLimit && usernameText.length <= usernameCharacterMaxLimit;
       }
     });
     passwordController.addListener(() {
@@ -45,20 +52,22 @@ class LoginController {
     });
   }
 
+  /// Dispose everything. Called at every page's dispose function
   void dispose(){
     emailController.dispose();
-    usernameController.dispose();
     passwordController.dispose();
     verifyEmailFormat.dispose();
-    verifyUsernameFormat.dispose();
     verifyPasswordFormat.dispose();
     isLoading.dispose();
   }
   
+  /// Called when the user pressed the given button
   void loginWithEmail() async{
     try {
       if(mounted){
         if(!isLoading.value){
+
+          /// Check if the email is valid. If true proceed otherwise return a snackbar error
           if(checkEmailValid(emailController.text.trim()) == false){
             handler.displaySnackbar(
               context,
@@ -68,6 +77,8 @@ class LoginController {
           }else{  
             if(mounted){
               isLoading.value = true;
+
+              /// Call authentication repository to login the user with email and password to FirebaseAuth
               await authRepo.loginUserWithEmailAndPassword(
                 context, 
                 emailController.text.trim(), 
@@ -77,15 +88,23 @@ class LoginController {
                 User? user = authRepo.currentUser.value;
                 if(user != null){
                   isLoading.value = true;
+
+                  /// Check if the user's email is verified
                   var verified = authRepo.currentUser.value?.emailVerified == false ? 
+
+                    /// If the email is unverified automatically navigate the user to the email verification page to verify the user's email
                     await Navigator.push(
                       context,
                       SliderRightToLeftRoute(
                         page: const EmailVerificationPage()
                       )
                     )
+
                   : true;
+
                   if(verified == true && mounted){
+
+                    /// Call the API to log the user in
                     dynamic res = await fetchDataRepo.fetchData(
                       context, 
                       RequestPost.loginWithEmail, 
@@ -93,9 +112,14 @@ class LoginController {
                         'email': emailController.text.trim(),
                       }
                     );
+
                     if(mounted){
                       isLoading.value = false;
+
+                      /// If res is not null, the API call is successful
                       if(res != null) {
+
+                        /// Start updating the current id, user data, and user socials at the app state repository
                         appStateRepo.currentID = res['userID'];
                         Map userProfileData = (res['userProfileData']);
                         UserDataClass userProfileDataClass = UserDataClass(
@@ -108,16 +132,21 @@ class LoginController {
                         );
                         updateUserData(userProfileDataClass);
                         updateUserSocials(userProfileDataClass, userSocialClass);
+
+                        /// Store the current lifecycle state of the app in a secured storage
                         secureStorageController.writeUserState(
                           AppLifecycleState.resumed.name, 
                           DateTime.now().toIso8601String()
                         );
+
+                        /// Navigate to main page
                         runDelay(() => Navigator.pushAndRemoveUntil(
                           context,
                           SliderRightToLeftRoute(
                             page: const MainPageWidget()),
                           (Route<dynamic> route) => false
                         ), navigatorDelayTime);
+
                       }
                     }
                   }
@@ -132,23 +161,34 @@ class LoginController {
     }
   }
 
+  /// Called when the user pressed the 'Forgot your password?' text widget
   void resetPassword(BuildContext context) async{
     if(mounted){
       if(!isLoading.value){
+
         if(emailController.text.isEmpty){
+
+          /// Returns a snackbar error if the user hasn't typed anything
           handler.displaySnackbar(
             context,
             SnackbarType.error,
             'Please fill your email'
           );
+
         }else if(checkEmailValid(emailController.text.trim()) == false){
+
+          /// Returns a snackbar error if the email format is invalid
           handler.displaySnackbar(
             context,
             SnackbarType.error,
             'Email format is invalid'
           );
+
         }else{  
+
+          /// Call on the authentication repository to reset the user's password by sending an email to the given email address
           authRepo.resetPassword(context, emailController.text.trim());
+
         }
       }
     }

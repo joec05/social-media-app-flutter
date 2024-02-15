@@ -1,5 +1,7 @@
 import 'package:intl/intl.dart';
 
+/// Returns the time difference between the DateTime now and the given DateTime in text form
+/// Examples include '5 minutes ago', '1 day ago', '10 months ago'
 String getTimeDifference(String day) {
   DateTime? dateTime = DateTime.parse(day).toLocal();
   Duration difference = DateTime.now().difference(dateTime);
@@ -18,6 +20,7 @@ String getTimeDifference(String day) {
   }
 }
 
+/// Returns something like '5 Mar 2019' from a given DateTime in text form
 String convertDateTimeDisplay(String dateTime){
   List<String> separatedDateTime = DateTime.parse(dateTime).toLocal().toIso8601String().substring(0, 10).split('-').reversed.toList();
   List<String> months = [
@@ -28,10 +31,12 @@ String convertDateTimeDisplay(String dateTime){
   return separatedDateTime.join(' ');
 }
 
+/// Returns a date of HH:mm format in text form from a given DateTime in text form
 String getCleanTimeFormat(String day) {
   return DateFormat('HH:mm').format(DateTime.parse(day).toLocal());
 }
 
+/// Returns a date of yyyy-MM-dd format in text form from a given DateTime in text form
 String getDateFormat(String day) {
   return DateFormat('yyyy-MM-dd').format(DateTime.parse(day).toLocal());
 }

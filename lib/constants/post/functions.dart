@@ -7,6 +7,11 @@ import 'package:social_media_app/global_files.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:ui' as ui;
 
+/// Loads the media widgets based on its url and type (image, video, website card). 
+/// For images and videos the, the size as well as the scaled size will need to be calculated for display.
+/// For website cards the title and image will need to be calculated for display.
+/// All media will be stored under one class model. Some values that are not shared by other type of media,
+/// such as playerController which stores VideoPlayerController for videos only, will be set to null.
 Future<List<MediaDatasClass>> loadMediasDatas(
   BuildContext context,
   List<dynamic> mediasDatasFromServer
@@ -40,6 +45,7 @@ Future<List<MediaDatasClass>> loadMediasDatas(
   return newMediasDatas;
 }
 
+/// Returns a raw decoded data of a file image. This is necessary to get the width and height of the image.
 Future<ui.Image> calculateImageFileDimension(url) async{
   final File imageFile = File(url);
   final Uint8List bytes = await imageFile.readAsBytes();
@@ -49,6 +55,7 @@ Future<ui.Image> calculateImageFileDimension(url) async{
   return image;
 }
 
+/// Returns a raw decoded data of a network image. This is necessary to get the width and height of the image.
 Future<ui.Image> calculateImageNetworkDimension(url) async{
   Image image = Image.network(url);
   final Completer<ui.Image> completer = Completer<ui.Image>();
@@ -63,6 +70,8 @@ Future<ui.Image> calculateImageNetworkDimension(url) async{
   return finalImage;
 }
 
+/// Display large values in short form. For example, thousands will be replaced by 'K' and millions by 'M'.
+/// Useful for displaying likes count, bookmarks count and comments count.
 String displayShortenedCount(int value){
   double dividedValue = 0;
   String lastLetter = '';

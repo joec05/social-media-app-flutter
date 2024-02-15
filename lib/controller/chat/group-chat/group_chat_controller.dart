@@ -4,19 +4,46 @@ import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 import 'package:uuid/uuid.dart';
 
+/// Controller which is used when the user enters a group chat
 class GroupChatController {
+   
+  /// A context will need to be passed to the controller to handle navigation and snackbars handler
   BuildContext context;
+
+  /// The chatID of the group chat that will be passed to the controller. The group chat may have been
+  /// created recently, which makes it possible for the chatID to be null
   String? chatIDValue;
+
+  /// The list of recipients in the group chat
   List<String>? recipientsList;
+
+  /// True if an API/Firebase/AppWrite function is running
   ValueNotifier<bool> isLoading = ValueNotifier(false);
+
+  /// Variable storing a list of the messages' data
   ValueNotifier<List<GroupMessageNotifier>> messages = ValueNotifier([]);
+
+  /// Variable storing the group profile data
   ValueNotifier<GroupProfileClass> groupProfile = ValueNotifier(GroupProfileClass('', '', '', []));
+
+  /// Variable storing the pagination status
   ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
+
+  /// True if pagination is still possible
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
-  late ValueNotifier<String?> chatID = ValueNotifier(null);
+
+  /// Variable storing the chatID of the group chat. The variable is changeable.
+  ValueNotifier<String?> chatID = ValueNotifier(null);
+
+  /// Variable storing the new chatID. Null only if the chatID is not null.
   ValueNotifier<String?> newChatID = ValueNotifier(null);
+  
+  /// True if the floating button should appear
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
+
+  /// Scroll controller in which the value of displayFloatingBtn depends on
   final ScrollController scrollController = ScrollController();
+
 
   GroupChatController(
     this.context,
@@ -26,6 +53,7 @@ class GroupChatController {
 
   bool get mounted => context.mounted;
 
+  /// This is where the controller is initialized. Called at every page's initState function
   void initializeController(){
     if(mounted){
       chatID.value = chatIDValue;
@@ -48,7 +76,9 @@ class GroupChatController {
     });
   }
 
+  /// Initialize the socket listeners
   void initializeSocketListeners(){
+    /// Listen to sockets to handle messages data
     String socketChatID = mounted ? chatID.value == null ? newChatID.value! : chatID.value! : '';
     socket.on("send-group-message-$socketChatID", ( data ) async{
       if(mounted && data != null){
@@ -147,6 +177,7 @@ class GroupChatController {
     });
   }
   
+  /// Dispose everything. Called at every page's dispose function
   void dispose(){
     isLoading.dispose();
     messages.dispose();

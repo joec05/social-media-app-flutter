@@ -5,6 +5,7 @@ import 'package:social_media_app/global_files.dart';
 
 class APICallRepository {
   var dio = Dio();
+  
   Future<dynamic> runAPICall(
     BuildContext context,
     dynamic call,

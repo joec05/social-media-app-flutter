@@ -104,7 +104,12 @@ class CustomChatWidgetState extends State<CustomChatWidget> {
                               GestureDetector(
                                 behavior: HitTestBehavior.opaque,
                                 onTap: (){
-                                  navigateToProfilePage(context, recipientData!.userID);
+                                  runDelay(()async => await Navigator.push(
+                                    context,
+                                    SliderRightToLeftRoute(
+                                      page: ProfilePageWidget(userID: recipientData!.userID)
+                                    )
+                                  ), navigatorDelayTime);
                                 },
                                 child: Container(
                                   width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,

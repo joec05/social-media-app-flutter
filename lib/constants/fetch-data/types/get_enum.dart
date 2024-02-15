@@ -1,3 +1,4 @@
+/// Enum to store API endpoints for get requests
 enum RequestGet {
   checkAccountExists,
   checkAccountExistsSignUp,

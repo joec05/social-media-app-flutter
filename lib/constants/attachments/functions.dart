@@ -1,11 +1,11 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 import 'package:html/dom.dart' as html;
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
 
-Size getSizeScale(width, height){
+/// Returns the scaled size based on a media's size 
+Size getSizeScale(double width, double height){
   double targetWidth = getScreenWidth();
   double targetHeight = getScreenHeight();
   
@@ -20,6 +20,9 @@ Size getSizeScale(width, height){
   return Size(resizedWidth, resizedHeight);
 }
 
+/// Returns a WebsiteCardClass, which is a non-persistent class model used to display website card widgets
+/// The function will parse the given url and query the title and image in the website's HTML code
+/// Otherwise returns a snackbar error if the operation failed to finish
 Future<WebsiteCardClass> fetchLinkPreview(BuildContext context, String url) async {
   String title = '';
   String imageUrl = defaultWebsiteCardImageLink;

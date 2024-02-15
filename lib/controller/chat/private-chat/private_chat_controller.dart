@@ -139,7 +139,6 @@ class PrivateChatController {
         if(mounted){
           isLoading.value = false;
           if(res != null){
-            print(res);
             if(res['message'] != 'blacklisted'){
               chatID.value = res['chatID'];
               List messagesData = res['messagesData'];

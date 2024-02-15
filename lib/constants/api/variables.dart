@@ -1,7 +1,8 @@
-String IP = '192.168.1.153';
+/// The IP address in which the local server is connected to
+String ip = '192.168.1.153';
 
-String PORT = '5001';
+/// The port in which the server is set to run at
+String port = '5001';
 
-//String serverDomainAddress = 'https://flutter-social-media-app.serveo.net';
-
-String serverDomainAddress = 'http://$IP:$PORT';
+/// The local domain address of the server
+String serverDomainAddress = 'http://$ip:$port';

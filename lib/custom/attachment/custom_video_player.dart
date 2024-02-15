@@ -334,14 +334,12 @@ class CustomVideoPlayerState extends State<CustomVideoPlayer> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context2) {
-        return WillPopScope(
-          onWillPop: () async{
+        return PopScope(
+          onPopInvoked: (_) async{
             if(isFullScreenValue.value){
               Navigator.of(context2).pop();
               isFullScreenValue.value = false;
-              return false;
             }
-            return false;
           },
           child: Scaffold(
             body: SizedBox(

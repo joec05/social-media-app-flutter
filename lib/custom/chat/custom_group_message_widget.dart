@@ -251,7 +251,10 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
                                 displayMessageBottomSheet();
                               },
                               child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: getScreenWidth() * 0.015, vertical: getScreenHeight() * 0.008),
+                                padding: EdgeInsets.symmetric(
+                                  vertical: getScreenHeight() * 0.0125, 
+                                  horizontal: getScreenWidth() * 0.02
+                                ),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(7.5),
                                   color: groupMessageData.sender == appStateRepo.currentID ? Colors.blue : Colors.grey.withOpacity(0.5)

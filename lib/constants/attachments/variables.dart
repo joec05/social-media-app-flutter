@@ -1,1 +1,2 @@
+/// If the HTML code of a given url link doesn't contain an image element, a default image url will be used instead
 String defaultWebsiteCardImageLink = 'https://github.com/joec05/files/blob/main/social_media_app/websiteCardLinkLogo.jpg?raw=true';

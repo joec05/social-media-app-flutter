@@ -106,11 +106,13 @@ class SearchedPostsController {
                 Map postData = modifiedSearchedPostsData[i];
                 List<dynamic> mediasDatasFromServer = jsonDecode(postData['medias_datas']);            
                 List<MediaDatasClass> newMediasDatas = [];
-                newMediasDatas = await loadMediasDatas(context, mediasDatasFromServer);
-                PostClass postDataClass = PostClass.fromMap(postData, newMediasDatas);
-                updatePostData(postDataClass);
-                if(posts.value.length < totalPostsLength.value){
-                  posts.value = [...posts.value, DisplayPostDataClass(postData['sender'], postData['post_id'])];
+                if(mounted){
+                  newMediasDatas = await loadMediasDatas(context, mediasDatasFromServer);
+                  PostClass postDataClass = PostClass.fromMap(postData, newMediasDatas);
+                  updatePostData(postDataClass);
+                  if(posts.value.length < totalPostsLength.value){
+                    posts.value = [...posts.value, DisplayPostDataClass(postData['sender'], postData['post_id'])];
+                  }
                 }
               }
             }

@@ -2,16 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 import 'package:uuid/uuid.dart';
 
+/// Controller which is used when the user wants to add other user(s) to the group chat
 class AddUsersToGroupController {
+  
+  /// A context will need to be passed to the controller to handle navigation and snackbars handler
   BuildContext context;
+
+  /// The chatID of the group chat that will be passed to the controller
   String chatID;
+
+  /// The group profile that will be passed to the controller
   ValueNotifier<GroupProfileClass> groupProfile;
+
+  /// An editing controller for the user to insert a search input
   TextEditingController searchedController = TextEditingController();
+
+  /// True if an API function is running
   ValueNotifier<bool> isSearching = ValueNotifier(false);
+
+  /// A list containing the id of the searched users
   ValueNotifier<List<String>> users = ValueNotifier([]);
+
+  /// A list containing the id of the selected users
   ValueNotifier<List<String>> selectedUsersID = ValueNotifier([]);
+
+  /// A list containing the name of the selected users
   ValueNotifier<List<String>> selectedUsersName = ValueNotifier([]);
+
+  /// True if the search input is in acceptable format
   ValueNotifier<bool> verifySearchedFormat = ValueNotifier(false);
+
+  /// Maximum amount of members a group can contain
   int groupMembersMaxLimit = 30;
 
   AddUsersToGroupController(
@@ -22,12 +43,15 @@ class AddUsersToGroupController {
 
   bool get mounted => context.mounted;
 
+  /// This is where the controller is initialized. Called at every page's initState function
   void initializeController(){
     searchedController.addListener(() {
       if(mounted){
         verifySearchedFormat.value = searchedController.text.isNotEmpty;
       }
     });
+
+    /// Listen to sockets to handle group profile data
     socket.on("send-leave-group-announcement-$chatID", ( data ) async{
       if(mounted && data != null){
         groupProfile.value = GroupProfileClass(
@@ -44,8 +68,10 @@ class AddUsersToGroupController {
         );
       }
     });
+
   }
  
+  /// Dispose everything. Called at every page's dispose function
   void dispose(){
     groupProfile.dispose();
     searchedController.dispose();
@@ -56,10 +82,13 @@ class AddUsersToGroupController {
     verifySearchedFormat.dispose();
   }
 
+  /// Called when the user pressed the search button
   Future<void> searchUsers(bool isPaginating) async{
     if(mounted){
       if(!isSearching.value){
         isSearching.value = true;
+
+        /// Call the API to search for the users based on the search input
         dynamic res = await fetchDataRepo.fetchData(
           context, 
           RequestGet.fetchSearchedAddToGroupUsers, 
@@ -71,47 +100,69 @@ class AddUsersToGroupController {
             'paginationLimit': searchTagUsersFetchLimit
           }
         );
+
         if(mounted) {
           isSearching.value = false;
+
+          /// API successfully ran and the users has been successfully fetched
           if(res != null){
+
+            /// Update the local state
             List userProfileDataList = res['usersProfileData'];
             users.value = [];
+
+            /// Update the users' data in the app state repository as well
             for(int i = 0; i < userProfileDataList.length; i++){
               Map userProfileData = userProfileDataList[i];
               UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
               updateUserData(userDataClass);
               users.value = [...users.value, userProfileData['user_id']];
             }
+
           }
         }
       }
     }
   }
 
+  /// Called when the user pressed the user widget
   void toggleSelectUser(userID, name){
     if(mounted){
       List<String> selectedUsersIDList = [...selectedUsersID.value];
       if(selectedUsersIDList.contains(userID)){
+
+        /// If the selected users list contains the given user id, remove it from the list
         selectedUsersIDList.remove(userID);
         selectedUsersName.value.remove(name);
+
       }else{
+
+        /// If the selected users list doesn't contain the given user id, add it to the list
         selectedUsersIDList.add(userID);
         selectedUsersName.value.add(name);
+
       }
       selectedUsersID.value = [...selectedUsersIDList];
     }
   }
 
+  /// Called when the user pressed the given button
   void addUsersToGroup() async{
     if(mounted){
       try {
+
+        /// Navigate the user out of the page
         Navigator.pop(context);
+
         if(selectedUsersID.value.length + groupProfile.value.recipients.length > groupMembersMaxLimit){
+
+          /// Display a snackbar error if the expected total amount of members exceeds the maximum amount of group members allowed
           handler.displaySnackbar(
             context, 
             SnackbarType.error, 
             'Failed to add user(s). Only a maximum of $groupMembersMaxLimit members are allowed for a group chat.'
           );
+
         }else{
           List<String> messagesID = List.filled(selectedUsersName.value.length, 0).map((e) => const Uuid().v4()).toList();
           String senderName = appStateRepo.usersDataNotifiers.value[appStateRepo.currentID]!.notifier.value.name;
@@ -120,6 +171,8 @@ class AddUsersToGroupController {
           for(int i = 0; i < selectedUsersID.value.length; i++){
             addedUsersDataList.add(appStateRepo.usersDataNotifiers.value[selectedUsersID.value[i]]!.notifier.value.toMap());
           }
+
+          /// Call the socket to add the selected users to the group members list
           socket.emit("add-users-to-group-to-server", {
             'chatID': chatID,
             'messagesID': messagesID,
@@ -136,6 +189,8 @@ class AddUsersToGroupController {
             },
             'addedUsersData': addedUsersDataList
           });
+          
+          /// Call the API to add the selected users to the group members list
           await fetchDataRepo.fetchData(
             context,
             RequestPatch.addUsersToGroup,
@@ -147,6 +202,7 @@ class AddUsersToGroupController {
               'addedUsersID': selectedUsersID.value,
             }
           );
+          
         }
       } catch (_) {
         if(mounted){

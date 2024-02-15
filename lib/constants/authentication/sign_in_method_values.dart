@@ -1,4 +1,0 @@
-enum AuthMethod {
-  password,
-  google,
-}

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
+/// Creates a page route builder. This is needed to declare named routes for a specific page.
 PageRouteBuilder generatePageRouteBuilder(RouteSettings? settings, Widget child){
   return PageRouteBuilder(
     settings: settings,
@@ -15,15 +16,7 @@ PageRouteBuilder generatePageRouteBuilder(RouteSettings? settings, Widget child)
   );
 }
 
-void navigateToProfilePage(BuildContext context, String userID) async{
-  runDelay(()async => await Navigator.push(
-    context,
-    SliderRightToLeftRoute(
-      page: ProfilePageWidget(userID: userID)
-    )
-  ), navigatorDelayTime);
-}
-
+/// Remove all active routes then navigates the user into the home page
 void navigateBackToInitialScreen(BuildContext context) async{
   runDelay(()async => await Navigator.pushAndRemoveUntil(
     context,

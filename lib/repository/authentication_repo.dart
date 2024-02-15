@@ -136,7 +136,9 @@ class AuthenticationRepository {
         EmailAuthProvider.credential(email: email, password: password)
       ).then((value) async {
         await _instance.currentUser?.delete();
-        logOut(context);
+        if(context.mounted){
+          logOut(context);
+        }
       });
     } on FirebaseAuthException catch(e) {
       final message = 'Error ${e.code}: ${e.message ?? tErr.firebase}';

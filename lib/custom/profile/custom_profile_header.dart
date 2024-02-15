@@ -123,14 +123,14 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
                     Column(
                       children: [
                         SizedBox(
-                          height: getScreenHeight() * 0.0225
+                          height: getScreenHeight() * 0.0125
                         ),
                         Text(userData.bio, style: TextStyle(fontSize: defaultTextFontSize), textAlign: TextAlign.center,)
                       ]
                     )
                     : Container(),
                   SizedBox(
-                    height: getScreenHeight() * 0.0225
+                    height: getScreenHeight() * 0.0125
                   ),
                   ValueListenableBuilder(
                     valueListenable: appStateRepo.usersSocialsNotifiers.value[userID]!.notifier,

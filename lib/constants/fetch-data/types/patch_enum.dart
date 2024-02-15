@@ -1,3 +1,4 @@
+/// Enum to store API endpoints for patch requests
 enum RequestPatch {
   followUser,
   unfollowUser,

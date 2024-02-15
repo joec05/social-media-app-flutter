@@ -1,3 +1,4 @@
+/// Stores fixed text to display in an error snackbar, depending on the type of the error
 class ErrorLabels {
   final title = 'Error!!!';
 
