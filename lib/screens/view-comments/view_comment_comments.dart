@@ -198,7 +198,11 @@ class _ViewCommentCommentsWidgetStatefulState extends State<ViewCommentCommentsW
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(height: defaultVerticalPadding / 2),
-                      Divider(color: Colors.grey, height: getScreenHeight() * 0.005),
+                      Divider(
+                        color: Theme.of(context).dividerColor,
+                        height: 2.5, 
+                        thickness: 1
+                      ),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
                         child: const Text('Comments', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),

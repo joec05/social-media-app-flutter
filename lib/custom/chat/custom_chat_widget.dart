@@ -83,7 +83,7 @@ class CustomChatWidgetState extends State<CustomChatWidget> {
         return Card(
           clipBehavior: Clip.antiAlias,
           margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
-          color: Colors.transparent,
+          color: Theme.of(context).cardColor,
           child: Material(
             color: Colors.transparent,
             child: InkWell(
@@ -109,7 +109,7 @@ class CustomChatWidgetState extends State<CustomChatWidget> {
                                 child: Container(
                                   width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
                                   decoration: BoxDecoration(
-                                    border: Border.all(width: 2, color: Colors.white),
+                                    border: Border.all(width: 2),
                                     borderRadius: BorderRadius.circular(100),
                                     image: DecorationImage(
                                       image: NetworkImage(
@@ -163,10 +163,8 @@ class CustomChatWidgetState extends State<CustomChatWidget> {
                                         : Container()
                                       ],
                                     ),
-                                    SizedBox(height: getScreenHeight() * 0.005),
-                                    Text(chatData.latestMessageData.content.isEmpty ? '' : '$subject: ${chatData.latestMessageData.content}', maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.blueGrey)),
-                                    SizedBox(height: getScreenHeight() * 0.005),
-                                    Text(chatData.latestMessageData.uploadTime.isNotEmpty ? getTimeDifference(chatData.latestMessageData.uploadTime) : '', style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey)),
+                                    Text(chatData.latestMessageData.content.isEmpty ? '' : '$subject: ${chatData.latestMessageData.content}', maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.teal)),
+                                    Text(chatData.latestMessageData.uploadTime.isNotEmpty ? getTimeDifference(chatData.latestMessageData.uploadTime) : '', style: TextStyle(fontSize: defaultTextFontSize * 0.675)),
                                   ],
                                 ),
                               ),
@@ -186,7 +184,7 @@ class CustomChatWidgetState extends State<CustomChatWidget> {
         return Card(
           clipBehavior: Clip.antiAlias,
           margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
-          color: Colors.transparent,
+          color: Theme.of(context).cardColor,
           child: Material(
             color: Colors.transparent,
             child: InkWell(
@@ -218,7 +216,7 @@ class CustomChatWidgetState extends State<CustomChatWidget> {
                                 child: Container(
                                   width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
                                   decoration: BoxDecoration(
-                                    border: Border.all(width: 2, color: Colors.white),
+                                    border: Border.all(width: 2),
                                     borderRadius: BorderRadius.circular(100),
                                     image: DecorationImage(
                                       image: NetworkImage(
@@ -250,17 +248,15 @@ class CustomChatWidgetState extends State<CustomChatWidget> {
                                         )
                                       ],
                                     ),
-                                    SizedBox(height: getScreenHeight() * 0.005),
                                     Text(
                                       senderProfileData == null ? '' : 
                                       senderProfileData.blockedByCurrentID || senderProfileData.blocksCurrentID ?
                                         'This message is unavailable'
                                       :
                                         chatData.latestMessageData.type == 'message' ? '$subject: ${chatData.latestMessageData.content}' : chatData.latestMessageData.content,
-                                      maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.blueGrey)
+                                      maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.teal)
                                     ),
-                                    SizedBox(height: getScreenHeight() * 0.005),
-                                    Text(chatData.latestMessageData.uploadTime.isNotEmpty ? getTimeDifference(chatData.latestMessageData.uploadTime) : '', style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey)),
+                                    Text(chatData.latestMessageData.uploadTime.isNotEmpty ? getTimeDifference(chatData.latestMessageData.uploadTime) : '', style: TextStyle(fontSize: defaultTextFontSize * 0.675)),
                                   ],
                                 
                                 ),
@@ -281,7 +277,7 @@ class CustomChatWidgetState extends State<CustomChatWidget> {
       return Card(
         clipBehavior: Clip.antiAlias,
         margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
-        color: Colors.transparent,
+        color: Theme.of(context).cardColor,
         child: Material(
           color: Colors.transparent,
           child: InkWell(

@@ -204,11 +204,9 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
                       displayMessageBottomSheet();
                     },
                     child: Container(
-                      margin: EdgeInsets.only(bottom: 0.01 * getScreenHeight()),
                       padding: EdgeInsets.symmetric(horizontal: getScreenWidth() * 0.015, vertical: getScreenHeight() * 0.008),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(7.5),
-                        border: Border.all(width: 2, color: Colors.white),
                         color: privateMessageData.sender == appStateRepo.currentID ? Colors.blue : Colors.grey.withOpacity(0.5)
                       ),
                       constraints: BoxConstraints(
@@ -219,8 +217,12 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           DisplayTextComponent(
-                            text: privateMessageData.content, tagsPressable: true, overflow: TextOverflow.ellipsis, 
-                            maxLines: 100, style: TextStyle(fontSize: defaultTextFontSize * 0.95), alignment: TextAlign.left, 
+                            text: privateMessageData.content, 
+                            tagsPressable: true, 
+                            overflow: TextOverflow.ellipsis, 
+                            maxLines: 100, 
+                            style: TextStyle(fontSize: defaultTextFontSize * 0.95, color: Theme.of(context).textTheme.labelMedium!.color), 
+                            alignment: TextAlign.left, 
                             context: context
                           )
                         ],
@@ -231,7 +233,7 @@ class CustomPrivateMessageState extends State<CustomPrivateMessage> {
               : Container(),
               Column(                
                 children: [
-                  Text(getCleanTimeFormat(privateMessageData.uploadTime), style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey)),
+                  Text(getCleanTimeFormat(privateMessageData.uploadTime), style: TextStyle(fontSize: defaultTextFontSize * 0.675)),
                 ],
               )
             ],

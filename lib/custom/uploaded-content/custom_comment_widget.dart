@@ -172,7 +172,7 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
       return Card(
         clipBehavior: Clip.antiAlias,
         margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
-        color: Colors.transparent,
+        color: Theme.of(context).cardColor,
         child: Material(
           color: Colors.transparent,
           child: InkWell(
@@ -209,7 +209,7 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                               child: Container(
                                 width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
                                 decoration: BoxDecoration(
-                                  border: Border.all(width: 2, color: Colors.white),
+                                  border: Border.all(width: 2),
                                   borderRadius: BorderRadius.circular(100),
                                   image: DecorationImage(
                                     image: NetworkImage(
@@ -272,8 +272,8 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
-                                      Text('@${senderData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.lightBlue)),
-                                      Text(getTimeDifference(commentData.uploadTime), style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey))
+                                      Text('@${senderData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.teal)),
+                                      Text(getTimeDifference(commentData.uploadTime), style: TextStyle(fontSize: defaultTextFontSize * 0.675))
                                     ],
                                   ),
                                 ],
@@ -285,15 +285,21 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                     ]
                   ),
                   SizedBox(height: getScreenHeight() * 0.01),
-                  Text("Replying to @${parentPostSender.username}'s ${commentData.parentPostType}", style: TextStyle(fontSize: defaultTextFontSize * 0.875, color: Colors.blueGrey)),
+                  Text("Replying to @${parentPostSender.username}'s ${commentData.parentPostType}", style: TextStyle(fontSize: defaultTextFontSize * 0.875, color: Colors.teal)),
                   SizedBox(height: getScreenHeight() * 0.01),
-                  const Divider(
-                    color: Colors.white, height: 2.5, thickness: 1
+                  Divider(
+                    color: Theme.of(context).dividerColor,
+                    height: 2.5, 
+                    thickness: 1
                   ),
                   SizedBox(height: getScreenHeight() * 0.01),
                   DisplayTextComponent(
-                    text: commentData.content, tagsPressable: true, overflow: TextOverflow.ellipsis, 
-                    maxLines: 100, style: TextStyle(fontSize: defaultTextFontSize * 0.95), alignment: TextAlign.left, 
+                    text: commentData.content, 
+                    tagsPressable: true, 
+                    overflow: TextOverflow.ellipsis, 
+                    maxLines: 100, 
+                    style: TextStyle(fontSize: defaultTextFontSize * 0.95, color: Theme.of(context).textTheme.labelMedium!.color), 
+                    alignment: TextAlign.left, 
                     context: context
                   ),
                   SizedBox(height: commentData.content.isNotEmpty ? getScreenHeight() * 0.01 : 0),
@@ -304,8 +310,10 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                       mediaDataPostComponentWidget(mediasDatas[i], context)
                     ],
                   ),
-                  const Divider(
-                    color: Colors.white, height: 2.5, thickness: 1
+                  Divider(
+                    color: Theme.of(context).dividerColor,
+                    height: 2.5, 
+                    thickness: 1
                   ),
                   SizedBox(height: getScreenHeight() * 0.005),
                   Row(
@@ -370,7 +378,7 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                         },
                         Row(
                           children: [
-                            const Icon(FontAwesomeIcons.solidComment, size: 20, color: Colors.grey),
+                            const Icon(FontAwesomeIcons.solidComment, size: 20),
                             SizedBox(width: getScreenWidth() * 0.02),
                             Text(displayShortenedCount(commentData.commentsCount))
                           ],
@@ -388,7 +396,7 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
       return Card(
         clipBehavior: Clip.antiAlias,
         margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
-        color: Colors.transparent,
+        color: Theme.of(context).cardColor,
         child: Material(
           color: Colors.transparent,
           child: InkWell(
@@ -434,8 +442,10 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                     )
                   ),
                   SizedBox(height: getScreenHeight() * 0.01),
-                  const Divider(
-                    color: Colors.white, height: 2.5, thickness: 1
+                  Divider(
+                    color: Theme.of(context).dividerColor,
+                    height: 2.5, 
+                    thickness: 1
                   ),
                   SizedBox(height: getScreenHeight() * 0.01),
                   for(int i = 0; i < 3; i++)
@@ -452,8 +462,10 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                     ],
                   ),
                   SizedBox(height: getScreenHeight() * 0.01),
-                  const Divider(
-                    color: Colors.white, height: 2.5, thickness: 1
+                  Divider(
+                    color: Theme.of(context).dividerColor,
+                    height: 2.5, 
+                    thickness: 1
                   ),
                   SizedBox(height: getScreenHeight() * 0.005),
                   Card(

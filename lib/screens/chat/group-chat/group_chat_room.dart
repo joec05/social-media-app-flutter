@@ -90,7 +90,7 @@ class _GroupChatRoomWidgetStatefulState extends State<_GroupChatRoomWidgetStatef
                                     width: getScreenWidth() * 0.075,
                                     height: getScreenWidth() * 0.075,
                                     decoration: BoxDecoration(
-                                      border: Border.all(width: 2, color: Colors.white),
+                                      border: Border.all(width: 2),
                                       borderRadius: BorderRadius.circular(100),
                                       image: DecorationImage(
                                         image: NetworkImage(
@@ -217,7 +217,7 @@ class _GroupChatRoomWidgetStatefulState extends State<_GroupChatRoomWidgetStatef
                   Container(
                     width: getScreenWidth(),
                     decoration: const BoxDecoration(
-                      border: Border(top: BorderSide(color: Colors.white, width: 1)),
+                      border: Border(top: BorderSide(width: 1)),
                     ),
                     child: ValueListenableBuilder<List>(
                       valueListenable: uploadController.mediasComponents,
@@ -240,7 +240,7 @@ class _GroupChatRoomWidgetStatefulState extends State<_GroupChatRoomWidgetStatef
                                       alignment: Alignment.centerLeft,
                                       child: Icon(Icons.photo, size: writePostIconSize,
                                         color: uploadController.mediasComponents.value.length == maxMessageMediaCount ?
-                                          Colors.grey : Colors.white
+                                          Colors.grey : Theme.of(context).iconTheme.color
                                       ),
                                     )
                                   ),
@@ -255,7 +255,7 @@ class _GroupChatRoomWidgetStatefulState extends State<_GroupChatRoomWidgetStatef
                                       alignment: Alignment.centerLeft,
                                       child: Icon(Icons.camera_alt_sharp, size: writePostIconSize,
                                         color: uploadController.mediasComponents.value.length == maxMessageMediaCount ?
-                                          Colors.grey : Colors.white
+                                          Colors.grey : Theme.of(context).iconTheme.color
                                       ),
                                     )
                                   ),
@@ -270,7 +270,7 @@ class _GroupChatRoomWidgetStatefulState extends State<_GroupChatRoomWidgetStatef
                                       alignment: Alignment.centerLeft,
                                       child: Icon(Icons.video_file_sharp, size: writePostIconSize,
                                         color: uploadController.mediasComponents.value.length == maxMessageMediaCount ?
-                                          Colors.grey : Colors.white
+                                          Colors.grey : Theme.of(context).iconTheme.color
                                       ),
                                     )
                                   ),

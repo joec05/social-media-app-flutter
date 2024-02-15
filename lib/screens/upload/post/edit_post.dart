@@ -121,7 +121,7 @@ class __EditPostWidgetStatefulState extends State<_EditPostWidgetStateful> with 
               ),
               Container(
                 decoration: const BoxDecoration(
-                  border: Border(top: BorderSide(color: Colors.white, width: 1)),
+                  border: Border(top: BorderSide(width: 1)),
                 ),
                 child: ValueListenableBuilder<List>(
                   valueListenable: controller.mediasComponents,
@@ -143,7 +143,7 @@ class __EditPostWidgetStatefulState extends State<_EditPostWidgetStateful> with 
                                 alignment: Alignment.centerLeft,
                                 child: Icon(Icons.photo, size: writePostIconSize,
                                   color: controller.mediasComponents.value.length == maxMediaCount ? 
-                                    Colors.grey : Colors.white
+                                    Colors.grey : Theme.of(context).iconTheme.color
                                 ),
                               )
                             ),
@@ -158,7 +158,7 @@ class __EditPostWidgetStatefulState extends State<_EditPostWidgetStateful> with 
                                 alignment: Alignment.centerLeft,
                                 child: Icon(Icons.camera_alt_sharp, size: writePostIconSize,
                                   color: controller.mediasComponents.value.length == maxMediaCount ?
-                                   Colors.grey : Colors.white
+                                   Colors.grey : Theme.of(context).iconTheme.color
                                 ),
                               )
                             ),
@@ -173,7 +173,7 @@ class __EditPostWidgetStatefulState extends State<_EditPostWidgetStateful> with 
                                 alignment: Alignment.centerLeft,
                                 child: Icon(Icons.video_file_sharp, size: writePostIconSize,
                                   color: controller.mediasComponents.value.length == maxMediaCount ?
-                                   Colors.grey : Colors.white
+                                   Colors.grey : Theme.of(context).iconTheme.color
                                 ),
                               )
                             ),

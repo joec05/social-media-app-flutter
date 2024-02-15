@@ -112,7 +112,7 @@ class _AddUsersToGroupWidgetStatefulState extends State<_AddUsersToGroupWidgetSt
                         controller.toggleSelectUser(usersList[i], appStateRepo.usersDataNotifiers.value[usersList[i]]!.notifier.value.name);
                       },
                       child: Container(
-                        color: selectedUsersID.contains(usersList[i]) ? Colors.white.withOpacity(0.5) : Colors.transparent,
+                        color: selectedUsersID.contains(usersList[i]) ? Colors.grey.withOpacity(0.5) : Colors.transparent,
                         child: CustomSimpleUserDataWidget(
                           userData: appStateRepo.usersDataNotifiers.value[usersList[i]]!.notifier.value,
                           key: UniqueKey()

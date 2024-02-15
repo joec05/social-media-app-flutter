@@ -66,11 +66,9 @@ class _SearchedWidgetStatefulState extends State<_SearchedWidgetStateful> with S
                       },
                       isScrollable: false,
                       controller: _tabController,
-                      labelColor: Colors.white,
                       indicatorColor: Colors.orange,
                       indicatorSize: TabBarIndicatorSize.tab,
                       indicatorWeight: 3.0,
-                      unselectedLabelColor: Colors.white,
                       tabs: const [
                         Tab(text: 'Posts'),
                         Tab(text: 'Replies'),

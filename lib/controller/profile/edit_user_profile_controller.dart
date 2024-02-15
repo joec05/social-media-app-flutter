@@ -22,7 +22,6 @@ class EditUserProfileController {
   final int nameCharacterMaxLimit = profileInputMaxLimit['name'];
   final int usernameCharacterMinLimit = profileInputMinLimit['username'];
   final int usernameCharacterMaxLimit = profileInputMaxLimit['username'];
-  final int passwordCharacterMaxLimit = profileInputMaxLimit['password'];
   final int bioCharacterMaxLimit = profileInputMaxLimit['bio'];
 
   EditUserProfileController(

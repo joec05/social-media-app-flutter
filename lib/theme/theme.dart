@@ -2,16 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
 class AppTheme {
-  ThemeData lightTheme = ThemeData(
+  ThemeData light = ThemeData(
     brightness: Brightness.light,
     textTheme: TextDisplayTheme.lightTextTheme,
     inputDecorationTheme: TextFieldTheme.lightInputDecorationTheme,
+    dividerColor: Colors.black,
+    cardColor: Colors.grey.withOpacity(0.5)
   );
 
-  ThemeData darkTheme = ThemeData(
+  ThemeData dark = ThemeData(
     brightness: Brightness.dark,
     textTheme: TextDisplayTheme.darkTextTheme,
     inputDecorationTheme: TextFieldTheme.darkInputDecorationTheme,
+    dividerColor: Colors.white,
+    cardColor: Colors.grey.withOpacity(0.5)
   );
 }
 

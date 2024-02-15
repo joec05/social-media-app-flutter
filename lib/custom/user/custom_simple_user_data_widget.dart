@@ -32,7 +32,7 @@ class _CustomSimpleUserDataWidgetState extends State<CustomSimpleUserDataWidget>
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
-      color: Colors.transparent,
+      color: Theme.of(context).cardColor,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
         child: Column(
@@ -47,7 +47,7 @@ class _CustomSimpleUserDataWidgetState extends State<CustomSimpleUserDataWidget>
                       Container(
                         width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
                         decoration: BoxDecoration(
-                          border: Border.all(width: 2, color: Colors.white),
+                          border: Border.all(width: 2),
                           borderRadius: BorderRadius.circular(100),
                           image: DecorationImage(
                             image: NetworkImage(
@@ -105,7 +105,7 @@ class _CustomSimpleUserDataWidgetState extends State<CustomSimpleUserDataWidget>
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text('@${userData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.lightBlue)),
+                                Text('@${userData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.teal)),
                               ],
                             ),
                           ],

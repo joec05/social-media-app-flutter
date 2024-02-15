@@ -39,7 +39,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
             Container(
               width: getScreenWidth() * 0.2, height: getScreenWidth() * 0.2,
               decoration: BoxDecoration(
-                border: Border.all(width: 2, color: Colors.white),
+                border: Border.all(width: 2),
                 borderRadius: BorderRadius.circular(100),
                 image: DecorationImage(
                   image: NetworkImage(
@@ -61,7 +61,11 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
                       children: <InlineSpan>[
                         TextSpan(
                           text: userData.name,
-                          style: const TextStyle(fontSize: 21),
+                          style: TextStyle(
+                            fontSize: Theme.of(context).textTheme.bodyLarge!.fontSize!,
+                            color: Theme.of(context).textTheme.bodyLarge!.color!, 
+                            fontWeight: FontWeight.bold
+                          )
                         ),
                         WidgetSpan(
                           alignment: PlaceholderAlignment.middle, 
@@ -111,7 +115,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
             SizedBox(
               height: getScreenHeight() * 0.005
             ),
-            Text(userData.suspended || userData.deleted ? '@' : '@${userData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.825, color: const Color.fromARGB(255, 117, 167, 192))),
+            Text(userData.suspended || userData.deleted ? '@' : '@${userData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.825, color: Colors.teal)),
             !userData.blocksCurrentID && !userData.suspended && !userData.deleted ?
               Column(
                 children: [
@@ -174,7 +178,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
               Container(
                 margin: EdgeInsets.only(top: getScreenHeight() * 0.025),
                 padding: EdgeInsets.symmetric(horizontal: getScreenWidth() * 0.025, vertical: getScreenHeight() * 0.025),
-                decoration: BoxDecoration(border: Border.all(width: 2, color: Colors.white), borderRadius: const BorderRadius.all(Radius.circular(10))),
+                decoration: BoxDecoration(border: Border.all(width: 2), borderRadius: const BorderRadius.all(Radius.circular(10))),
                 child: Column(
                   children: [
                     const Icon(FontAwesomeIcons.trash, size: 35),
@@ -188,7 +192,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
               Container(
                 margin: EdgeInsets.only(top: getScreenHeight() * 0.025),
                 padding: EdgeInsets.symmetric(horizontal: getScreenWidth() * 0.025, vertical: getScreenHeight() * 0.025),
-                decoration: BoxDecoration(border: Border.all(width: 2, color: Colors.white), borderRadius: const BorderRadius.all(Radius.circular(10))),
+                decoration: BoxDecoration(border: Border.all(width: 2), borderRadius: const BorderRadius.all(Radius.circular(10))),
                 child: Column(
                   children: [
                     const Icon(FontAwesomeIcons.userSlash, size: 35),
@@ -202,7 +206,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
               Container(
                 margin: EdgeInsets.only(top: getScreenHeight() * 0.025),
                 padding: EdgeInsets.symmetric(horizontal: getScreenWidth() * 0.025, vertical: getScreenHeight() * 0.025),
-                decoration: BoxDecoration(border: Border.all(width: 2, color: Colors.white), borderRadius: const BorderRadius.all(Radius.circular(10))),
+                decoration: BoxDecoration(border: Border.all(width: 2), borderRadius: const BorderRadius.all(Radius.circular(10))),
                 child: Column(
                   children: [
                     const Icon(FontAwesomeIcons.userXmark, size: 35),
@@ -219,7 +223,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
                   Container(
                     margin: EdgeInsets.only(top: getScreenHeight() * 0.025),
                     padding: EdgeInsets.symmetric(horizontal: getScreenWidth() * 0.025, vertical: getScreenHeight() * 0.025),
-                    decoration: BoxDecoration(border: Border.all(width: 2, color: Colors.white), borderRadius: const BorderRadius.all(Radius.circular(10))),
+                    decoration: BoxDecoration(border: Border.all(width: 2), borderRadius: const BorderRadius.all(Radius.circular(10))),
                     child: Column(
                       children: [
                         const Icon(FontAwesomeIcons.userLock, size: 35),
@@ -370,7 +374,10 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
       );
     }else{
       return Container(
-        padding: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding, vertical: defaultVerticalPadding),
+        padding: EdgeInsets.symmetric(
+          horizontal: defaultHorizontalPadding, 
+          vertical: defaultVerticalPadding
+        ),
         child: Column(
           children: [
             CircleAvatar(

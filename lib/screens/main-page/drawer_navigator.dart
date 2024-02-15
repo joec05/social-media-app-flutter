@@ -75,7 +75,7 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
                                 child: Container(
                                   width: getScreenWidth() * 0.15, height: getScreenWidth() * 0.15,
                                   decoration: BoxDecoration(
-                                    border: Border.all(width: 2, color: Colors.white),
+                                    border: Border.all(width: 2),
                                     borderRadius: BorderRadius.circular(100),
                                     image: DecorationImage(
                                       image: NetworkImage(
@@ -104,7 +104,7 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
                                                     SizedBox(
                                                       width: iconsBesideNameProfileMargin
                                                     ),
-                                                    Icon(Icons.verified_rounded, color: Colors.white, size: verifiedIconProfileWidgetSize),
+                                                    Icon(Icons.verified_rounded, size: verifiedIconProfileWidgetSize),
                                                   ]
                                                 )
                                               : Container(),
@@ -114,7 +114,7 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
                                                     SizedBox(
                                                       width: iconsBesideNameProfileMargin
                                                     ),
-                                                    Icon(FontAwesomeIcons.lock, color: Colors.white, size: lockIconProfileWidgetSize),
+                                                    Icon(FontAwesomeIcons.lock, size: lockIconProfileWidgetSize),
                                                   ],
                                                 )
                                               : Container(),
@@ -130,7 +130,11 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
                                   ],
                                 ),
                               ),
-                              const Divider(height: 1.5, color: Colors.white)
+                              Divider(
+                                color: Theme.of(context).dividerColor,
+                                height: 2.5, 
+                                thickness: 1
+                              ),
                             ],
                           ),
                         ),
@@ -272,20 +276,38 @@ class __DrawerNavigatorStatefulState extends State<_DrawerNavigatorStateful> wit
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(FontAwesomeIcons.moon, size: 20),
-                      // icons should depend on theme mode
-                      SizedBox(width: getScreenWidth() * 0.05),
-                      Text('Toggle Theme', style: TextStyle(fontSize: defaultTextFontSize)),
-                    ],
+                  ValueListenableBuilder(
+                    valueListenable: appStateRepo.appTheme, 
+                    builder: (context, themeValue, child){
+                      bool isDark = themeValue == globalTheme.dark;
+                      return Row(
+                        children: [
+                          Icon(
+                            isDark ? FontAwesomeIcons.sun : FontAwesomeIcons.moon, 
+                            size: 20
+                          ),
+                          SizedBox(width: getScreenWidth() * 0.05),
+                          Text('Switch Theme', style: TextStyle(fontSize: defaultTextFontSize)),
+                        ],
+                      );
+                    }
                   )
                 ]
               ),
             ),
             onTap: () {
-              // create state to store value of current theme mode and set it up in materialapp
-              // toggle it here
+              runDelay((){
+                Navigator.of(context).pop();
+                runDelay((){
+                  if(appStateRepo.appTheme.value == globalTheme.light) {
+                    appStateRepo.appTheme.value = globalTheme.dark;
+                    sharedPreferencesController.setAppTheme('dark');
+                  }else if(appStateRepo.appTheme.value == globalTheme.dark) {
+                    appStateRepo.appTheme.value = globalTheme.light;
+                    sharedPreferencesController.setAppTheme('light');
+                  }
+                }, actionDelayTime);
+              }, navigatorDelayTime);
             }
           ),
           ListTile(

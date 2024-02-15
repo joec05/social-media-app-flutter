@@ -34,6 +34,7 @@ class _SocialMediaAppState extends State<SocialMediaApp> {
   @override
   void initState() {
     super.initState();
+    appStateRepo.appTheme.value = sharedPreferencesController.getAppTheme() == 'light' ? globalTheme.light : globalTheme.dark;
   }
 
   @override
@@ -43,16 +44,21 @@ class _SocialMediaAppState extends State<SocialMediaApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Social Media App',
-      theme: globalTheme.darkTheme,
-      onGenerateRoute: (settings) {
-        if (settings.name == "/chats-list") {
-          return generatePageRouteBuilder(settings, const ChatsWidget());
-        }
-        return null;
-      },
-      home: authRepo.currentUser.value != null ? const MainPageWidget() : onboardingDisplayed ? const HomePage() : const OnboardingPage()
+    return ValueListenableBuilder(
+      valueListenable: appStateRepo.appTheme,
+      builder: (context, themeValue, child){
+        return MaterialApp(
+          title: 'Social Media App',
+          theme: themeValue,
+          onGenerateRoute: (settings) {
+            if (settings.name == "/chats-list") {
+              return generatePageRouteBuilder(settings, const ChatsWidget());
+            }
+            return null;
+          },
+          home: authRepo.currentUser.value != null ? const MainPageWidget() : onboardingDisplayed ? const HomePage() : const OnboardingPage()
+        );
+      }
     );
   }
 }

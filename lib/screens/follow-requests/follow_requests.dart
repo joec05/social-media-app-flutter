@@ -67,11 +67,9 @@ class _FollowRequestsWidgetStatefulState extends State<_FollowRequestsWidgetStat
                       },
                       isScrollable: false,
                       controller: _tabController,
-                      labelColor: Colors.white,
                       indicatorColor: Colors.orange,
                       indicatorSize: TabBarIndicatorSize.tab,
                       indicatorWeight: 3.0,
-                      unselectedLabelColor: Colors.white,
                       tabs: const [
                         Tab(text: 'Requests From Me'),
                         Tab(text: 'Requests To Me'),

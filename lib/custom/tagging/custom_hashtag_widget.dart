@@ -30,7 +30,7 @@ class _CustomHashtagDataWidgetState extends State<CustomHashtagDataWidget>{
       return Card(
         clipBehavior: Clip.antiAlias,
         margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
-        color: Colors.transparent,
+        color: Theme.of(context).cardColor,
         child: Material(
           color: Colors.transparent,
           child: InkWell(
@@ -66,7 +66,7 @@ class _CustomHashtagDataWidgetState extends State<CustomHashtagDataWidget>{
       return Card(
         clipBehavior: Clip.antiAlias,
         margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
-        color: Colors.transparent,
+        color: Theme.of(context).cardColor,
         child: Material(
           color: Colors.transparent,
           child: InkWell(

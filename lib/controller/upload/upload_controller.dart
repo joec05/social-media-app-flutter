@@ -196,7 +196,6 @@ class UploadController {
               width: getScreenWidth() * 0.1,
               height: getScreenWidth() * 0.1,
               decoration: const BoxDecoration(
-                color: Colors.white,
                 shape: BoxShape.circle,
               ),
               child: GestureDetector(
@@ -223,7 +222,6 @@ class UploadController {
               width: getScreenWidth() * 0.1,
               height: getScreenWidth() * 0.1,
               decoration: const BoxDecoration(
-                color: Colors.white,
                 shape: BoxShape.circle,
               ),
               child: GestureDetector(
@@ -785,9 +783,6 @@ class UploadController {
               'recipient': recipient,
               'mediasDatas': serverMediasDatas,
             });
-            textController.text = '';
-            mediasDatas.value = [];
-            mediasComponents.value = [];
             dynamic res = await fetchDataRepo.fetchData(
               context, 
               RequestPost.sendPrivateMessage, 
@@ -804,6 +799,9 @@ class UploadController {
             if(mounted) {
               isUploading.value = false;
               if(res != null) {
+                textController.text = '';
+                mediasDatas.value = [];
+                mediasComponents.value = [];
                 chatID ??= newChatID;
               }
             }
@@ -872,9 +870,6 @@ class UploadController {
               'mediasDatas': serverMediasDatas,
               'type': 'message'
             });
-            textController.text = '';
-            mediasDatas.value = [];
-            mediasComponents.value = [];
             dynamic res = await fetchDataRepo.fetchData(
               context, 
               RequestPost.sendGroupMessage, 
@@ -891,6 +886,9 @@ class UploadController {
             if(mounted) {
               isUploading.value = false;
               if(res != null) {
+                textController.text = '';
+                mediasDatas.value = [];
+                mediasComponents.value = [];
                 if(chatController.chatID.value == null){
                   chatController.chatID.value = chatController.newChatID.value;
                   chatController.newChatID.value = null;

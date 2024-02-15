@@ -39,7 +39,7 @@ Widget textFieldWithDescription(Widget textField, String description, String too
       Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(description, style: const TextStyle(color: Colors.white, fontSize: 14.5, fontWeight: FontWeight.bold)),
+          Text(description, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold)),
           SizedBox(
             width: getScreenWidth() * 0.0075,
           ),
@@ -67,7 +67,6 @@ InputDecoration generatePostTextFieldDecoration(content, prefixIcon){
   return InputDecoration(
     counterText: "",
     contentPadding: EdgeInsets.symmetric(vertical: getScreenHeight() * 0.0225, horizontal: getScreenWidth() * 0.02),
-    fillColor: const Color.fromARGB(255, 70, 64, 64),
     filled: true,
     border: InputBorder.none,
     hintText: 'Enter $content',
@@ -80,7 +79,6 @@ InputDecoration generateBioTextFieldDecoration(content, prefixIcon){
   return InputDecoration(
     counterText: "",
     contentPadding: EdgeInsets.symmetric(vertical: getScreenHeight() * 0.0225, horizontal: getScreenWidth() * 0.02),
-    fillColor: const Color.fromARGB(255, 70, 64, 64),
     filled: true,
     border: InputBorder.none,
     hintText: 'Talk about yourself',
@@ -93,7 +91,6 @@ InputDecoration generateProfileTextFieldDecoration(content, prefixIcon){
   return InputDecoration(
     counterText: "",
     contentPadding: EdgeInsets.symmetric(vertical: getScreenHeight() * 0.0225, horizontal: getScreenWidth() * 0.02),
-    fillColor: const Color.fromARGB(255, 70, 64, 64),
     filled: true,
     border: InputBorder.none,
     hintText: 'Enter $content',
@@ -106,7 +103,6 @@ InputDecoration generateSearchTextFieldDecoration(content, suffixIcon, onPressed
   return InputDecoration(
     counterText: "",
     contentPadding: EdgeInsets.symmetric(vertical: getScreenHeight() * 0.0225, horizontal: getScreenWidth() * 0.02),
-    fillColor: const Color.fromARGB(255, 70, 64, 64),
     filled: true,
     border: InputBorder.none,
     hintText: 'Enter $content',
@@ -125,7 +121,6 @@ InputDecoration generateMessageTextFieldDecoration(content){
   return InputDecoration(
     counterText: "",
     contentPadding: EdgeInsets.only(top: getScreenHeight() * 0.0225, bottom: getScreenHeight() * 0.0225, left: getScreenWidth() * 0.02),
-    fillColor: const Color.fromARGB(255, 70, 64, 64),
     filled: true,
     border: InputBorder.none,
     hintText: 'Enter $content',
@@ -422,7 +417,7 @@ Widget defaultLeadingWidget(BuildContext context){
   return InkWell(
     splashFactory: InkRipple.splashFactory,
     onTap: () => context.mounted ? runDelay(() => Navigator.pop(context), 60) : (){},
-    child: const Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.white)
+    child: const Icon(Icons.arrow_back_ios_new, size: 20)
   );
 }
 

@@ -175,11 +175,9 @@ class _ProfilePageWithUsernameWidgetStatefulState extends State<_ProfilePageWith
                               },
                               isScrollable: false,
                               controller: controller.tabController,
-                              labelColor: Colors.white,
                               indicatorColor: Colors.orange,
                               indicatorSize: TabBarIndicatorSize.tab,
                               indicatorWeight: 3.0,
-                              unselectedLabelColor: Colors.white,
                               tabs: const [
                                 Tab(text: 'Posts'),
                                 Tab(text: 'Replies'),

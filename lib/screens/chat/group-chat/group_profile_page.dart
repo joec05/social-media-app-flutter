@@ -65,7 +65,7 @@ class _GroupProfilePageWidgetStatefulState extends State<_GroupProfilePageWidget
                         width: getScreenWidth() * 0.2,
                         height: getScreenWidth() * 0.2,
                         decoration: BoxDecoration(
-                          border: Border.all(width: 2, color: Colors.white),
+                          border: Border.all(width: 2),
                           borderRadius: BorderRadius.circular(100),
                           image: DecorationImage(
                             image: NetworkImage(

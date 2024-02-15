@@ -95,7 +95,7 @@ class __MainPageWidgetStatefulState extends State<_MainPageWidgetStateful> with 
           bottomNavigationBar: Container(
             decoration: const BoxDecoration(
               boxShadow: [                                                               
-                BoxShadow(color: Colors.white, spreadRadius: 0, blurRadius: 10),
+                BoxShadow(spreadRadius: 0, blurRadius: 10),
               ],
             ),
             child:SizedBox(

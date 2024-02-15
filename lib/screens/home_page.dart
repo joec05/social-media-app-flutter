@@ -91,7 +91,7 @@ class _HomePageState extends State<HomePage> {
                       Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          const Text('Social Media App', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: Colors.black)),
+                          const Text('Social Media App', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
                           SizedBox(height: getScreenHeight() * 0.085),
                         ],
                       ),

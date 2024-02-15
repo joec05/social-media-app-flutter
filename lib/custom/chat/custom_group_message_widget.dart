@@ -218,7 +218,6 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
                               width: getScreenWidth() * 0.08,
                               height: getScreenWidth() * 0.08,
                               decoration: BoxDecoration(
-                                border: Border.all(width: 2, color: Colors.white),
                                 borderRadius: BorderRadius.circular(100),
                                 image: DecorationImage(
                                   image: NetworkImage(
@@ -252,11 +251,9 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
                                 displayMessageBottomSheet();
                               },
                               child: Container(
-                                margin: EdgeInsets.only(top: 0.01 * getScreenHeight()),
                                 padding: EdgeInsets.symmetric(horizontal: getScreenWidth() * 0.015, vertical: getScreenHeight() * 0.008),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(7.5),
-                                  border: Border.all(width: 2, color: Colors.white),
                                   color: groupMessageData.sender == appStateRepo.currentID ? Colors.blue : Colors.grey.withOpacity(0.5)
                                 ),
                                 constraints: BoxConstraints(
@@ -267,8 +264,12 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     DisplayTextComponent(
-                                      text: groupMessageData.content, tagsPressable: true, overflow: TextOverflow.ellipsis, 
-                                      maxLines: 100, style: TextStyle(fontSize: defaultTextFontSize), alignment: TextAlign.left, 
+                                      text: groupMessageData.content, 
+                                      tagsPressable: true, 
+                                      overflow: TextOverflow.ellipsis, 
+                                      maxLines: 100, 
+                                      style: TextStyle(fontSize: defaultTextFontSize, color: Theme.of(context).textTheme.labelMedium!.color), 
+                                      alignment: TextAlign.left, 
                                       context: context
                                     )
                                   ],
@@ -290,7 +291,7 @@ class CustomGroupMessageState extends State<CustomGroupMessage> {
                         SizedBox(
                           width: groupMessageData.sender == appStateRepo.currentID ? 0 : getScreenWidth() * 0.09,
                         ),
-                        Text(getCleanTimeFormat(groupMessageData.uploadTime), style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey)),
+                        Text(getCleanTimeFormat(groupMessageData.uploadTime), style: TextStyle(fontSize: defaultTextFontSize * 0.675)),
                       ],
                     ),
                   ],

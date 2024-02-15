@@ -39,7 +39,7 @@ class CustomButtonState extends State<CustomButton> {
       child: Container(
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: widget.onTapped == null ? Colors.white.withOpacity(0.5) : widget.color,
+          color: widget.onTapped == null ? Colors.grey.withOpacity(0.5) : widget.color,
           borderRadius: widget.setBorderRadius ? const BorderRadius.all(Radius.circular(5)) : BorderRadius.zero
         ),
         child: Material(

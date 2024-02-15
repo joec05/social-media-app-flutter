@@ -126,8 +126,8 @@ class _CustomNotificationWidgetState extends State<CustomNotificationWidget>{
       return Card(
         clipBehavior: Clip.antiAlias,
         margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
-        color: Colors.transparent,
-        child:Material(
+        color: Theme.of(context).cardColor,
+        child: Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: (){
@@ -151,7 +151,7 @@ class _CustomNotificationWidgetState extends State<CustomNotificationWidget>{
                     child: Container(
                       width: getScreenWidth() * 0.1, height: getScreenWidth() * 0.1,
                       decoration: BoxDecoration(
-                        border: Border.all(width: 2, color: Colors.white),
+                        border: Border.all(width: 2),
                         borderRadius: BorderRadius.circular(100),
                         image: DecorationImage(
                           image: NetworkImage(
@@ -170,13 +170,11 @@ class _CustomNotificationWidgetState extends State<CustomNotificationWidget>{
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(generateNotificationText(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: defaultTextFontSize * 0.9), softWrap: true),
-                        SizedBox(height: notificationDescription.isNotEmpty ? getScreenHeight() * 0.005 : 0),
                         notificationDescription.isNotEmpty ? Text(
                           StringEllipsis.convertToEllipsis(notificationDescription), maxLines: 3, 
-                          overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.blueGrey)
+                          overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.teal)
                         ) : Container(),
-                        SizedBox(height: getScreenHeight() * 0.005),
-                        Text(getTimeDifference(notificationClass.time), style: TextStyle(fontSize: defaultTextFontSize * 0.675, color: Colors.grey))
+                        Text(getTimeDifference(notificationClass.time), style: TextStyle(fontSize: defaultTextFontSize * 0.675))
                       ],
                     ),
                   )
@@ -190,7 +188,7 @@ class _CustomNotificationWidgetState extends State<CustomNotificationWidget>{
       return Card(
         clipBehavior: Clip.antiAlias,
         margin: EdgeInsets.symmetric(horizontal: defaultHorizontalPadding / 2, vertical: defaultVerticalPadding / 2),
-        color: Colors.transparent,
+        color: Theme.of(context).cardColor,
         child: Material(
           color: Colors.transparent,
           child: InkWell(
