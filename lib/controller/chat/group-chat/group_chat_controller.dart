@@ -14,7 +14,7 @@ class GroupChatController {
   /// created recently, which makes it possible for the chatID to be null
   String? chatIDValue;
 
-  /// The list of recipients in the group chat
+  /// The list of recipients in the group chat passed to the controller
   List<String>? recipientsList;
 
   /// True if an API/Firebase/AppWrite function is running
@@ -59,7 +59,7 @@ class GroupChatController {
       chatID.value = chatIDValue;
       newChatID.value = chatID.value == null ? const Uuid().v4() : null;
     }
-    runDelay(() async => fetchGroupChatData(messages.value.length, false, false), actionDelayTime);
+    runDelay(() async => fetchGroupChatData(messages.value.length, false), actionDelayTime);
     initializeSocketListeners();
     scrollController.addListener(() {
       if(mounted){
@@ -190,12 +190,20 @@ class GroupChatController {
     scrollController.dispose();
   }
 
-  Future<void> fetchGroupChatData(int currentPostsLength, bool isRefreshing, bool isPaginating) async{
+  /// Called when controller is initialized or when the page is paginating
+  Future<void> fetchGroupChatData(int currentPostsLength, bool isPaginating) async{
     if(mounted){
       try{
+
+        /// The variable recipientsList is set to null in case the user has sent a message and the chatID is no longer null.
+        /// Otherwise, it won't be null. The value will contain the selected group members including the user as well
         if(recipientsList == null){
           isLoading.value = true;
+
+          /// Determine the endpoint based on whether the page is paginating or not
           RequestGet call = isPaginating ? RequestGet.fetchGroupChatPagination : RequestGet.fetchGroupChat;
+          
+          /// Call the API to fetch the group chat data. This includes messages and group profile
           dynamic res = await fetchDataRepo.fetchData(
             context, 
             call, 
@@ -206,11 +214,17 @@ class GroupChatController {
               'paginationLimit': messagesPaginationLimit,
               'maxFetchLimit': messagesServerFetchLimit
             }
+
           );
           if(mounted){
             isLoading.value = false;
+
+            /// API call is successful
             if(res != null){
+
               if(res['message'] != 'blacklisted'){
+
+                /// Update the chatID and groupProfile values based on the data fetched from the API
                 chatID.value = res['chatID'];
                 List messagesData = res['messagesData'];
                 List usersProfileDatasList = res['membersProfileData'];
@@ -223,10 +237,11 @@ class GroupChatController {
                     groupProfileData['description'], groupMembersID
                   );
                 }
-                if(isRefreshing){
-                  messages.value = [];
-                }
+
+                /// The API will also determine whether further pagination is still possible or not
                 canPaginate.value = res['canPaginate'];
+
+                /// Update the user data of the group members to the application state repository
                 for(int i = 0; i < usersProfileDatasList.length; i++){
                   Map userProfileData = usersProfileDatasList[i];
                   UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
@@ -234,9 +249,16 @@ class GroupChatController {
                   updateUserData(userDataClass);
                   updateUserSocials(userDataClass, userSocialClass);
                 }
+
+                /// Handle the messages data fetched by the API
                 for(int i = 0; i < messagesData.length; i++){
                   Map messageData = messagesData[i];
+
+                  /// True only when the message is an announcement. For example, when a user left a group,
+                  /// or when a user added other users
                   if(messageData['type'] != 'message'){
+
+                    /// Handle the display text of the announcement message
                     String senderName = usersProfileDatasList.where((e) => e['user_id'] == messageData['sender']).toList()[0]['name'];
                     if(messageData['type'] == 'edit_group_profile'){
                       messageData['content'] = '$senderName has edited the group profile';
@@ -247,14 +269,21 @@ class GroupChatController {
                       String addedUserName = usersProfileDatasList.where((e) => e['user_id'] == addedUserID).toList()[0]['name'];
                       messageData['content'] = '$senderName has added $addedUserName to the group';
                     }
+
                   } 
+
+                  /// Load the media attached to the message
                   List<MediaDatasClass> newMediasDatas = await loadMediasDatas(context, jsonDecode(messageData['medias_datas']));
+
                   if(mounted){
+
+                    /// Convert the message data to a model class and add it to the messages list variable
                     messages.value = [...messages.value, GroupMessageNotifier(
                       messageData['message_id'], ValueNotifier(
                         GroupMessageClass.fromMap(messageData, newMediasDatas)
                       )
                     )];
+
                   }
                 }
               }
@@ -262,14 +291,19 @@ class GroupChatController {
           }
         }else{
           if(mounted){
+
+            /// Happens in case the user has created the group chat however hasn't sent a message at all
+            /// In case the user navigates back before sending a message, the group chat will not be saved
             groupProfile.value = GroupProfileClass(
               'You and ${recipientsList!.length - 1} others', 
               defaultGroupChatProfilePicLink, 
               '', 
               recipientsList!
             );
+
           }
         }
+
       } catch (_) {
         if(mounted){
           isLoading.value = false;
@@ -283,14 +317,20 @@ class GroupChatController {
     }
   }
 
+  /// Called when the user scrolled to the top and the page is still able to paginate
   Future<void> loadMoreChats() async{
     if(mounted){
+      
+      /// Set the paginationStatus to loading and run a timer delay before calling the function
       paginationStatus.value = PaginationStatus.loading;
       Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
         timer.cancel();
-        await fetchGroupChatData(messages.value.length, false, true);
+        await fetchGroupChatData(messages.value.length, true);
         if(mounted){
+
+          /// Set the paginationStatus to loaded
           paginationStatus.value = PaginationStatus.loaded;
+
         }
       });
     }

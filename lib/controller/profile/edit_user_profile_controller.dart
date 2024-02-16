@@ -6,22 +6,56 @@ import 'package:permission_handler/permission_handler.dart' as ph;
 import 'package:device_info_plus/device_info_plus.dart';
 
 class EditUserProfileController {
+  
+  /// A context will need to be passed to the controller to handle navigation and snackbars handler
   BuildContext context;
+
+  /// True if an API/Firebase/AppWrite function is running
   ValueNotifier<bool> isLoading = ValueNotifier(false);
+
+  /// Editing controller for name
   TextEditingController nameController = TextEditingController();
+
+  /// Editing controller for username
   TextEditingController usernameController = TextEditingController();
+
+  /// Editing controller for birth date
   TextEditingController birthDateController = TextEditingController();
+
+  /// Editing controller for bio
   TextEditingController bioController = TextEditingController();
+
+  /// Variable for storing file path of selected image
   ValueNotifier<String> imageFilePath = ValueNotifier('');
+
+  /// Variable for storing network path of user's current profile picture
   ValueNotifier<String> imageNetworkPath = ValueNotifier('');
+
+  /// Selected birth date in DateTime format
   DateTime selectedBirthDate = DateTime.now();
+
+  /// True if the name is in correct format
   ValueNotifier<bool> verifyNameFormat = ValueNotifier(false);
+
+  /// True if the username is in correct format
   ValueNotifier<bool> verifyUsernameFormat = ValueNotifier(false);
+
+  /// True if the birth date is in correct format
   ValueNotifier<bool> verifyBirthDateFormat = ValueNotifier(false);
+
+  /// True if the bio is in correct format
   ValueNotifier<bool> verifyBioFormat = ValueNotifier(false);
+
+  /// Maximum length for name
   final int nameCharacterMaxLimit = profileInputMaxLimit['name'];
+
+  /// Minimum length for username
   final int usernameCharacterMinLimit = profileInputMinLimit['username'];
+
+  /// Maximum length for username
   final int usernameCharacterMaxLimit = profileInputMaxLimit['username'];
+
+  /// Maximum length for bio
   final int bioCharacterMaxLimit = profileInputMaxLimit['bio'];
 
   EditUserProfileController(
@@ -30,6 +64,7 @@ class EditUserProfileController {
   
   bool get mounted => context.mounted;
 
+  /// This is where the controller is initialized. Called at every page's initState function
   void initializeController(){
     runDelay(() async => fetchUserProfileData(), actionDelayTime);
     nameController.addListener(() {
@@ -60,6 +95,7 @@ class EditUserProfileController {
     });
   }
 
+  /// Dispose everything. Called at every page's dispose function
   void dispose(){
     isLoading.dispose();
     nameController.dispose();
@@ -74,9 +110,12 @@ class EditUserProfileController {
     imageNetworkPath.dispose();
   }
 
+  /// Called during initialization
   void fetchUserProfileData() async{
     if(mounted){
       isLoading.value = true;
+
+      /// Call API to fetch user profile data
       dynamic res = await fetchDataRepo.fetchData(
         context, 
         RequestGet.fetchCurrentUserProfile, 
@@ -84,8 +123,11 @@ class EditUserProfileController {
           'currentID': appStateRepo.currentID
         }
       );
+
       if(mounted){
         isLoading.value = false;
+
+        /// The API call is successful
         if(res != null){
           Map userProfileData = res['userProfileData'];
           nameController.text = userProfileData['name'];
@@ -100,6 +142,7 @@ class EditUserProfileController {
     }
   }
   
+  /// Called when the user pressed the TextField for the birth date
   Future<void> selectBirthDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -116,6 +159,7 @@ class EditUserProfileController {
     }
   }
 
+  /// Function to pick image
   Future<void> pickImage() async {
     bool permissionIsGranted = false;
     ph.Permission? permission;
@@ -146,30 +190,39 @@ class EditUserProfileController {
     }
   }
 
+  /// Called when the user pressed the given button
   void editProfile() async{
     if(mounted) {
       if(!isLoading.value){
         if(checkUsernameValid(usernameController.text.trim()) == false){
+
+          /// Display a snackbar error if the username is not valid
           handler.displaySnackbar(
             context, 
             SnackbarType.error, 
             'Username format is invalid.'
           );
+
         }else{  
           isLoading.value = true;
           String currentID = appStateRepo.currentID;
           String nameText = nameController.text.trim();
           String usernameText = usernameController.text.trim();
-          String imagePath = '';
+          String? imagePath;
           if(imageFilePath.value.isNotEmpty){
+
+            /// Upload selected profile picture to AppWrite
             imagePath = await cloudController.uploadImageToAppWrite(
               context,
               imageFilePath.value
             );
+
           }else{
             imagePath = imageNetworkPath.value;
           }
           if(mounted){
+
+            /// Call the API to edit the user profile with the given data
             dynamic res = await fetchDataRepo.fetchData(
               context, 
               RequestPatch.editUserProfile, 
@@ -182,12 +235,17 @@ class EditUserProfileController {
                 'birthDate': selectedBirthDate.toString()
               }
             );
+            
             if(mounted){
               isLoading.value = false;
+
+              /// API call is successful
               if(res != null){
+
+                /// Reflect the updated user profile at the app state repository
                 UserDataClass currentUserProfileDataClass = appStateRepo.usersDataNotifiers.value[currentID]!.notifier.value;
                 UserDataClass updatedCurrentUserProfileDataClass = UserDataClass(
-                  currentID, nameText, usernameText, imagePath, currentUserProfileDataClass.dateJoined, 
+                  currentID, nameText, usernameText, imagePath ?? defaultUserProfilePicLink, currentUserProfileDataClass.dateJoined, 
                   selectedBirthDate.toString(), bioController.text.trim(),
                   currentUserProfileDataClass.mutedByCurrentID, currentUserProfileDataClass.blockedByCurrentID, 
                   currentUserProfileDataClass.blocksCurrentID, currentUserProfileDataClass.private,
@@ -195,7 +253,10 @@ class EditUserProfileController {
                   currentUserProfileDataClass.verified, currentUserProfileDataClass.suspended, currentUserProfileDataClass.deleted
                 );
                 appStateRepo.usersDataNotifiers.value[currentID]!.notifier.value = updatedCurrentUserProfileDataClass;
+
+                /// Navigate to previous page
                 Navigator.pop(context);
+                
               }
             }
           }

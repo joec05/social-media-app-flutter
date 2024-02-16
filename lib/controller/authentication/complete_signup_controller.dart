@@ -60,7 +60,7 @@ class CompleteSignUpController {
         isLoading.value = true;
 
         /// Upload the selected image to AppWrite and get the url
-        String uploadProfilePic = await cloudController.uploadImageToAppWrite(context, imageFilePath.value);
+        String uploadProfilePic = await cloudController.uploadImageToAppWrite(context, imageFilePath.value) ?? defaultUserProfilePicLink;
         
         if(mounted){
 

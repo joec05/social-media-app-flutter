@@ -74,16 +74,15 @@ class _GroupMembersPageStatefulState extends State<_GroupMembersPageStateful> wi
           return ListenableBuilder(
             listenable: Listenable.merge([
               controller.paginationStatus,
-              controller.totalUsersLength,
               controller.users
             ]),
             builder: (context, child){
               PaginationStatus loadingStatusValue = controller.paginationStatus.value;
               List<String> usersList = controller.users.value;
               return LoadMoreBottom(
-                addBottomSpace: usersList.length < controller.totalUsersLength.value,
+                addBottomSpace: usersList.length < widget.usersID.length,
                 loadMore: () async{
-                  if(usersList.length < controller.totalUsersLength.value){
+                  if(usersList.length < widget.usersID.length){
                     await controller.loadMoreUsers();
                   }
                 },

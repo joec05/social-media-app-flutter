@@ -3,12 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:social_media_app/global_files.dart';
 
 class ChatsController {
+  
+  /// A context will need to be passed to the controller to handle navigation and snackbars handler
   BuildContext context;
+
+  /// Variable storing the loading status
   ValueNotifier<LoadingState> loadingState = ValueNotifier(LoadingState.loading);
+
+  /// Variable storing a list of the chats' data
   ValueNotifier<List<ChatDataNotifier>> chats = ValueNotifier([]);
+
+  /// Variable storing the pagination status
   ValueNotifier<PaginationStatus> paginationStatus = ValueNotifier(PaginationStatus.loaded);
+
+  // True if pagination is still possible
   ValueNotifier<bool> canPaginate = ValueNotifier(false);
+  
+  /// True if the floating button should appear
   ValueNotifier<bool> displayFloatingBtn = ValueNotifier(false);
+
+  /// Scroll controller in which the value of displayFloatingBtn depends on
   final ScrollController scrollController = ScrollController();
 
   ChatsController(
@@ -17,6 +31,7 @@ class ChatsController {
 
   bool get mounted => context.mounted;
 
+  /// This is where the controller is initialized. Called at every page's initState function
   void initializeController(){
     runDelay(() async => fetchChatsData(chats.value.length, false, false), actionDelayTime);
     initializeSocketListeners();
@@ -35,6 +50,7 @@ class ChatsController {
     });
   }
 
+  /// Initialize the socket listeners
   void initializeSocketListeners() {
     socket.on("update-latest-private-message-${appStateRepo.currentID}", ( data ) async{
       if(mounted && data != null){
@@ -292,6 +308,7 @@ class ChatsController {
     });
   }
 
+  /// Dispose everything. Called at every page's dispose function
   void dispose(){
     loadingState.dispose();
     chats.dispose();
@@ -301,8 +318,11 @@ class ChatsController {
     scrollController.dispose();
   }
 
+  /// Called when controller is initialized or when the page is paginating
   Future<void> fetchChatsData(int currentPostsLength, bool isRefreshing, bool isPaginating) async{
     if(mounted){
+
+      /// Call the API to fetch a list the user's chats
       dynamic res = await fetchDataRepo.fetchData(
         context, 
         RequestGet.fetchUserChats, 
@@ -313,16 +333,28 @@ class ChatsController {
           'maxFetchLimit': chatsServerFetchLimit
         }
       );
+
       if(mounted) {
         loadingState.value = LoadingState.loaded;
+
+        /// API call is successful
         if(res != null) {
+
           List userChatsData = res['userChatsData'];
           List usersProfileDatasList = res['recipientsProfileData'];
           List usersSocialsDatasList = res['recipientsSocialsData'];
+
           if(isRefreshing){
+            
+            /// Empty the chats list if the user is refreshing
             chats.value = [];
+
           }
+
+          /// The API will also determine whether further pagination is still possible or not
           canPaginate.value = res['canPaginate'];
+
+          /// Update the user data of the group members to the application state repository
           for(int i = 0; i < usersProfileDatasList.length; i++){
             Map userProfileData = usersProfileDatasList[i];
             UserDataClass userDataClass = UserDataClass.fromMap(userProfileData);
@@ -330,8 +362,13 @@ class ChatsController {
             updateUserData(userDataClass);
             updateUserSocials(userDataClass, userSocialClass);
           }
+
+          /// Handle the chats data fetched by the API
           for(int i = 0; i < userChatsData.length; i++){
             Map chatData = userChatsData[i];
+
+            /// True only when the message is an group announcement. For example, when a user left a group,
+            /// or when a user added other users
             if(chatData['type'] == 'group' && chatData['latest_message_type'] != 'message'){
               String senderName = usersProfileDatasList.where((e) => e['user_id'] == chatData['latest_message_sender']).toList()[0]['name'];
               if(chatData['latest_message_type'] == 'edit_group_profile'){
@@ -344,6 +381,8 @@ class ChatsController {
                 chatData['latest_message_content'] = '$senderName has added $addedUserName to the group';
               }
             } 
+
+            /// Convert the chat data to a model class and add it to the chats list variable
             chats.value = [...chats.value, ChatDataNotifier(
               chatData['chat_id'], ValueNotifier(
                 ChatDataClass.fromMap(chatData)
@@ -355,26 +394,36 @@ class ChatsController {
     }
   }
 
+  /// Called when the user scrolled to the top and the page is still able to paginate
   Future<void> loadMoreChats() async{
     if(mounted){
+
+      /// Set the loadingState to paginating and paginationStatus to loading and run a timer 
+      /// delay before calling the function
       loadingState.value = LoadingState.paginating;
       paginationStatus.value = PaginationStatus.loading;
       Timer.periodic(const Duration(milliseconds: 1500), (Timer timer) async{
         timer.cancel();
         await fetchChatsData(chats.value.length, false, true);
         if(mounted){
+
+          /// Set the paginationStatus to loaded
           paginationStatus.value = PaginationStatus.loaded;
+
         }
       });
     }
   }
 
+  /// Called when the user refreshes
   Future<void> refresh() async{
     loadingState.value = LoadingState.refreshing;
     fetchChatsData(0, true, false);
   }
 
+  /// Called when the user deletes a private chat
   void deletePrivateChat(String chatID) async{
+
     for(int i = 0; i < chats.value.length; i++){
       ChatDataClass chatData = chats.value[i].notifier.value;
       if(chatData.chatID == chatID && mounted){
@@ -385,6 +434,8 @@ class ChatsController {
         );
       }
     }
+    
+    /// Call the API to delete the user's chat based on the chatID
     await fetchDataRepo.fetchData(
       context, 
       RequestPatch.deletePrivateChat, 
@@ -393,9 +444,12 @@ class ChatsController {
         'currentID': appStateRepo.currentID,
       }
     );
+
   }
 
+  /// Called when the user deletes a group chat
   void deleteGroupChat(String chatID) async{
+
     for(int i = 0; i < chats.value.length; i++){
       ChatDataClass chatData = chats.value[i].notifier.value;
       if(chatData.chatID == chatID && mounted){
@@ -406,6 +460,8 @@ class ChatsController {
         );
       }
     }
+
+    /// Call the API to delete the user's chat based on the chatID
     await fetchDataRepo.fetchData(
       context, 
       RequestPatch.deleteGroupChat, 
@@ -414,5 +470,6 @@ class ChatsController {
         'currentID': appStateRepo.currentID,
       }
     );
+    
   }
 }

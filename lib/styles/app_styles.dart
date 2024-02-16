@@ -106,12 +106,9 @@ InputDecoration generateSearchTextFieldDecoration(content, suffixIcon, onPressed
     filled: true,
     border: InputBorder.none,
     hintText: 'Enter $content',
-    suffixIcon: Container(
-      color: Colors.grey, 
-      child: TextButton(
-        onPressed: onPressedIcon,
-        child: Icon(suffixIcon, size: 25)
-      ),
+    suffixIcon: TextButton(
+      onPressed: onPressedIcon,
+      child: Icon(suffixIcon, size: 25)
     ),
     suffixIconColor: Colors.blueGrey,
   );

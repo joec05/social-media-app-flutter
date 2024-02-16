@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:social_media_app/global_files.dart';
 
+/// Controller which is used to handle the display of information, typically in the form of a snackbar
 class HandlerController {
+
+  /// Returns the color of the snackbar depending on the type of information the snackbar will display
   Color getHandlerColor(SnackbarType type) {
     if(type == SnackbarType.error){
       return Colors.redAccent;
@@ -16,6 +19,8 @@ class HandlerController {
     return Colors.red;
   }
 
+  /// Returns the icon to be displayed in the  snackbar depending on the type of information 
+  /// the snackbar will display
   IconData? getIconData(SnackbarType type) {
     if(type == SnackbarType.error){
       return FontAwesomeIcons.x;
@@ -29,6 +34,7 @@ class HandlerController {
     return null;
   }
 
+  /// Displays the snackbar
   void displaySnackbar(
     BuildContext context, 
     SnackbarType type,
@@ -46,6 +52,7 @@ class HandlerController {
       )
     );
   }
+  
 }
 
 final handler = HandlerController();

@@ -380,7 +380,7 @@ class UploadController {
           for(int i = 0; i < mediasDatas.value.length; i++){
             if(mounted){
               MediaDatasClass mediaData = mediasDatas.value[i];
-              String storageUrl = '';
+              String? storageUrl;
               if(mediasDatas.value[i].mediaType == MediaType.image){
                 storageUrl = await cloudController.uploadImageToAppWrite(
                   context,
@@ -395,7 +395,7 @@ class UploadController {
               }else if(mediasDatas.value[i].mediaType == MediaType.websiteCard){
                 storageUrl = mediaData.url;
               }
-              if(storageUrl.isNotEmpty){
+              if(storageUrl != null){
                 updatedMediasDatas.add(MediaDatasClass(
                   mediaData.mediaType, storageUrl, mediaData.playerController, mediaData.storagePath, 
                   MediaSourceType.network, mediaData.websiteCardData, mediaData.mediaSize
@@ -464,7 +464,7 @@ class UploadController {
           for(int i = 0; i < mediasDatas.value.length; i++){
             if(mounted){
               MediaDatasClass mediaData = mediasDatas.value[i];
-              String storageUrl = '';
+              String? storageUrl;
               if(mediasDatas.value[i].mediaType == MediaType.image){
                 storageUrl = await cloudController.uploadImageToAppWrite(
                   context,
@@ -479,7 +479,7 @@ class UploadController {
               }else if(mediasDatas.value[i].mediaType == MediaType.websiteCard){
                 storageUrl = mediaData.url;
               }
-              if(storageUrl.isNotEmpty){
+              if(storageUrl != null){
                 updatedMediasDatas.add(MediaDatasClass(
                   mediaData.mediaType, storageUrl, mediaData.playerController, mediaData.storagePath, 
                   MediaSourceType.network, mediaData.websiteCardData, mediaData.mediaSize
@@ -546,7 +546,7 @@ class UploadController {
           for(int i = 0; i < mediasDatas.value.length; i++){
             if(mounted){
               MediaDatasClass mediaData = mediasDatas.value[i];
-              String storageUrl = '';
+              String? storageUrl;
               if(mediasDatas.value[i].mediaType == MediaType.image){
                 storageUrl = await cloudController.uploadImageToAppWrite(
                   context,
@@ -561,7 +561,7 @@ class UploadController {
               }else if(mediasDatas.value[i].mediaType == MediaType.websiteCard){
                 storageUrl = mediaData.url;
               }
-              if(storageUrl.isNotEmpty){
+              if(storageUrl != null){
                 updatedMediasDatas.add(MediaDatasClass(
                   mediaData.mediaType, storageUrl, mediaData.playerController, mediaData.storagePath, 
                   MediaSourceType.network, mediaData.websiteCardData, mediaData.mediaSize
@@ -657,7 +657,7 @@ class UploadController {
           for(int i = 0; i < mediasDatas.value.length; i++){
             if(mounted){
               MediaDatasClass mediaData = mediasDatas.value[i];
-              String storageUrl = '';
+              String? storageUrl;
               if(mediasDatas.value[i].mediaType == MediaType.image){
                 storageUrl = await cloudController.uploadImageToAppWrite(
                   context,
@@ -672,7 +672,7 @@ class UploadController {
               }else if(mediasDatas.value[i].mediaType == MediaType.websiteCard){
                 storageUrl = mediaData.url;
               }
-              if(storageUrl.isNotEmpty){
+              if(storageUrl != null){
                 updatedMediasDatas.add(MediaDatasClass(
                   mediaData.mediaType, storageUrl, mediaData.playerController, mediaData.storagePath, 
                   MediaSourceType.network, mediaData.websiteCardData, mediaData.mediaSize
@@ -746,7 +746,7 @@ class UploadController {
           for(int i = 0; i < mediasDatas.value.length; i++){
             if(mounted){
               MediaDatasClass mediaData = mediasDatas.value[i];
-              String storageUrl = '';
+              String? storageUrl;
               if(mediasDatas.value[i].mediaType == MediaType.image){
                 storageUrl = await cloudController.uploadImageToAppWrite(
                   context,
@@ -761,7 +761,7 @@ class UploadController {
               }else if(mediasDatas.value[i].mediaType == MediaType.websiteCard){
                 storageUrl = mediaData.url;
               }
-              if(storageUrl.isNotEmpty){
+              if(storageUrl != null){
                 updatedMediasDatas.add(MediaDatasClass(
                   mediaData.mediaType, storageUrl, mediaData.playerController, mediaData.storagePath, 
                   MediaSourceType.network, mediaData.websiteCardData, mediaData.mediaSize
@@ -832,7 +832,7 @@ class UploadController {
           for(int i = 0; i < mediasDatas.value.length; i++){
             if(mounted){
               MediaDatasClass mediaData = mediasDatas.value[i];
-              String storageUrl = '';
+              String? storageUrl;
               if(mediasDatas.value[i].mediaType == MediaType.image){
                 storageUrl = await cloudController.uploadImageToAppWrite(
                   context,
@@ -847,7 +847,7 @@ class UploadController {
               }else if(mediasDatas.value[i].mediaType == MediaType.websiteCard){
                 storageUrl = mediaData.url;
               }
-              if(storageUrl.isNotEmpty){
+              if(storageUrl != null){
                 updatedMediasDatas.add(MediaDatasClass(
                   mediaData.mediaType, storageUrl, mediaData.playerController, mediaData.storagePath, 
                   MediaSourceType.network, mediaData.websiteCardData, mediaData.mediaSize
@@ -889,6 +889,7 @@ class UploadController {
                 textController.text = '';
                 mediasDatas.value = [];
                 mediasComponents.value = [];
+                chatController.recipientsList = null;
                 if(chatController.chatID.value == null){
                   chatController.chatID.value = chatController.newChatID.value;
                   chatController.newChatID.value = null;
