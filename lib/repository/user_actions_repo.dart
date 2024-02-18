@@ -446,8 +446,9 @@ void verifyDeleteAccount(BuildContext context) {
                       fontSize: 18
                     )
                   ),
-                  containerMargin(
-                    textFieldWithDescription(
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin),
+                    child: textFieldWithDescription(
                       TextField(
                         controller: emailController,
                         keyboardType: TextInputType.emailAddress,
@@ -456,10 +457,10 @@ void verifyDeleteAccount(BuildContext context) {
                       'Email',
                       ''
                     ),
-                    EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
                   ),
-                  containerMargin(
-                    textFieldWithDescription(
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin),
+                    child: textFieldWithDescription(
                       TextField(
                         controller: passwordController,
                         decoration: generateProfileTextFieldDecoration('password', Icons.lock),
@@ -469,7 +470,6 @@ void verifyDeleteAccount(BuildContext context) {
                       'Password',
                       "Your password should be between ${profileInputMinLimit['password']} and ${profileInputMaxLimit['password']} characters",
                     ),
-                    EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
                   ),
                   SizedBox(
                     height: textFieldToButtonMargin
@@ -477,7 +477,7 @@ void verifyDeleteAccount(BuildContext context) {
                   CustomButton(
                     width: getScreenWidth() * 0.65, 
                     height: getScreenHeight() * 0.07, 
-                    color: Colors.teal, 
+                    color: Colors.cyanAccent, 
                     text: 'Delete', 
                     prefix: null, 
                     onTapped: () {

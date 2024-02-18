@@ -272,7 +272,7 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
-                                      Text('@${senderData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.teal)),
+                                      Text('@${senderData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.cyanAccent)),
                                       Text(getTimeDifference(commentData.uploadTime), style: TextStyle(fontSize: defaultTextFontSize * 0.675))
                                     ],
                                   ),
@@ -285,7 +285,7 @@ class _CustomCommentWidgetState extends State<CustomCommentWidget>{
                     ]
                   ),
                   SizedBox(height: getScreenHeight() * 0.01),
-                  Text("Replying to @${parentPostSender.username}'s ${commentData.parentPostType}", style: TextStyle(fontSize: defaultTextFontSize * 0.875, color: Colors.teal)),
+                  Text("Replying to @${parentPostSender.username}'s ${commentData.parentPostType}", style: TextStyle(fontSize: defaultTextFontSize * 0.875, color: Colors.cyanAccent)),
                   SizedBox(height: getScreenHeight() * 0.01),
                   Divider(
                     color: Theme.of(context).dividerColor,

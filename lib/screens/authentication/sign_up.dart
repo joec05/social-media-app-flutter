@@ -82,8 +82,9 @@ class _SignUpStatefulState extends State<SignUpStateful> {
                     SizedBox(
                       height: titleToContentMargin,
                     ),
-                    containerMargin(
-                      textFieldWithDescription(
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin),
+                      child: textFieldWithDescription(
                         TextField(
                           controller: controller.emailController,
                           keyboardType: TextInputType.emailAddress,
@@ -92,10 +93,10 @@ class _SignUpStatefulState extends State<SignUpStateful> {
                         'Email',
                         ''
                       ),
-                      EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
                     ),
-                    containerMargin(
-                      textFieldWithDescription(
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin),
+                      child: textFieldWithDescription(
                         TextField(
                           controller: controller.passwordController,
                           decoration: generateProfileTextFieldDecoration('password', Icons.lock),
@@ -105,10 +106,10 @@ class _SignUpStatefulState extends State<SignUpStateful> {
                         'Password',
                         "Your password should be between ${controller.passwordCharacterMinLimit} and ${controller.passwordCharacterMaxLimit} characters",
                       ),
-                      EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
                     ),
-                    containerMargin(
-                      textFieldWithDescription(
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin),
+                      child: textFieldWithDescription(
                         TextField(
                           controller: controller.nameController,
                           decoration: generateProfileTextFieldDecoration('your name', Icons.person),
@@ -116,9 +117,11 @@ class _SignUpStatefulState extends State<SignUpStateful> {
                         ),
                         'Name',
                         "Your name should be between 1 and ${controller.nameCharacterMaxLimit} characters",
-                      ), EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)),
-                    containerMargin(
-                      textFieldWithDescription(
+                      )
+                    ),
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin),
+                      child: textFieldWithDescription(
                           TextField(
                           controller: controller.usernameController,
                           decoration: generateProfileTextFieldDecoration('username', Icons.person),
@@ -127,10 +130,10 @@ class _SignUpStatefulState extends State<SignUpStateful> {
                         'Username',
                         "Your username should be between ${controller.usernameCharacterMinLimit} and ${controller.usernameCharacterMaxLimit} characters",
                       ),
-                      EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
                     ),
-                    containerMargin(
-                      textFieldWithDescription(
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin),
+                      child: textFieldWithDescription(
                         GestureDetector(
                           onTap: () => controller.selectBirthDate(context),
                           child: TextField(
@@ -142,7 +145,6 @@ class _SignUpStatefulState extends State<SignUpStateful> {
                         'Birth Date',
                         ''
                       ),
-                      EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
                     ),
                     SizedBox(
                       height: textFieldToButtonMargin

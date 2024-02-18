@@ -12,7 +12,7 @@ class HandlerController {
     }else if(type == SnackbarType.successful){
       return Colors.lightGreen;
     }else if(type == SnackbarType.regular){
-      return Colors.teal;
+      return Colors.cyanAccent;
     }else if(type == SnackbarType.warning){
       return Colors.yellow;
     }

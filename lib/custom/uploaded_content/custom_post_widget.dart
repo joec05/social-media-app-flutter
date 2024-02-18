@@ -274,7 +274,7 @@ class _CustomPostWidgetState extends State<CustomPostWidget>{
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
-                                      Text('@${senderData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.teal)),
+                                      Text('@${senderData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.cyanAccent)),
                                       Text(getTimeDifference(postData.uploadTime), style: TextStyle(fontSize: defaultTextFontSize * 0.675))
                                     ],
                                   ),

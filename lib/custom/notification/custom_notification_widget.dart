@@ -172,7 +172,7 @@ class _CustomNotificationWidgetState extends State<CustomNotificationWidget>{
                         Text(generateNotificationText(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: defaultTextFontSize * 0.9), softWrap: true),
                         notificationDescription.isNotEmpty ? Text(
                           StringEllipsis.convertToEllipsis(notificationDescription), maxLines: 3, 
-                          overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.teal)
+                          overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.cyanAccent)
                         ) : Container(),
                         Text(getTimeDifference(notificationClass.time), style: TextStyle(fontSize: defaultTextFontSize * 0.675))
                       ],

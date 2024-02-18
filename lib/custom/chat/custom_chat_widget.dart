@@ -168,7 +168,7 @@ class CustomChatWidgetState extends State<CustomChatWidget> {
                                         : Container()
                                       ],
                                     ),
-                                    Text(chatData.latestMessageData.content.isEmpty ? '' : '$subject: ${chatData.latestMessageData.content}', maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.teal)),
+                                    Text(chatData.latestMessageData.content.isEmpty ? '' : '$subject: ${chatData.latestMessageData.content}', maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.cyanAccent)),
                                     Text(chatData.latestMessageData.uploadTime.isNotEmpty ? getTimeDifference(chatData.latestMessageData.uploadTime) : '', style: TextStyle(fontSize: defaultTextFontSize * 0.675)),
                                   ],
                                 ),
@@ -259,7 +259,7 @@ class CustomChatWidgetState extends State<CustomChatWidget> {
                                         'This message is unavailable'
                                       :
                                         chatData.latestMessageData.type == 'message' ? '$subject: ${chatData.latestMessageData.content}' : chatData.latestMessageData.content,
-                                      maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.teal)
+                                      maxLines: 3, style: TextStyle(fontSize: defaultTextFontSize * 0.8, color: Colors.cyanAccent)
                                     ),
                                     Text(chatData.latestMessageData.uploadTime.isNotEmpty ? getTimeDifference(chatData.latestMessageData.uploadTime) : '', style: TextStyle(fontSize: defaultTextFontSize * 0.675)),
                                   ],

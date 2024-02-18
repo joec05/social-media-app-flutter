@@ -76,8 +76,9 @@ class _LoginWithEmailStatefulState extends State<LoginWithEmailStateful> {
                     SizedBox(
                       height: defaultVerticalPadding
                     ),
-                    containerMargin(
-                      textFieldWithDescription(
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin),
+                      child: textFieldWithDescription(
                         TextField(
                           controller: controller.emailController,
                           keyboardType: TextInputType.emailAddress,
@@ -86,10 +87,10 @@ class _LoginWithEmailStatefulState extends State<LoginWithEmailStateful> {
                         'Email',
                         ''
                       ),
-                      EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
                     ),
-                    containerMargin(
-                      Column(
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin),
+                      child: Column(
                         children: [
                           textFieldWithDescription(
                             TextField(
@@ -106,7 +107,6 @@ class _LoginWithEmailStatefulState extends State<LoginWithEmailStateful> {
                           ),
                         ]
                       ),
-                      EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
                     ),
                     SizedBox(
                       height: textFieldToButtonMargin

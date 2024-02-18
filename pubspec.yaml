@@ -70,7 +70,6 @@ dependencies:
   onboarding: ^3.1.0
   google_sign_in: ^6.2.1
   flutter_secure_storage: ^9.0.0
-  google_fonts: ^4.0.4
 
 dependency_overrides:
 
@@ -137,6 +136,16 @@ flutter:
   #       - asset: fonts/TrajanPro.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
-  #
+  fonts:
+    - family: Poly
+      fonts:
+        - asset: assets/fonts/Poly-Regular.ttf
+        - asset: assets/fonts/Poly-Italic.ttf
+          style: italic
+    - family: SourceSans3
+      fonts:
+        - asset: assets/fonts/SourceSans3-VariableFont_wght.ttf
+        - asset: assets/fonts/SourceSans3-Italic-VariableFont_wght.ttf
+          style: italic
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

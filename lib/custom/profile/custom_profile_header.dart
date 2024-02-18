@@ -115,7 +115,7 @@ class _CustomProfileHeaderState extends State<CustomProfileHeader>{
             SizedBox(
               height: getScreenHeight() * 0.005
             ),
-            Text(userData.suspended || userData.deleted ? '@' : '@${userData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.825, color: Colors.teal)),
+            Text(userData.suspended || userData.deleted ? '@' : '@${userData.username}', style: TextStyle(fontSize: defaultTextFontSize * 0.825, color: Colors.cyanAccent)),
             !userData.blocksCurrentID && !userData.suspended && !userData.deleted ?
               Column(
                 children: [

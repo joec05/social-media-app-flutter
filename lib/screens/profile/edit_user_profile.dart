@@ -65,94 +65,85 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
                       if(filePath.isNotEmpty){
                         return Column(
                           children: [
-                            containerMargin(
-                              Container(
-                                width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
-                                decoration: BoxDecoration(
-                                  border: Border.all(width: 2),
-                                  borderRadius: BorderRadius.circular(100),
-                                  image: DecorationImage(
-                                    image: FileImage(
-                                      File(filePath)
-                                    ), fit: BoxFit.fill
-                                  )
-                                ),
-                                child: Center(
-                                  child: GestureDetector(
-                                    onTap: (){
-                                      if(mounted) controller.imageFilePath.value = '';
-                                    },
-                                    child: const Icon(Icons.delete, size: 30)
-                                  ),
-                                )
-                              ),
-                              EdgeInsets.only(
+                            Container(
+                              width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
+                              margin: EdgeInsets.only(
                                 top: getScreenHeight() * 0.0075, 
                                 bottom: defaultPickedImageVerticalMargin
+                              ),
+                              decoration: BoxDecoration(
+                                border: Border.all(width: 2),
+                                borderRadius: BorderRadius.circular(100),
+                                image: DecorationImage(
+                                  image: FileImage(
+                                    File(filePath)
+                                  ), fit: BoxFit.fill
+                                )
+                              ),
+                              child: Center(
+                                child: GestureDetector(
+                                  onTap: (){
+                                    if(mounted) controller.imageFilePath.value = '';
+                                  },
+                                  child: const Icon(Icons.delete, size: 30)
+                                ),
                               )
-                            )
+                            ),
                           ]
                         );
                       }else if(networkPath.isNotEmpty){
                         return Column(
                           children: [
-                            containerMargin(
-                              Container(
-                                width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
-                                decoration: BoxDecoration(
-                                  border: Border.all(width: 2),
-                                  borderRadius: BorderRadius.circular(100),
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                      networkPath
-                                    ), fit: BoxFit.fill
-                                  )
-                                ),
-                                child: Center(
-                                  child: GestureDetector(
-                                    onTap: (){
-                                      if(mounted) controller.imageNetworkPath.value = '';
-                                    },
-                                    child: const Icon(Icons.delete, size: 30)
-                                  ),
-                                )
-                              ),
-                              EdgeInsets.only(
+                            Container(
+                              width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
+                              margin: EdgeInsets.only(
                                 top: getScreenHeight() * 0.0075, 
                                 bottom: defaultPickedImageVerticalMargin
+                              ),
+                              decoration: BoxDecoration(
+                                border: Border.all(width: 2),
+                                borderRadius: BorderRadius.circular(100),
+                                image: DecorationImage(
+                                  image: NetworkImage(
+                                    networkPath
+                                  ), fit: BoxFit.fill
+                                )
+                              ),
+                              child: Center(
+                                child: GestureDetector(
+                                  onTap: (){
+                                    if(mounted) controller.imageNetworkPath.value = '';
+                                  },
+                                  child: const Icon(Icons.delete, size: 30)
+                                ),
                               )
-                            )
+                            ),
                           ]
                         );
                       }else{
-                        return containerMargin(
-                          Column(
-                            children: [
-                              Container(
-                                width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
-                                decoration: BoxDecoration(
-                                  border: Border.all(width: 2),
-                                  borderRadius: BorderRadius.circular(100),
-                                ),
-                                child: Center(
-                                  child: GestureDetector(
-                                    onTap: () => controller.pickImage(),
-                                    child: const Icon(Icons.add, size: 30)
-                                  ),
-                                )
-                              )
-                            ]
-                          ),
-                          EdgeInsets.only(
+                        return Container(
+                          width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
+                          margin: EdgeInsets.only(
                             top: getScreenHeight() * 0.0075, 
                             bottom: defaultPickedImageVerticalMargin
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(width: 2),
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Center(
+                            child: GestureDetector(
+                              onTap: () => controller.pickImage(),
+                              child: const Icon(Icons.add, size: 30)
+                            ),
                           )
                         );
                       }
                     }
                   ),
-                  containerMargin(
-                    textFieldWithDescription(
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin),
+                    child: textFieldWithDescription(
                       TextField(
                         controller: controller.nameController,
                         decoration: generateProfileTextFieldDecoration('your name', Icons.person),
@@ -160,9 +151,11 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
                       ),
                       'Name',
                       "Your name should be between 1 and ${controller.nameCharacterMaxLimit} characters",
-                    ), EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)),
-                  containerMargin(
-                    textFieldWithDescription(
+                    )
+                  ),
+                   Container(
+                    margin: EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin),
+                    child: textFieldWithDescription(
                         TextField(
                         controller: controller.usernameController,
                         decoration: generateProfileTextFieldDecoration('username', Icons.person),
@@ -171,10 +164,10 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
                       'Username',
                       "Your username should be between ${controller.usernameCharacterMinLimit} and ${controller.usernameCharacterMaxLimit} characters",
                     ),
-                    EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
                   ),
-                  containerMargin(
-                    textFieldWithDescription(
+                   Container(
+                    margin: EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin),
+                    child: textFieldWithDescription(
                       GestureDetector(
                         onTap: () => controller.selectBirthDate(context),
                         child: TextField(
@@ -186,10 +179,10 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
                       'Birth Date',
                       ''
                     ),
-                    EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
                   ),
-                  containerMargin(
-                    textFieldWithDescription(
+                   Container(
+                    margin: EdgeInsets.only(top: getScreenHeight() * 0.0075, bottom: defaultTextFieldVerticalMargin),
+                    child: textFieldWithDescription(
                       TextField(
                         controller: controller.bioController,
                         decoration: generateBioTextFieldDecoration('bio', Icons.person),
@@ -200,7 +193,6 @@ class _EditProfileStatefulState extends State<EditProfileStateful> with Lifecycl
                       'Bio',
                       "Your bio is optional and should not exceed ${controller.bioCharacterMaxLimit} characters",
                     ),
-                    EdgeInsets.only(top: getScreenHeight() * 0.0075, bottom: defaultTextFieldVerticalMargin)
                   ),
                   SizedBox(
                     height: textFieldToButtonMargin

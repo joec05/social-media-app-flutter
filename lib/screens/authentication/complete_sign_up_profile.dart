@@ -55,62 +55,50 @@ class _CompleteSignUpProfileStatefulState extends State<CompleteSignUpProfileSta
                     height: titleToContentMargin,
                   ),
                   Center(
-                    child: containerMargin(
-                      Text('Select your profile picture', style: TextStyle(fontSize: defaultTextFontSize, fontWeight: FontWeight.w500)),
-                      EdgeInsets.only(top: defaultPickedImageVerticalMargin, bottom: getScreenHeight() * 0.0075)
+                    child: Container(
+                      margin: EdgeInsets.only(top: defaultPickedImageVerticalMargin, bottom: getScreenHeight() * 0.0075),
+                      child: Text('Select your profile picture', style: TextStyle(fontSize: defaultTextFontSize, fontWeight: FontWeight.w500)),
                     ),
                   ),
                   ValueListenableBuilder(
                     valueListenable: controller.imageFilePath,
                     builder: (context, filePath, child){
                       if(filePath.isNotEmpty){
-                        return Column(
-                          children: [
-                            containerMargin(
-                              Container(
-                                width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
-                                decoration: BoxDecoration(
-                                  border: Border.all(width: 2),
-                                  borderRadius: BorderRadius.circular(100),
-                                  image: DecorationImage(
-                                    image: FileImage(
-                                      File(filePath)
-                                    ), fit: BoxFit.fill
-                                  )
-                                ),
-                                child: Center(
-                                  child: GestureDetector(
-                                    onTap: (){
-                                      if(mounted) controller.imageFilePath.value = '';
-                                    },
-                                    child: const Icon(Icons.delete, size: 30)
-                                  ),
-                                )
-                              ),
-                              EdgeInsets.only(top: getScreenHeight() * 0.0075, bottom: defaultPickedImageVerticalMargin)
+                        return Container(
+                          margin: EdgeInsets.only(top: getScreenHeight() * 0.0075, bottom: defaultPickedImageVerticalMargin),
+                          width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
+                          decoration: BoxDecoration(
+                            border: Border.all(width: 2),
+                            borderRadius: BorderRadius.circular(100),
+                            image: DecorationImage(
+                              image: FileImage(
+                                File(filePath)
+                              ), fit: BoxFit.fill
                             )
-                          ]
+                          ),
+                          child: Center(
+                            child: GestureDetector(
+                              onTap: (){
+                                if(mounted) controller.imageFilePath.value = '';
+                              },
+                              child: const Icon(Icons.delete, size: 30)
+                            ),
+                          )
                         );
                       }else{
-                        return containerMargin(
-                          Column(
-                            children: [
-                              Container(
-                                width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
-                                decoration: BoxDecoration(
-                                  border: Border.all(width: 2),
-                                  borderRadius: BorderRadius.circular(100),
-                                ),
-                                child: Center(
-                                  child: GestureDetector(
-                                    onTap: () => controller.pickImage(),
-                                    child: const Icon(Icons.add, size: 30)
-                                  ),
-                                )
-                              )
-                            ]
+                        return Container(
+                          width: getScreenWidth() * 0.35, height: getScreenWidth() * 0.35,
+                          margin: EdgeInsets.only(top: getScreenHeight() * 0.0075, bottom: defaultPickedImageVerticalMargin),
+                          decoration: BoxDecoration(
+                            border: Border.all(width: 2),
+                            borderRadius: BorderRadius.circular(100),
                           ),
-                          EdgeInsets.only(top: getScreenHeight() * 0.0075, bottom: defaultPickedImageVerticalMargin)
+                          child: Center(
+                            child: GestureDetector(
+                              onTap: () => controller.pickImage(),
+                              child: const Icon(Icons.add, size: 30)
+                            ),
+                          )
                         );
                       }
                     }
@@ -119,13 +107,14 @@ class _CompleteSignUpProfileStatefulState extends State<CompleteSignUpProfileSta
                     height: getScreenHeight() * 0.025
                   ),
                   Center(
-                    child: containerMargin(
-                      Text('Complete your bio (optional)', style: TextStyle(fontSize: defaultTextFontSize, fontWeight: FontWeight.w500)),
-                      EdgeInsets.only(top: defaultPickedImageVerticalMargin, bottom: getScreenHeight() * 0.0075)
+                    child: Container(
+                      margin: EdgeInsets.only(top: defaultPickedImageVerticalMargin, bottom: getScreenHeight() * 0.0075),
+                      child: Text('Complete your bio (optional)', style: TextStyle(fontSize: defaultTextFontSize, fontWeight: FontWeight.w500)),
                     ),
                   ),
-                  containerMargin(
-                    textFieldWithDescription(
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin),
+                    child: textFieldWithDescription(
                       TextField(
                         controller: controller.bioController,
                         decoration: generateBioTextFieldDecoration('bio', Icons.person),
@@ -136,7 +125,6 @@ class _CompleteSignUpProfileStatefulState extends State<CompleteSignUpProfileSta
                       'Bio',
                       "Your bio is optional and should not exceed ${controller.bioCharacterMaxLimit} characters",
                     ),
-                    EdgeInsets.symmetric(vertical: defaultTextFieldVerticalMargin)
                   ),
                   SizedBox(
                     height: textFieldToButtonMargin

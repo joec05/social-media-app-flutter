@@ -10,7 +10,7 @@ A simple social media project app made with Flutter wrapped in simple and beauti
 
 * PostgreSQL as database
 
-* Firebase as authentication tool and cloud storage for videos
+* Firebase as authentication medium and cloud storage for videos
 
 * Appwrite as cloud storage for images
 
@@ -86,21 +86,9 @@ Once you have set up all of these the app is ready to use.
 
 ## Basic preview of the application
 
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_1.png?raw=true "Social media app preview 1")
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/demo_1.png?raw=true "Social media app preview 1")
 
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_2.png?raw=true "Social media app preview 2")
-
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_3.png?raw=true "Social media app preview 3")
-
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_4.png?raw=true "Social media app preview 4")
-
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_5.png?raw=true "Social media app preview 5")
-
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_6.png?raw=true "Social media app preview 6")
-
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_7.png?raw=true "Social media app preview 7")
-
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/app_demo_8.png?raw=true "Social media app preview 8")
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/demo_1.png?raw=true "Social media app preview 2")
 
 ## Things to fix and improve
 
