@@ -88,7 +88,7 @@ Once you have set up all of these the app is ready to use.
 
 ![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/demo_1.png?raw=true "Social media app preview 1")
 
-![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/demo_1.png?raw=true "Social media app preview 2")
+![Social media app preview](https://github.com/joec05/files/blob/main/social_media_app/demo_2.png?raw=true "Social media app preview 2")
 
 ## Things to fix and improve
 
